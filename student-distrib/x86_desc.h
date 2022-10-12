@@ -113,6 +113,7 @@ typedef struct __attribute__((packed)) tss_t {
 
 /* Some external descriptors declared in .S files */
 extern x86_desc_t gdt_desc;
+extern x86_desc_t gdt_desc_ptr; // data for gdtr
 
 extern uint16_t ldt_desc;
 extern uint32_t ldt_size;
@@ -163,10 +164,12 @@ typedef union idt_desc_t {
 } idt_desc_t;
 
 /* The IDT itself (declared in x86_desc.S */
-extern idt_desc_t idt[NUM_VEC];
+extern idt_desc_t idt[NUM_VEC];              // be sure to use this to load the idt
 /* The descriptor used to load the IDTR */
-extern x86_desc_t idt_desc_ptr;
+extern x86_desc_t idt_desc_ptr;              // the idt pointer
 
+
+// used to set the idt entry, need a for loop to loop each entry and load to IDT table
 /* Sets runtime parameters for an IDT entry */
 #define SET_IDT_ENTRY(str, handler)                              \
 do {                                                             \
