@@ -135,6 +135,9 @@ void entry(unsigned long magic, unsigned long addr) {
         tss.esp0 = 0x800000;
         ltr(KERNEL_TSS);
     }
+    
+    // IDT session starting here
+    
 
     /* Init the PIC */
     i8259_init();
