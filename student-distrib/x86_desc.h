@@ -146,18 +146,18 @@ do {                                                            \
 } while (0)
 
 /* An interrupt descriptor entry (goes into the IDT) */
-typedef union idt_desc_t {
-    uint32_t val[2];
+typedef union idt_desc_t {  // pay attention, this is union, the size of the union = max(all members)
+    uint32_t val[2];        // in this case, it is 32 * 2 = 64 bits = 8 bytes
     struct {
-        uint16_t offset_15_00;
-        uint16_t seg_selector;
+        uint16_t offset_15_00; // something that i am not sure about
+        uint16_t seg_selector; // current line and the line above is the segment selector, need to set to kernel code segment descriptor on GDT
         uint8_t  reserved4;
-        uint32_t reserved3 : 1;
-        uint32_t reserved2 : 1;
+        uint32_t reserved3 : 1; // this is called "bitfield", this means this var only use 1 bit
+        uint32_t reserved2 : 1; // what is benefit? better and efficient manipulations on the memory data
         uint32_t reserved1 : 1;
         uint32_t size      : 1;
         uint32_t reserved0 : 1;
-        uint32_t dpl       : 2;
+        uint32_t dpl       : 2; // set to 0 for interrupt and exception, set to 3 for system call
         uint32_t present   : 1;
         uint16_t offset_31_16;
     } __attribute__ ((packed));
