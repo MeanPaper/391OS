@@ -78,7 +78,40 @@ void init_idt_desc(){
     // setting up other information
     // question on setting up idt, for the the first 32 entries as well as the rest of the entries
     // not sure what to do with them for now
-    // lidt();
+    
+    // SET_IDT_ENTRY(idt[0x00], some_handler);
+    // SET_IDT_ENTRY(idt[0x01], some_handler);
+    // SET_IDT_ENTRY(idt[0x02], some_handler);
+    // SET_IDT_ENTRY(idt[0x03], some_handler);
+    // SET_IDT_ENTRY(idt[0x04], some_handler);
+    // SET_IDT_ENTRY(idt[0x05], some_handler);
+    // SET_IDT_ENTRY(idt[0x06], some_handler);
+    // SET_IDT_ENTRY(idt[0x07], some_handler);
+    // SET_IDT_ENTRY(idt[0x08], some_handler);
+    // SET_IDT_ENTRY(idt[0x09], some_handler);
+    // SET_IDT_ENTRY(idt[0xA], some_handler);
+    // SET_IDT_ENTRY(idt[0xB], some_handler);
+    // SET_IDT_ENTRY(idt[0xC], some_handler);
+    // SET_IDT_ENTRY(idt[0xD], some_handler);
+    // SET_IDT_ENTRY(idt[0xE], some_handler);  
+    // SET_IDT_ENTRY(idt[0xF], some_handler);
+    // SET_IDT_ENTRY(idt[0x10], some_handler);
+    // SET_IDT_ENTRY(idt[0x11], some_handler);
+    // SET_IDT_ENTRY(idt[0x12], some_handler);
+    // SET_IDT_ENTRY(idt[0x13], some_handler);
+    // SET_IDT_ENTRY(idt[0x14], some_handler); // 20
+    // SET_IDT_ENTRY(idt[0x15], some_handler);
+    // SET_IDT_ENTRY(idt[0x16], some_handler);
+    // SET_IDT_ENTRY(idt[0x17], some_handler);
+    // SET_IDT_ENTRY(idt[0x18], some_handler);
+    // SET_IDT_ENTRY(idt[0x19], some_handler);
+    // SET_IDT_ENTRY(idt[0x1A], some_handler);
+    // SET_IDT_ENTRY(idt[0x1B], some_handler);
+    // SET_IDT_ENTRY(idt[0x1C], some_handler);
+    // SET_IDT_ENTRY(idt[0x1D], some_handler);
+    // SET_IDT_ENTRY(idt[0x1E], some_handler);
+    // SET_IDT_ENTRY(idt[0x1F], some_handler);
 
+    // lidt();
     // lidt(&idt_desc_ptr);
 }
