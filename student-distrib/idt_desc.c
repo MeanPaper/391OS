@@ -10,6 +10,12 @@
 #define SYSTEM_CALL     0x80  // index for system calls
 
 
+
+// void divide_error_exception(){
+//     printf(" Divide Error Exception \n");
+//     while(1);
+// }
+
 /**
  * 
  *  Notes from IA-32 documentation page 156, and mp3 documentation appendix D
@@ -38,10 +44,12 @@
  *  31------------------------16-15----------------------------0
  *  |     Segment Selector      |      Offset 15 .. 0          |  0
  *  +----------------------------------------------------------+
+ * 
+ * the first 20 line of the code should work
+ * 
+ * 
+ * 
 */
-
-
-
 
 // initialize IDT
 // 0x00 - 0x1F: exceptions, require trap gate settings
@@ -98,20 +106,9 @@ void init_idt_desc(){
     // SET_IDT_ENTRY(idt[0x10], some_handler);
     // SET_IDT_ENTRY(idt[0x11], some_handler);
     // SET_IDT_ENTRY(idt[0x12], some_handler);
-    // SET_IDT_ENTRY(idt[0x13], some_handler);
-    // SET_IDT_ENTRY(idt[0x14], some_handler); // 20
-    // SET_IDT_ENTRY(idt[0x15], some_handler);
-    // SET_IDT_ENTRY(idt[0x16], some_handler);
-    // SET_IDT_ENTRY(idt[0x17], some_handler);
-    // SET_IDT_ENTRY(idt[0x18], some_handler);
-    // SET_IDT_ENTRY(idt[0x19], some_handler);
-    // SET_IDT_ENTRY(idt[0x1A], some_handler);
-    // SET_IDT_ENTRY(idt[0x1B], some_handler);
-    // SET_IDT_ENTRY(idt[0x1C], some_handler);
-    // SET_IDT_ENTRY(idt[0x1D], some_handler);
-    // SET_IDT_ENTRY(idt[0x1E], some_handler);
-    // SET_IDT_ENTRY(idt[0x1F], some_handler);
+    // SET_IDT_ENTRY(idt[0x13], some_handler); // idt index 19
+    // SET_IDT_ENTRY(idt[0x14], some_handler); // 20 to 31 do not use
 
-    // lidt();
-    // lidt(&idt_desc_ptr);
+
+    lidt(idt_desc_ptr);
 }

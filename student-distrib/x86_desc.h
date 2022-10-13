@@ -170,6 +170,10 @@ extern x86_desc_t idt_desc_ptr;              // the idt pointer
 
 
 // used to set the idt entry, need a for loop to loop each entry and load to IDT table
+// double check SET_IDT_ENTRY with prof. Lumetta
+
+// str is the idt entry, handler is the function pointer
+
 /* Sets runtime parameters for an IDT entry */
 #define SET_IDT_ENTRY(str, handler)                              \
 do {                                                             \
@@ -195,6 +199,8 @@ do {                                    \
  * (defined as "struct x86_desc" above) contains a 2-byte size field
  * specifying the size of the IDT, and a 4-byte address field specifying
  * the base address of the IDT. */
+
+// the desc should be treated as label, the assmebly code will translate desc to label
 #define lidt(desc)                      \
 do {                                    \
     asm volatile ("lidt (%0)"           \
