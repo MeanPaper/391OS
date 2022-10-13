@@ -77,4 +77,5 @@ void init_idt_desc(){
     // setting up other information
     // question on setting up idt, for the the first 32 entries as well as the rest of the entries
     // not sure what to do with them for now
+    
 }
