@@ -8,6 +8,7 @@
 #include "i8259.h"
 #include "debug.h"
 #include "tests.h"
+#include "idt_desc.h"
 
 #define RUN_TESTS
 
@@ -141,7 +142,7 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Init the PIC */
     i8259_init();
-
+    init_idt_desc();
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
 
@@ -154,7 +155,7 @@ void entry(unsigned long magic, unsigned long addr) {
 
 #ifdef RUN_TESTS
     /* Run tests */
-    launch_tests();
+    launch_tests(); // comment this if you do not want loop booting
 #endif
     /* Execute the first program ("shell") ... */
 

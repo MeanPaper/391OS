@@ -3,6 +3,7 @@
 #include "i8259.h"
 #include "debug.h"
 #include "tests.h"
+#include "x86_desc.h"
 #include "idt_desc.h"
 
 #define INTEL_LAST_DEF  0x1F  // the last index of intel define info on idt
@@ -77,5 +78,7 @@ void init_idt_desc(){
     // setting up other information
     // question on setting up idt, for the the first 32 entries as well as the rest of the entries
     // not sure what to do with them for now
-    
+    // lidt();
+
+    // lidt(&idt_desc_ptr);
 }
