@@ -10,7 +10,7 @@ extern void page_init();
 
 // need data allignment with 4096
 // This should go outside any function..
-extern void loadPageDirectory(unsigned int*) {
+extern void loadPageDirectory(unsigned int* name) {
     asm volatile ("push %ebp            \n\
                 mov %esp, %ebp          \n\
                 mov 8(%esp), %eax       \n\
