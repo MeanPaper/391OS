@@ -113,6 +113,7 @@ typedef struct __attribute__((packed)) tss_t {
 
 /* Some external descriptors declared in .S files */
 extern x86_desc_t gdt_desc;
+extern x86_desc_t gdt_desc_ptr; // data for gdtr
 
 extern uint16_t ldt_desc;
 extern uint32_t ldt_size;
@@ -145,27 +146,33 @@ do {                                                            \
 } while (0)
 
 /* An interrupt descriptor entry (goes into the IDT) */
-typedef union idt_desc_t {
-    uint32_t val[2];
+typedef union idt_desc_t {  // pay attention, this is union, the size of the union = max(all members)
+    uint32_t val[2];        // in this case, it is 32 * 2 = 64 bits = 8 bytes
     struct {
-        uint16_t offset_15_00;
-        uint16_t seg_selector;
+        uint16_t offset_15_00; // something that i am not sure about
+        uint16_t seg_selector; // current line and the line above is the segment selector, need to set to kernel code segment descriptor on GDT
         uint8_t  reserved4;
-        uint32_t reserved3 : 1;
-        uint32_t reserved2 : 1;
+        uint32_t reserved3 : 1; // this is called "bitfield", this means this var only use 1 bit
+        uint32_t reserved2 : 1; // what is benefit? better and efficient manipulations on the memory data
         uint32_t reserved1 : 1;
         uint32_t size      : 1;
         uint32_t reserved0 : 1;
-        uint32_t dpl       : 2;
+        uint32_t dpl       : 2; // set to 0 for interrupt and exception, set to 3 for system call
         uint32_t present   : 1;
         uint16_t offset_31_16;
     } __attribute__ ((packed));
 } idt_desc_t;
 
 /* The IDT itself (declared in x86_desc.S */
-extern idt_desc_t idt[NUM_VEC];
+extern idt_desc_t idt[NUM_VEC];              // be sure to use this to load the idt
 /* The descriptor used to load the IDTR */
-extern x86_desc_t idt_desc_ptr;
+extern x86_desc_t idt_desc_ptr;              // the idt pointer
+
+
+// used to set the idt entry, need a for loop to loop each entry and load to IDT table
+// double check SET_IDT_ENTRY with prof. Lumetta
+
+// str is the idt entry, handler is the function pointer
 
 /* Sets runtime parameters for an IDT entry */
 #define SET_IDT_ENTRY(str, handler)                              \
@@ -192,6 +199,8 @@ do {                                    \
  * (defined as "struct x86_desc" above) contains a 2-byte size field
  * specifying the size of the IDT, and a 4-byte address field specifying
  * the base address of the IDT. */
+
+// the desc should be treated as label, the assmebly code will translate desc to label
 #define lidt(desc)                      \
 do {                                    \
     asm volatile ("lidt (%0)"           \
