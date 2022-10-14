@@ -6,127 +6,12 @@
 #include "x86_desc.h"
 #include "idt_desc.h"
 
+
 #define INTRRUPT_START  32    // start of user defined interrupt in IDT
 #define SYSTEM_CALL     0x80  // index for system calls
 #define INTEL_LAST_DEF  19    // the last valid intel defined entry
 #define INTEL_RESERVED  15    // on the IDT, 15 is reserved by intel
 #define NMI_INTR        2
-
-
-void divide_by_zero(){ // 0
-    clear();
-    printf(" Divide by 0 error exception \n");
-    while(1);
-}
-
-void debug_except(){ // 1
-    clear();
-    printf(" Debug exception \n");
-    while(1);
-}
-
-void nmi_intr_except(){ // 2
-    clear();
-    printf(" NMI interrupt \n");
-    while(1);
-}
-
-void breakpoint(){ // 3
-    clear();
-    printf(" Breakpoint exception \n");
-    while(1);
-}
-
-void overflow(){ // 4
-    clear();
-    printf(" Overflow exception \n");
-    while(1);
-}
-
-void BOUND_range_exceeded(){ // 5
-    clear();
-    printf(" BOUND range exceeded exception \n");
-    while(1);
-}
-
-void invalid_opcode(){ // 6
-    clear();
-    printf(" Invalid opcode exception \n");
-    while(1);
-}
-
-void device_not_avail(){ // 7
-    clear();
-    printf(" Device not available exception \n");
-    while(1);
-}
-
-void double_fault(){ // 8
-    clear();
-    printf(" Double fault exception \n");
-    while(1);
-}
-
-void coprocessor_seg_overrun(){ // 9
-    clear();
-    printf(" Coprocessor segment overrun exception \n");
-    while(1);
-}
-
-void invalid_tts(){ // 10
-    clear();
-    printf(" Invalid TSS exception \n");
-    while(1);
-}
-
-void segment_not_present(){ // 11
-    clear();
-    printf(" Segment not present exception \n");
-    while(1);
-}
-
-void stack_segment_fault(){ // 12
-    clear();
-    printf(" Stack segment fault exception \n");
-    while(1);
-}
-
-void general_protection(){ // 13
-    clear();
-    printf(" General protection exception \n");
-    while(1);
-}
-
-void page_fault(){ // 14
-    clear();
-    printf(" Page fault exception \n");
-    while(1);
-}
-
-void fpu_float_error(){ // 16
-    clear();
-    printf(" x87 FPU floating-point error exception \n");
-    while(1);
-}
-
-void alignment_check(){ // 17   
-    clear();
-    printf(" Alignment check exception \n");
-    while(1);
-}
-
-void machine_check(){ // 18
-    clear();
-    printf(" Machine check exception \n");
-    while(1);
-}
-
-void simd_float_exception(){ // 19
-    clear();
-    printf(" SIMD floating-point exception \n");
-    while(1);
-}
-
 
 /**
  * 
@@ -226,4 +111,38 @@ void init_idt_desc(){
     // user defined part, exception and interrupt
 
     lidt(idt_desc_ptr);
+}
+
+
+
+const char* exception_message[] = {
+    " Divide by 0 error exception \n ",
+    " Debug exception \n",
+    " NMI interrupt \n",
+    " Breakpoint exception \n",
+    " Overflow exception \n",
+    " BOUND range exceeded exception \n",
+    " Invalid opcode exception \n",
+    " Device not available exception \n",
+    " Double fault exception \n",
+    " Coprocessor segment overrun exception \n",
+    " Invalid TSS exception \n",
+    " Segment not present exception \n",
+    " Stack segment fault exception \n",
+    " General protection exception \n",
+    " Page fault exception \n",
+    " oops, intel reserved",
+    " x87 FPU floating-point error exception \n",
+    " Alignment check exception \n",
+    " Machine check exception \n",
+    " SIMD floating-point exception \n"
+};
+void exception_handler(int idt_num){
+    clear();
+    if(idt < 0 || idt > 19){
+        printf("oops! reaching the wrong code.");
+        while(1);
+    }
+    printf(exception_message[idt_num]);
+    while(1);
 }
