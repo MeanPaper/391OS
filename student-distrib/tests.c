@@ -51,9 +51,12 @@ int div_zero_test(){
 	TEST_HEADER;
 	int j = 0;
 	int i = 10 / j; // raise divide by 0 exception
-	return PASS;
+	return i ? PASS: FAIL;
 }
-
+int derefence_null(){
+	int * j = NULL;
+	return (*j) ? PASS: FAIL;
+}
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -66,5 +69,6 @@ void launch_tests(){
 	// launch your tests here
 
 	// checkpoint 1 test, checking for exception
-	TEST_OUTPUT("divide by 0 test", div_zero_test());
+	// TEST_OUTPUT("divide by 0 test", div_zero_test());
+	// TEST_OUTPUT("deference null test", derefence_null());
 }

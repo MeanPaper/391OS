@@ -113,8 +113,6 @@ void init_idt_desc(){
     lidt(idt_desc_ptr);
 }
 
-
-
 const char* exception_message[] = {
     " Divide by 0 error exception \n ",
     " Debug exception \n",
@@ -131,7 +129,7 @@ const char* exception_message[] = {
     " Stack segment fault exception \n",
     " General protection exception \n",
     " Page fault exception \n",
-    " oops, intel reserved",
+    " OOPS, intel reserved",
     " x87 FPU floating-point error exception \n",
     " Alignment check exception \n",
     " Machine check exception \n",
