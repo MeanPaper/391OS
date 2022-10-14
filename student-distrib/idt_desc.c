@@ -6,9 +6,11 @@
 #include "x86_desc.h"
 #include "idt_desc.h"
 
-#define INTEL_LAST_DEF  0x1F  // the last index of intel define info on idt
+#define INTRRUPT_START  32    // start of user defined interrupt in IDT
 #define SYSTEM_CALL     0x80  // index for system calls
-
+#define INTEL_LAST_DEF  19    // the last valid intel defined entry
+#define INTEL_RESERVED  15    // on the IDT, 15 is reserved by intel
+#define NMI_INTR        2
 
 
 // void divide_error_exception(){
@@ -31,7 +33,7 @@
  * 
  *  interrupt gate             
  *  31-------------16--15-14-13-12-------8--7-6-5--4-----------0
- *  | Offset 31..16  | P | DPL | 0 D 1 1 0 |0 0 0 | reserved_4 |  4                            |
+ *  | Offset 31..16  | P | DPL | 0 D 1 1 0 |0 0 0 | reserved_4 |  4                            
  *  +----------------------------------------------------------+
  *  31------------------------16-15----------------------------0
  *  |     Segment Selector      |      Offset 15 .. 0          |  0
@@ -39,7 +41,7 @@
  * 
  *  trap gate
  *  31-------------16--15-14-13-12-------8--7-6-5--4-----------0
- *  | Offset 31..16  | P | DPL | 0 D 1 1 1 |0 0 0 | reserved_4 |  4                            |
+ *  | Offset 31..16  | P | DPL | 0 D 1 1 1 |0 0 0 | reserved_4 |  4                            
  *  +----------------------------------------------------------+
  *  31------------------------16-15----------------------------0
  *  |     Segment Selector      |      Offset 15 .. 0          |  0
@@ -55,10 +57,13 @@
 // 0x00 - 0x1F: exceptions, require trap gate settings
 void init_idt_desc(){
     int i;
-    for(i = 0; i <= INTEL_LAST_DEF; ++i){
+    for(i = 0; i <=INTEL_LAST_DEF; ++i){
+        if(INTEL_RESERVED == i) { // entry 15 intel reserved, not used
+            continue;
+        }
         idt[i].seg_selector = KERNEL_CS;
         idt[i].reserved4 = 0;
-        idt[i].reserved3 = 1;
+        idt[i].reserved3 = (NMI_INTR == i) ? 0 : 1;
         idt[i].reserved2 = 1;
         idt[i].reserved1 = 1;
         idt[i].size = 1; // set size of the gate to 32 bit 
@@ -69,11 +74,11 @@ void init_idt_desc(){
         
     }
 
-    for(i = INTEL_LAST_DEF + 1; i < NUM_VEC; ++i){
-        // here are all the interrupt gates
+    for(i = INTRRUPT_START + 1; i < NUM_VEC; ++i){
+        // here are all the interrupt gates, dl35 included a long comment on the top
         idt[i].seg_selector = KERNEL_CS;
         idt[i].reserved4 = 0;
-        idt[i].reserved3 = 0;
+        idt[i].reserved3 = 0;   
         idt[i].reserved2 = 1;
         idt[i].reserved1 = 1;        
         idt[i].size = 1;
