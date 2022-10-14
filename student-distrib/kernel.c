@@ -9,6 +9,7 @@
 #include "debug.h"
 #include "tests.h"
 #include "idt_desc.h"
+#include "paging.h"
 
 #define RUN_TESTS
 
@@ -142,6 +143,9 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Init the PIC */
     i8259_init();
+
+    /* Init the page */
+    page_init();
 
     // lidt(idt_desc_ptr);
     

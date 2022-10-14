@@ -63,9 +63,11 @@ typedef struct page_table_entry_t {
 page_directory_entry_t page_directory[1024];
 page_table_entry_t first_page_table[1024];
 
+extern void page_init();
+
+
 extern void loadPageDirectory(page_directory_entry_t* page_directory);
 extern void enablePaging();
 
-extern void page_init();
 
 #endif

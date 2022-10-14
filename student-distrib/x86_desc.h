@@ -33,6 +33,7 @@ typedef struct x86_desc {
 } x86_desc_t;
 
 /* This is a segment descriptor.  It goes in the GDT. */
+// TODO: 
 typedef struct seg_desc {
     union {
         uint32_t val[2];
@@ -146,6 +147,7 @@ do {                                                            \
 } while (0)
 
 /* An interrupt descriptor entry (goes into the IDT) */
+// TODO: 
 typedef union idt_desc_t {  // pay attention, this is union, the size of the union = max(all members)
     uint32_t val[2];        // in this case, it is 32 * 2 = 64 bits = 8 bytes
     struct {
