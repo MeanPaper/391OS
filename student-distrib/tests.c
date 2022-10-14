@@ -46,6 +46,13 @@ int idt_test(){
 }
 
 // add more tests here
+/* Checkpoint 1 tests*/
+int div_zero_test(){
+	TEST_HEADER;
+	int j = 0;
+	int i = 10 / j; // raise divide by 0 exception
+	return PASS;
+}
 
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
@@ -57,4 +64,7 @@ int idt_test(){
 void launch_tests(){
 	TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
+
+	// checkpoint 1 test, checking for exception
+	TEST_OUTPUT("divide by 0 test", div_zero_test());
 }

@@ -138,11 +138,11 @@ void entry(unsigned long magic, unsigned long addr) {
     }
     
     // IDT session starting here
-    
+    init_idt_desc();
 
     /* Init the PIC */
     i8259_init();
-    init_idt_desc();
+
     // lidt(idt_desc_ptr);
     
     /* Initialize devices, memory, filesystem, enable device interrupts on the
@@ -157,7 +157,7 @@ void entry(unsigned long magic, unsigned long addr) {
 
 #ifdef RUN_TESTS
     /* Run tests */
-    // launch_tests(); // comment this if you do not want loop booting
+    launch_tests(); // comment this if you do not want loop booting
 #endif
     /* Execute the first program ("shell") ... */
 

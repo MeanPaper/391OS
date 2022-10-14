@@ -14,6 +14,7 @@
 
 
 void divide_by_zero(){ // 0
+    // clear();
     printf(" Divide by 0 error exception \n");
     while(1);
 }
