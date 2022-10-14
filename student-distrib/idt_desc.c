@@ -13,10 +13,101 @@
 #define NMI_INTR        2
 
 
-// void divide_error_exception(){
-//     printf(" Divide Error Exception \n");
-//     while(1);
-// }
+void divide_by_zero(){ // 0
+    printf(" Divide by 0 error exception \n");
+    while(1);
+}
+
+void debug_except(){ // 1
+    printf(" Debug exception \n");
+    while(1);
+}
+
+void nmi_intr_except(){ // 2
+    printf(" NMI interrupt \n");
+    while(1);
+}
+
+void breakpoint(){ // 3
+    printf(" Breakpoint exception \n");
+    while(1);
+}
+
+void overflow(){ // 4
+    printf(" Overflow exception \n");
+    while(1);
+}
+
+void BOUND_range_exceeded(){ // 5
+    printf(" BOUND range exceeded exception \n");
+    while(1);
+}
+
+void invalid_opcode(){ // 6
+    printf(" Invalid opcode exception \n");
+    while(1);
+}
+
+void device_not_avail(){ // 7
+    printf(" Device not available exception \n");
+    while(1);
+}
+
+void double_fault(){ // 8
+    printf(" Double fault exception \n");
+    while(1);
+}
+
+void coprocessor_seg_overrun(){ // 9
+    printf(" Coprocessor segment overrun exception \n");
+    while(1);
+}
+
+void invalid_tts(){ // 10
+    printf(" Invalid TSS exception \n");
+    while(1);
+}
+
+void segment_not_present(){ // 11
+    printf(" Segment not present exception \n");
+    while(1);
+}
+
+void stack_segment_fault(){ // 12
+    printf(" Stack segment fault exception \n");
+    while(1);
+}
+
+void general_protection(){ // 13
+    printf(" General protection exception \n");
+    while(1);
+}
+
+void page_fault(){ // 14
+    printf(" Page fault exception \n");
+    while(1);
+}
+
+void fpu_float_error(){ // 16
+    printf(" x87 FPU floating-point error exception \n");
+    while(1);
+}
+
+void alignment_check(){ // 17
+    printf(" Alignment check exception \n");
+    while(1);
+}
+
+void machine_check(){ // 18
+    printf(" Machine check exception \n");
+    while(1);
+}
+
+void simd_float_exception(){ // 19
+    printf(" SIMD floating-point exception \n");
+    while(1);
+}
+
 
 /**
  * 
@@ -92,28 +183,28 @@ void init_idt_desc(){
     // question on setting up idt, for the the first 32 entries as well as the rest of the entries
     // not sure what to do with them for now
     
-    // SET_IDT_ENTRY(idt[0x00], some_handler);
-    // SET_IDT_ENTRY(idt[0x01], some_handler);
-    // SET_IDT_ENTRY(idt[0x02], some_handler);
-    // SET_IDT_ENTRY(idt[0x03], some_handler);
-    // SET_IDT_ENTRY(idt[0x04], some_handler);
-    // SET_IDT_ENTRY(idt[0x05], some_handler);
-    // SET_IDT_ENTRY(idt[0x06], some_handler);
-    // SET_IDT_ENTRY(idt[0x07], some_handler);
-    // SET_IDT_ENTRY(idt[0x08], some_handler);
-    // SET_IDT_ENTRY(idt[0x09], some_handler);
-    // SET_IDT_ENTRY(idt[0xA], some_handler);
-    // SET_IDT_ENTRY(idt[0xB], some_handler);
-    // SET_IDT_ENTRY(idt[0xC], some_handler);
-    // SET_IDT_ENTRY(idt[0xD], some_handler);
-    // SET_IDT_ENTRY(idt[0xE], some_handler);  
-    // SET_IDT_ENTRY(idt[0xF], some_handler);
-    // SET_IDT_ENTRY(idt[0x10], some_handler);
-    // SET_IDT_ENTRY(idt[0x11], some_handler);
-    // SET_IDT_ENTRY(idt[0x12], some_handler);
-    // SET_IDT_ENTRY(idt[0x13], some_handler); // idt index 19
-    // SET_IDT_ENTRY(idt[0x14], some_handler); // 20 to 31 do not use
+    // intel defined part, exception and interrupt
+    SET_IDT_ENTRY(idt[0], divide_by_zero);
+    SET_IDT_ENTRY(idt[1], debug_except);
+    SET_IDT_ENTRY(idt[2], nmi_intr_except);
+    SET_IDT_ENTRY(idt[3], breakpoint);
+    SET_IDT_ENTRY(idt[4], overflow);
+    SET_IDT_ENTRY(idt[5], BOUND_range_exceeded);
+    SET_IDT_ENTRY(idt[6], invalid_opcode);
+    SET_IDT_ENTRY(idt[7], device_not_avail);
+    SET_IDT_ENTRY(idt[8], double_fault);
+    SET_IDT_ENTRY(idt[9], coprocessor_seg_overrun);
+    SET_IDT_ENTRY(idt[10], invalid_tts);
+    SET_IDT_ENTRY(idt[11], segment_not_present);
+    SET_IDT_ENTRY(idt[12], stack_segment_fault);
+    SET_IDT_ENTRY(idt[13], general_protection);
+    SET_IDT_ENTRY(idt[14], page_fault);  
+    SET_IDT_ENTRY(idt[16], fpu_float_error);
+    SET_IDT_ENTRY(idt[17], alignment_check);
+    SET_IDT_ENTRY(idt[18], machine_check);
+    SET_IDT_ENTRY(idt[19], simd_float_exception); // idt index 19
 
+    // user defined part, exception and interrupt
 
     lidt(idt_desc_ptr);
 }
