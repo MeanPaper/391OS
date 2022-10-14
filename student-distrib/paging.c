@@ -1,5 +1,4 @@
 #include "paging.h"
-#include "types.h"
 #include "lib.h"
 
 // initialize page
