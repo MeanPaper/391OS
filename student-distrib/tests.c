@@ -57,7 +57,7 @@ int div_zero_test(){
 
 int rtc_test() {
 	TEST_HEADER;
-	rtc_change_rate(4096);
+	rtc_change_rate(8);
 	return 1;
 }
 

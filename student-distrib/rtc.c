@@ -5,10 +5,11 @@
 #include "rtc.h"
 #include "lib.h"
 
-unsigned int log2_helper(unsigned int input);
+int log2_helper(unsigned int input);
 
 /* Initialize RTC */
 void rtc_init(void) {
+    enable_irq(RTC_IRQ_NUM);
     outb(REG_B | DIS_NMI, RTC_PORT);		// select register B, and disable NMI
     char prev=inb(RTC_DATA);	// read the current value of register B
     outb(REG_B | DIS_NMI, RTC_PORT);		// set the index again (a read will reset the index to register D)
@@ -30,13 +31,16 @@ void rtc_change_rate(int frequency) {
 
 /* Handle RTC interrupt */
 void rtc_handler(void) {
-    send_eoi(RTC_IRQ_NUM);
+    cli();
+    // send_eoi(RTC_IRQ_NUM);
     test_interrupts();
     outb(REG_C, RTC_PORT);	// select register C
     inb(RTC_DATA);		// just throw away contents
+    send_eoi(RTC_IRQ_NUM);
+    sti();
 }
 
-unsigned int log2_helper(unsigned int input) {
+int log2_helper(unsigned int input) {
     int count = 0;
     int curr_num = 1;
     while (curr_num <= input) {
