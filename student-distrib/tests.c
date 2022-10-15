@@ -53,12 +53,14 @@ int div_zero_test(){
 	int i = 10 / j; // raise divide by 0 exception
 	return i ? PASS: FAIL;
 }
-int derefence_null(){
-	TEST_HEADER;
-	int * j = NULL;
-	printf("%d", *j);
-	return (*j) ? PASS: FAIL;
-}
+
+// ?????
+// int derefence_null(){
+// 	TEST_HEADER;
+// 	int * j = NULL;
+// 	printf("%d", *j);
+// 	return (*j) ? PASS: FAIL;
+// }
 
 int system_call_test(){
 	TEST_HEADER;
