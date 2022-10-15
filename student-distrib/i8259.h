@@ -26,9 +26,10 @@
 #define ICW3_SLAVE          0x02
 #define ICW4                0x01
 
-/* End-of-interrupt byte.  This gets OR'd with
- * the interrupt number and sent out to the PIC
- * to declare the interrupt finished */
+
+// i8259 data sheet page 53 
+// non specific EOI signal used 0x20
+/* declare specific EOI signal */
 #define EOI                 0x60
 
 /* Externally-visible functions */
