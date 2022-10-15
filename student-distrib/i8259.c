@@ -72,12 +72,15 @@ void disable_irq(uint32_t irq_num) {
 
 
 // this does not look right
+
+// i8259 data sheet page 15, END OF INTERRUPT
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num) {
     if(irq_num >= 8){
-        irq_num -= 8;
-        outb(EOI | irq_num, SLAVE_8259_PORT); // eoi to slave
-        outb(EOI | SLAVE_IRQ_NUM, MASTER_8259_PORT);
+        outb(EOI | (irq_num - 8), SLAVE_8259_PORT); // eoi to slave
+        // outb(EOI | SLAVE_IRQ_NUM, MASTER_8259_PORT); //eoi to master
     }
-    outb(EOI | irq_num, MASTER_8259_PORT);
+
+    // if irq >= 8 use the slave irq_num, otherwise just use irq_num
+    outb(EOI | ((irq_num >= 8) ? SLAVE_IRQ_NUM : irq_num), MASTER_8259_PORT);
 }
