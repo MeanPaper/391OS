@@ -6,7 +6,7 @@
 #include "x86_desc.h"
 #include "idt_desc.h"
 #include "interrupt.h"
-
+#include "exception.h"
 #define INTRRUPT_START          32    // start of user defined interrupt in IDT
 #define SYSTEM_CALL_INDEX     0x80  // index for system calls
 #define INTEL_LAST_DEF          19    // the last valid intel defined entry
@@ -56,34 +56,50 @@ void print_intel(){
 // 0x00 - 0x1F: exceptions, require trap gate settings
 void init_idt_desc(){
     int i;
-    for(i = 0; i < INTRRUPT_START; ++i){
-        idt[i].seg_selector = KERNEL_CS;
-        idt[i].reserved4 = 0;
-        idt[i].reserved3 = (NMI_INTR == i) ? 0 : 1;
-        idt[i].reserved2 = 1;
-        idt[i].reserved1 = 1;
-        idt[i].size = 1; // set size of the gate to 32 bit 
-        idt[i].reserved0 = 0;
-        // trap or interrupt, set dpl to 0
-        idt[i].dpl = 0;     
-        idt[i].present = 1;   
+    // for(i = 0; i < INTRRUPT_START; ++i){
+    //     idt[i].seg_selector = KERNEL_CS;
+    //     idt[i].reserved4 = 0;
+    //     idt[i].reserved3 = 1;
+    //     idt[i].reserved2 = 1;
+    //     idt[i].reserved1 = 1;
+    //     idt[i].size = 1; // set size of the gate to 32 bit 
+    //     idt[i].reserved0 = 0;
+    //     // trap or interrupt, set dpl to 0
+    //     idt[i].dpl = 0;     
+    //     idt[i].present = 1;   
         
-    }
+    // }
 
-    for(i = INTRRUPT_START; i < NUM_VEC; ++i){
-        // here are all the interrupt gates, dl35 included a long comment on the top
-        idt[i].seg_selector = KERNEL_CS;
-        idt[i].reserved4 = 0;
-        idt[i].reserved3 = 0;   
-        idt[i].reserved2 = 1;
-        idt[i].reserved1 = 1;        
-        idt[i].size = 1;
-        idt[i].reserved0 = 0;
-        idt[i].dpl = 0;    // setting interrupts dpl
-        idt[i].present = 1;  
-    }
-    idt[SYSTEM_CALL_INDEX].dpl = 3; // system call have dpl = 3
+    // for(i = INTRRUPT_START; i < NUM_VEC; ++i){
+    //     // here are all the interrupt gates, dl35 included a long comment on the top
+    //     idt[i].seg_selector = KERNEL_CS;
+    //     idt[i].reserved4 = 0;
+    //     idt[i].reserved3 = 0;   
+    //     idt[i].reserved2 = 1;
+    //     idt[i].reserved1 = 1;        
+    //     idt[i].size = 1;
+    //     idt[i].reserved0 = 0;
+    //     idt[i].dpl = 0;    // setting interrupts dpl
+    //     idt[i].present = 1;  
+    // }
+    // idt[SYSTEM_CALL_INDEX].dpl = 3; // system call have dpl = 3
 
+
+	for (i = 0; i< NUM_VEC; i++){
+		
+		idt[i].seg_selector = KERNEL_CS;
+
+		idt[i].reserved4 =0;
+		if (i < 32) idt[i].reserved3 =1; //for architecture defined  exception handlers, set to trap gate
+		else idt[i].reserved3 = 0; // otherwise, set to interrupt gates
+		idt[i].reserved2 =1;
+		idt[i].reserved1 =1;
+		idt[i].size = 1;
+		idt[i].reserved0 =0;
+		if (i != SYSTEM_CALL_INDEX) idt[i].dpl=0;	
+		else idt[i].dpl = 3; //for system call handler, DPL is set to 3
+		idt[i].present =1;
+	}
     // setting up other information
     // question on setting up idt, for the the first 32 entries as well as the rest of the entries
     // not sure what to do with them for now
@@ -116,9 +132,6 @@ void init_idt_desc(){
 
     // user defined part, exception and interrupt
     SET_IDT_ENTRY(idt[0x80], system_call);
-
-
-    lidt(idt_desc_ptr);
 }
 
 const char* exception_message[20] = {

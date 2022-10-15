@@ -6,15 +6,14 @@
 #include "lib.h"
 
 /* Interrupt masks to determine which interrupts are enabled and disabled */
-uint8_t master_mask; /* IRQs 0-7  */
-uint8_t slave_mask;  /* IRQs 8-15 */
+uint8_t master_mask = 0xff; /* IRQs 0-7  */
+uint8_t slave_mask = 0xff;  /* IRQs 8-15 */
 
 /* Initialize the 8259 PIC */
 void i8259_init(void) {
     /* Save masks, and mask all IRQ */
-    unsigned char a1, a2;
-    a1 = inb(MASTER_8259_DATA);
-    a2 = inb(SLAVE_8259_DATA);
+    // master_mask = inb(MASTER_8259_DATA);
+    // slave_mask = inb(SLAVE_8259_DATA);
     outb(0xff, MASTER_8259_DATA);
     outb(0xff, SLAVE_8259_DATA);
 
@@ -31,8 +30,8 @@ void i8259_init(void) {
     outb(ICW4, SLAVE_8259_DATA);          // Set mode for pics: 8086/88 (MCS-80/85) mode
 
     /* Restored saved masks (enable IRQ) */
-    outb(MASTER_8259_DATA, a1);
-    outb(SLAVE_8259_DATA, a2);
+    outb(master_mask, MASTER_8259_DATA);
+    outb(slave_mask, SLAVE_8259_DATA);
 
     enable_irq(SLAVE_IRQ_NUM);
 }
@@ -49,7 +48,9 @@ void enable_irq(uint32_t irq_num) {
         irq_num -= 8;
     }
     value = inb(port) & ~(1 << irq_num);    // clear the corresponding mask bit
-    outb(port, value);
+    if(MASTER_8259_DATA == port) master_mask = value;
+    else slave_mask = value;
+    outb(value, port);
 }
 
 /* Disable (mask) the specified IRQ */
@@ -64,13 +65,17 @@ void disable_irq(uint32_t irq_num) {
         irq_num -= 8;
     }
     value = inb(port) | (1 << irq_num);     // set the corresponding mask bit
-    outb(port, value);
+    if(MASTER_8259_DATA == port) master_mask = value;
+    else slave_mask = value;
+    outb(value, port);
 }
 
+
+// this does not look right
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num) {
     if(irq_num >= 8){
-        outb(SLAVE_8259_PORT, EOI);
+        outb(EOI, SLAVE_8259_PORT);
     }
-    outb(MASTER_8259_PORT, EOI);
+    outb(EOI, MASTER_8259_PORT);
 }

@@ -1,7 +1,6 @@
 #ifndef _IDT_DESC_H
 #define _IDT_DESC_H
 
-#include "exception.h"
 // initialize the idt table
 extern void init_idt_desc();
 
