@@ -6,8 +6,7 @@ loadPageDirectory:
     mov %esp, %ebp
     mov 8(%esp), %eax
     mov %eax, %cr3
-    mov %ebp, %esp
-    pop %ebp
+    leave
     ret
 
 # setting in the following order cr3, cr4, cr0
@@ -18,7 +17,7 @@ enablePaging:
 
     # start with cr4 
     mov %cr4, %eax
-    or $0x090, %eax          # bit 7 and bit 4 of CR4
+    or $0x010, %eax          # bit 7 and bit 4 of CR4
     mov %eax, %cr4
 
     # and then cr0
@@ -26,6 +25,5 @@ enablePaging:
     or $0x80000001, %eax    # bit 31 of CR0
     mov %eax, %cr0
 
-    mov %ebp, %esp
-    pop %ebp
+    leave
     ret

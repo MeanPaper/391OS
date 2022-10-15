@@ -143,8 +143,13 @@ void entry(unsigned long magic, unsigned long addr) {
     // IDT session starting here
     init_idt_desc();
     lidt(idt_desc_ptr);
+
+    /*
+    char lookup = ['A', 'B']
+    putc(lookup[char_code])
+    */
     
-    // page_init();
+    page_init();
    
     /* Init the PIC */    
     i8259_init();
