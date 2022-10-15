@@ -5,13 +5,13 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "idt_desc.h"
+#include "interrupt.h"
 
-
-#define INTRRUPT_START  32    // start of user defined interrupt in IDT
-#define SYSTEM_CALL     0x80  // index for system calls
-#define INTEL_LAST_DEF  19    // the last valid intel defined entry
-#define INTEL_RESERVED  15    // on the IDT, 15 is reserved by intel
-#define NMI_INTR        2
+#define INTRRUPT_START          32    // start of user defined interrupt in IDT
+#define SYSTEM_CALL_INDEX     0x80  // index for system calls
+#define INTEL_LAST_DEF          19    // the last valid intel defined entry
+#define INTEL_RESERVED          15    // on the IDT, 15 is reserved by intel
+#define NMI_INTR                2
 
 /**
  * 
@@ -81,7 +81,7 @@ void init_idt_desc(){
         idt[i].dpl = 0;    // setting interrupts dpl
         idt[i].present = 1;  
     }
-    idt[SYSTEM_CALL].dpl = 3; // system call have dpl = 3
+    idt[SYSTEM_CALL_INDEX].dpl = 3; // system call have dpl = 3
 
     // setting up other information
     // question on setting up idt, for the the first 32 entries as well as the rest of the entries
@@ -109,6 +109,7 @@ void init_idt_desc(){
     SET_IDT_ENTRY(idt[19], simd_float_exception); // idt index 19
 
     // user defined part, exception and interrupt
+    SET_IDT_ENTRY(idt[0x80], system_call);
 
     lidt(idt_desc_ptr);
 }

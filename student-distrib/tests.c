@@ -54,9 +54,16 @@ int div_zero_test(){
 	return i ? PASS: FAIL;
 }
 int derefence_null(){
+	TEST_HEADER;
 	int * j = NULL;
 	printf("%d", *j);
 	return (*j) ? PASS: FAIL;
+}
+
+int system_call_test(){
+	TEST_HEADER;
+	asm volatile("int $0x80");
+	return PASS;
 }
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
@@ -70,5 +77,6 @@ void launch_tests(){
 	// launch your tests here
 
 	// checkpoint 1 test, checking for exception
-	TEST_OUTPUT("divide by 0 test", div_zero_test());
+	// TEST_OUTPUT("divide by 0 test", div_zero_test());
+	TEST_OUTPUT("System call test", system_call_test());
 }
