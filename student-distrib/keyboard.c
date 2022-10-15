@@ -1,8 +1,12 @@
 #include "keyboard.h"
-
+const char keyboard_ch[256] = {
+	'\0'
+};
 void keyboard_init(){
 	enable_irq(KEYBOARD_IRQ);
 }
+
+// control, shift, caps lock
 
 void keyboard_interrupt(){
 	cli();

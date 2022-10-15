@@ -143,17 +143,16 @@ void entry(unsigned long magic, unsigned long addr) {
     // IDT session starting here
     init_idt_desc();
     lidt(idt_desc_ptr);
-
-    /* Init the PIC */    
-    i8259_init();
     
     // page_init();
    
+    /* Init the PIC */    
+    i8259_init();
     
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
     // rtc_init();
-    // keyboard_init();
+    keyboard_init();
 
 
     /* Enable interrupts */
