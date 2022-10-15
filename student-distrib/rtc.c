@@ -32,11 +32,10 @@ void rtc_change_rate(int frequency) {
 /* Handle RTC interrupt */
 void rtc_handler(void) {
     cli();
-    // send_eoi(RTC_IRQ_NUM);
+    send_eoi(RTC_IRQ_NUM);
     test_interrupts();
     outb(REG_C, RTC_PORT);	// select register C
     inb(RTC_DATA);		// just throw away contents
-    send_eoi(RTC_IRQ_NUM);
     sti();
 }
 
