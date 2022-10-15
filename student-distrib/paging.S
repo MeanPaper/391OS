@@ -1,5 +1,3 @@
-#include "paging.h"
-
 .align 4096
 
 .globl loadPageDirectory
@@ -25,5 +23,3 @@ enablePaging:
     mov %ebp, %esp
     pop %ebp
     ret
-
-

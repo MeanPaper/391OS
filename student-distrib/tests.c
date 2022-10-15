@@ -55,6 +55,7 @@ int div_zero_test(){
 }
 int derefence_null(){
 	int * j = NULL;
+	printf("%d", *j);
 	return (*j) ? PASS: FAIL;
 }
 /* Checkpoint 2 tests */
@@ -69,6 +70,5 @@ void launch_tests(){
 	// launch your tests here
 
 	// checkpoint 1 test, checking for exception
-	// TEST_OUTPUT("divide by 0 test", div_zero_test());
-	// TEST_OUTPUT("deference null test", derefence_null());
+	TEST_OUTPUT("divide by 0 test", div_zero_test());
 }

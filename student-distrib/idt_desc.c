@@ -137,10 +137,10 @@ const char* exception_message[] = {
 };
 void exception_handler(int idt_num){
     clear();
-    if(idt < 0 || idt > 19){
+    if(idt_num < 0 || idt_num > 19){
         printf("oops! reaching the wrong code.");
         while(1);
     }
-    printf(exception_message[idt_num]);
+    printf("%s", exception_message[idt_num]);
     while(1);
 }

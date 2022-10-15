@@ -1,6 +1,7 @@
 #ifndef _PAGING_H
 #define _PAGING_H
 
+#include "types.h"
 typedef union page_directory_4MB_entry {
     uint32_t val;
     struct {
