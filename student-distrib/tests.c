@@ -80,5 +80,5 @@ void launch_tests(){
 
 	// checkpoint 1 test, checking for exception
 	// TEST_OUTPUT("divide by 0 test", div_zero_test());
-	TEST_OUTPUT("System call test", system_call_test());
+	// TEST_OUTPUT("System call test", system_call_test());
 }
