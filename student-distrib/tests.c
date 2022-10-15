@@ -55,7 +55,7 @@ int div_zero_test(){
 }
 
 // ?????
-// int derefence_null(){
+// int derefence_null(){  // needs to have page set up before testing, should trigger page fault
 // 	TEST_HEADER;
 // 	int * j = NULL;
 // 	printf("%d", *j);

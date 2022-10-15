@@ -8,6 +8,7 @@ void system_call_helper();
 // temp system call function
 extern void system_call();
 
+// rtc interrupt call function
 extern void rtc_interrupt_call();
 
 #endif 

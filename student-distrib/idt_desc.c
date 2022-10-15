@@ -108,8 +108,13 @@ void init_idt_desc(){
     SET_IDT_ENTRY(idt[18], machine_check);
     SET_IDT_ENTRY(idt[19], simd_float_exception); // idt index 19
 
+    // rtc interrupt and keyboard interrupt
+    // SET_IDT_ENTRY(idt[0x21], keyboard_interrupt_call);
+    SET_IDT_ENTRY(idt[0x28], rtc_interrupt_call);
+
     // user defined part, exception and interrupt
     SET_IDT_ENTRY(idt[0x80], system_call);
+
 
     lidt(idt_desc_ptr);
 }

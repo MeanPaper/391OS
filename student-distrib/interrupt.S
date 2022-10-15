@@ -20,4 +20,5 @@
 
 SYS_CALL(system_call, system_call_helper)
 
-INTERRUPT_WRAPPER(rtc_interrupt_call, )
+INTERRUPT_WRAPPER(rtc_interrupt_call, rtc_handler)
+
