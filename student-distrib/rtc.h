@@ -28,4 +28,6 @@ void rtc_init(void);
 /* Handle RTC interrupt */
 void rtc_handler(void);
 
+void rtc_change_rate(int frequency);
+
 #endif /* _RTC_H */
