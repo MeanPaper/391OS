@@ -32,6 +32,3 @@ void page_init() {
     enablePaging();
 
 }
-
-
-

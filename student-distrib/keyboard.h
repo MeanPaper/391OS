@@ -4,8 +4,11 @@
 #include "lib.h"
 #include "i8259.h"
 
-#define KEYBOARD_IRQ 1;
-#define KEYBOARD_PORT 0x60;
-void keyboard_init();
+#define KEYBOARD_IRQ 1
+#define KEYBOARD_PORT 0x60
 
-void keyboard_interrupt();
+extern void keyboard_init();
+
+extern void keyboard_interrupt();
+
+#endif

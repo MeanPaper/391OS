@@ -21,4 +21,4 @@
 SYS_CALL(system_call, system_call_helper)
 
 INTERRUPT_WRAPPER(rtc_interrupt_call, rtc_handler)
-
+INTERRUPT_WRAPPER(keyboard_intr_call, keyboard_interrupt)
