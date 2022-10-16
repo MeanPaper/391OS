@@ -56,7 +56,8 @@ typedef union page_table_entry {
     } __attribute__ ((packed));
 } page_table_entry_t;
 
-
+uint32_t page_directory[1024] __attribute__ ((aligned(4096)));
+uint32_t first_page_table[1024] __attribute__ ((aligned(4096)));
 
 extern void page_init();
 

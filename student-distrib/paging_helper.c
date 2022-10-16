@@ -1,8 +1,6 @@
 #include "paging.h"
 #include "lib.h"
 
-uint32_t page_directory[1024] __attribute__ ((aligned(4096)));
-uint32_t first_page_table[1024] __attribute__ ((aligned(4096)));
 
 // initialize page
 // reference: https://wiki.osdev.org/Setting_Up_Paging
@@ -33,19 +31,26 @@ void page_init() {
     page_table_entry_t vid_page;
     vid_page.val = 0;
 
-    // Set up video mem page
-    vid_page.page_base_addr = 0xB8000 >> 12;
+    /* Set up video mem page */
+    // this need 4kB page
+    // physcial addr / 4096 to determine the index on page table
+    // because we don't have that many space in the page_base_addr
+    // also the bottom 12 bits are zero anyway
+    vid_page.page_base_addr = 0xB8000 >> 12; 
     vid_page.rw = 1;
     vid_page.present = 1;
     first_page_table[0xB8000 >> 12] = vid_page.val;
 
-    // Make the kernel page
+    /* set up the kernel page */
     kernel_page.val = 0;
     kernel_page.page_base_addr = 1;
     kernel_page.present = 1;
     kernel_page.rw = 1;
     kernel_page.page_size = 1;
+
     // kernel_page.global_page = 1;
+    // this is because kernel page only use 4MB page
+    // so there is no page table indirection
     page_directory[1] = kernel_page.val;
 
     // load page directory to cr3

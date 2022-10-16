@@ -2,6 +2,7 @@
 #include "x86_desc.h"
 #include "lib.h"
 #include "rtc.h"
+#include "paging.h"
 
 #define PASS 1
 #define FAIL 0
@@ -73,6 +74,15 @@ int system_call_test(){
 	asm volatile("int $0x80");
 	return PASS;
 }
+
+int paging_test_no_fault(){
+	TEST_HEADER;
+	int * i = &page_directory[1];
+	int * j = &first_page_table[0xB8000 >> 12];
+	int x = *i;
+	int y = *j;
+	return PASS;
+}
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -85,9 +95,6 @@ void launch_tests(){
 	TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
 
-
-
-
 	// checkpoint 1 test
 	/* expect screen to be constantly changing */
 	// TEST_OUTPUT("rtc_test", rtc_test());
@@ -96,8 +103,11 @@ void launch_tests(){
 	// TEST_OUTPUT("divide by 0 test", div_zero_test());
 
 	/* expect to have system call and program stay in a loop */
-	TEST_OUTPUT("System call test", system_call_test());
+	// TEST_OUTPUT("System call test", system_call_test());
 
 	/* expect to have a page fault */
 	// TEST_OUTPUT("deference null pointer", derefence_null()); 
+
+	/* expect to have no page fault, need to*/
+	TEST_OUTPUT("deference correct page pointer", paging_test_no_fault()); 
 }

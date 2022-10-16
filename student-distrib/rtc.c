@@ -17,8 +17,9 @@ void rtc_init(void) {
 }
 
 /* Change frequency */
+// frequency =  32768 >> (rate-1);
 void rtc_change_rate(int frequency) {
-    int rate = 16 - log2_helper(frequency);
+    int rate = 16 - log2_helper(frequency); // the higher the rate, the smaller the frequency
     if (rate > 2 && rate < 16) {
         cli();
         outb(REG_A | DIS_NMI, RTC_PORT);
