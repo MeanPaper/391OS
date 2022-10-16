@@ -25,6 +25,15 @@
 *.d
 *.DS_Store
 
+# vscode file
+.vscode
+
+# img file
+*.img
+
+# dependancy file 
+*.dep
+
 # Object files
 *.o
 *.ko

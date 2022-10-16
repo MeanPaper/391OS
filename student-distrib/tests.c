@@ -1,6 +1,8 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "rtc.h"
+#include "paging.h"
 
 #define PASS 1
 #define FAIL 0
@@ -34,7 +36,7 @@ int idt_test(){
 
 	int i;
 	int result = PASS;
-	for (i = 0; i < 10; ++i){
+	for (i = 0; i < 16; ++i){
 		if ((idt[i].offset_15_00 == NULL) && 
 			(idt[i].offset_31_16 == NULL)){
 			assertion_failure();
@@ -51,9 +53,44 @@ int div_zero_test(){
 	TEST_HEADER;
 	int j = 0;
 	int i = 10 / j; // raise divide by 0 exception
+	return i ? PASS: FAIL;
+}
+
+int rtc_test() {
+	TEST_HEADER;
+	rtc_change_rate(8);
+	return 1;
+}
+
+int derefence_null(){  // needs to have page set up before testing, should trigger page fault
+	TEST_HEADER;
+	int * j = NULL;
+	printf("%d", *j);
+	return (*j) ? PASS: FAIL;
+}
+
+int system_call_test(){
+	TEST_HEADER;
+	asm volatile("int $0x80");
 	return PASS;
 }
 
+int paging_test_no_fault(){
+	TEST_HEADER;
+	uint32_t * i = &page_directory[1];
+	uint32_t * j = &first_page_table[0xB8000 >> 12];
+	uint32_t x = *i;
+	uint32_t y = *j;
+	printf("ignore values (for eliminating warnings): \n %d \n %d", x, y);
+	return PASS;
+}
+
+int overflow_exception_test(){
+	TEST_HEADER;
+	asm volatile("int $4");
+
+	return PASS;
+}
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -62,9 +99,26 @@ int div_zero_test(){
 
 /* Test suite entry point */
 void launch_tests(){
+	clear();
 	TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
 
-	// checkpoint 1 test, checking for exception
-	TEST_OUTPUT("divide by 0 test", div_zero_test());
+	// checkpoint 1 test
+	/* expect screen to be constantly changing */
+	// TEST_OUTPUT("rtc_test", rtc_test());
+	
+	/* expect to have div by 0 exception */
+	// TEST_OUTPUT("divide by 0 test", div_zero_test());
+
+	/* expect to have system call and program stay in a loop */
+	// TEST_OUTPUT("System call test", system_call_test());
+
+	/* expect to have a page fault */
+	// TEST_OUTPUT("deference null pointer", derefence_null()); 
+
+	/* expect to have no page fault */
+	// TEST_OUTPUT("deference correct page pointer", paging_test_no_fault()); 
+
+	/* expect to have overflow exception */
+	TEST_OUTPUT("overflow exception rise", overflow_exception_test()); 
 }
