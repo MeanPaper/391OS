@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "rtc.h"
 
 #define PASS 1
 #define FAIL 0
@@ -54,6 +55,12 @@ int div_zero_test(){
 	return i ? PASS: FAIL;
 }
 
+int rtc_test() {
+	TEST_HEADER;
+	rtc_change_rate(8);
+	return 1;
+}
+
 // ?????
 // int derefence_null(){  // needs to have page set up before testing, should trigger page fault
 // 	TEST_HEADER;
@@ -75,7 +82,8 @@ int system_call_test(){
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("idt_test", idt_test());
+	// TEST_OUTPUT("idt_test", idt_test());
+	TEST_OUTPUT("rtc_test", rtc_test());
 	// launch your tests here
 
 	// checkpoint 1 test, checking for exception
