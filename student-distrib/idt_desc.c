@@ -57,6 +57,7 @@ void print_intel(){
 void init_idt_desc(){
     int i;
     for(i = 0; i < INTEL_LAST_DEF; ++i){
+        if(INTEL_RESERVED == i){continue;}
         idt[i].seg_selector = KERNEL_CS;
         idt[i].reserved4 = 0;
         idt[i].reserved3 = 1;
