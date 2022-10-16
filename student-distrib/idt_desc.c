@@ -143,6 +143,7 @@ const char* exception_message[20] = {
     " SIMD floating-point exception \n"
 };
 void exception_handler(int idt_num){
+    // clear();
     if(idt_num < 0 || idt_num > 19){
         printf("oops! reaching the wrong code.");
         while(1);

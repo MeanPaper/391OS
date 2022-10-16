@@ -33,7 +33,10 @@ void rtc_change_rate(int frequency) {
 void rtc_handler(void) {
     cli();
     send_eoi(RTC_IRQ_NUM);
-    test_interrupts();
+
+    // use to test rtc refleshing screen
+    // test_interrupts();
+    
     outb(REG_C, RTC_PORT);	// select register C
     inb(RTC_DATA);		// just throw away contents
     sti();

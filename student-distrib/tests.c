@@ -61,13 +61,12 @@ int rtc_test() {
 	return 1;
 }
 
-// ?????
-// int derefence_null(){  // needs to have page set up before testing, should trigger page fault
-// 	TEST_HEADER;
-// 	int * j = NULL;
-// 	printf("%d", *j);
-// 	return (*j) ? PASS: FAIL;
-// }
+int derefence_null(){  // needs to have page set up before testing, should trigger page fault
+	TEST_HEADER;
+	int * j = NULL;
+	printf("%d", *j);
+	return (*j) ? PASS: FAIL;
+}
 
 int system_call_test(){
 	TEST_HEADER;
@@ -82,11 +81,23 @@ int system_call_test(){
 
 /* Test suite entry point */
 void launch_tests(){
-	// TEST_OUTPUT("idt_test", idt_test());
-	TEST_OUTPUT("rtc_test", rtc_test());
+	clear();
+	TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
 
-	// checkpoint 1 test, checking for exception
+
+
+
+	// checkpoint 1 test
+	/* expect screen to be constantly changing */
+	// TEST_OUTPUT("rtc_test", rtc_test());
+	
+	/* expect to have div by 0 exception */
 	// TEST_OUTPUT("divide by 0 test", div_zero_test());
-	// TEST_OUTPUT("System call test", system_call_test());
+
+	/* expect to have system call and program stay in a loop */
+	TEST_OUTPUT("System call test", system_call_test());
+
+	/* expect to have a page fault */
+	// TEST_OUTPUT("deference null pointer", derefence_null()); 
 }
