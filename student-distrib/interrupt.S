@@ -1,6 +1,20 @@
 # interrupt wrapper code
 # including system call
 #define ASM 1
+
+
+
+
+# INTERRUPT_WRAPPER
+# Description: interrupt handler wrapper
+#
+# Input:    func_name : label for function name
+#           irq_num   : label for interrupt number
+# Output:       none
+# Reture Value: none
+# 
+# 
+
 #define INTERRUPT_WRAPPER(func_name, handler, irq_num) \
     .global	func_name                       ;\
     func_name:                              ;\
@@ -13,6 +27,17 @@
         iret
 
 
+
+# the wrapper below need to be modify into a jump table
+# SYS_CALL
+# Description: system call handler wrapper
+#
+# Input:    func_name : label for function name
+#           handler   : the handler for system call
+# Output:       none
+# Reture Value: none
+# 
+# 
 # system call only use register
 
 #define SYS_CALL(func_name, handler) \

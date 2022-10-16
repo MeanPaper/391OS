@@ -1,5 +1,6 @@
 /* i8259.c - Functions to interact with the 8259 interrupt controller
  * vim:ts=4 noexpandtab
+ * reference: https://wiki.osdev.org/PIC
  */
 
 #include "i8259.h"
@@ -13,9 +14,8 @@ uint8_t slave_mask = 0xff;  /* IRQs 8-15 */
 void i8259_init(void) {
     uint32_t flags;
     cli_and_save(flags);
-    /* Save masks, and mask all IRQ */
-    // master_mask = inb(MASTER_8259_DATA);
-    // slave_mask = inb(SLAVE_8259_DATA);
+
+    /* Mask all IRQ */
     outb(0xff, MASTER_8259_DATA);
     outb(0xff, SLAVE_8259_DATA);
 
@@ -35,6 +35,7 @@ void i8259_init(void) {
     outb(master_mask, MASTER_8259_DATA);
     outb(slave_mask, SLAVE_8259_DATA);
 
+    /* Enable interrupts from the secondary PIC*/
     enable_irq(SLAVE_IRQ_NUM);
     
     restore_flags(flags);
@@ -75,17 +76,13 @@ void disable_irq(uint32_t irq_num) {
     outb(value, port);
 }
 
-
-// this does not look right
-
-// i8259 data sheet page 15, END OF INTERRUPT
+// reference: i8259 data sheet page 15, END OF INTERRUPT
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num) {
     if(irq_num >= 8){
-        outb(EOI | (irq_num - 8), SLAVE_8259_PORT); // eoi to slave
-        // outb(EOI | SLAVE_IRQ_NUM, MASTER_8259_PORT); //eoi to master
+        // eoi to slave
+        outb(EOI | (irq_num - 8), SLAVE_8259_PORT);
     }
-
-    // if irq >= 8 use the slave irq_num, otherwise just use irq_num
+    // eoi to master
     outb(EOI | ((irq_num >= 8) ? SLAVE_IRQ_NUM : irq_num), MASTER_8259_PORT);
 }
