@@ -77,10 +77,18 @@ int system_call_test(){
 
 int paging_test_no_fault(){
 	TEST_HEADER;
-	int * i = &page_directory[1];
-	int * j = &first_page_table[0xB8000 >> 12];
-	int x = *i;
-	int y = *j;
+	uint32_t * i = &page_directory[1];
+	uint32_t * j = &first_page_table[0xB8000 >> 12];
+	uint32_t x = *i;
+	uint32_t y = *j;
+	printf("ignore values (for eliminating warnings): \n %d \n %d", x, y);
+	return PASS;
+}
+
+int overflow_exception_test(){
+	TEST_HEADER;
+	asm volatile("int $4");
+
 	return PASS;
 }
 /* Checkpoint 2 tests */
@@ -108,6 +116,9 @@ void launch_tests(){
 	/* expect to have a page fault */
 	// TEST_OUTPUT("deference null pointer", derefence_null()); 
 
-	/* expect to have no page fault, need to*/
-	TEST_OUTPUT("deference correct page pointer", paging_test_no_fault()); 
+	/* expect to have no page fault */
+	// TEST_OUTPUT("deference correct page pointer", paging_test_no_fault()); 
+
+	/* expect to have overflow exception */
+	TEST_OUTPUT("overflow exception rise", overflow_exception_test()); 
 }
