@@ -38,13 +38,28 @@
 
 /* Externally-visible functions */
 
-/* Initialize both PICs */
+/* i8259_init(void)
+ *   Inputs: none
+ *   Return Value: none
+ *   Function: Initialize both PICs */
 void i8259_init(void);
-/* Enable (unmask) the specified IRQ */
+
+/* enable_irq(uint32_t irq_num)
+ *   Inputs: uint32_t irq_num
+ *   Return Value: none
+ *   Function: Enable (unmask) the specified IRQ */
 void enable_irq(uint32_t irq_num);
-/* Disable (mask) the specified IRQ */
+
+/* disable_irq(uint32_t irq_num)
+ *   Inputs: uint32_t irq_num
+ *   Return Value: none
+ *   Function: Disable (mask) the specified IRQ */
 void disable_irq(uint32_t irq_num);
-/* Send end-of-interrupt signal for the specified IRQ */
+
+/* send_eoi(uint32_t irq_num)
+ *   Inputs: uint32_t irq_num
+ *   Return Value: none
+ *   Function: Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num);
 
 #endif /* _I8259_H */
