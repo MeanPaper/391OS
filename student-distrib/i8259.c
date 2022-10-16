@@ -11,6 +11,8 @@ uint8_t slave_mask = 0xff;  /* IRQs 8-15 */
 
 /* Initialize the 8259 PIC */
 void i8259_init(void) {
+    uint32_t flags;
+    cli_and_save(flags);
     /* Save masks, and mask all IRQ */
     // master_mask = inb(MASTER_8259_DATA);
     // slave_mask = inb(SLAVE_8259_DATA);
@@ -34,6 +36,9 @@ void i8259_init(void) {
     outb(slave_mask, SLAVE_8259_DATA);
 
     enable_irq(SLAVE_IRQ_NUM);
+    
+    restore_flags(flags);
+    sti();
 }
 
 /* Enable (unmask) the specified IRQ */
