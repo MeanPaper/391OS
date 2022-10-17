@@ -46,6 +46,15 @@ int idt_test(){
 
 	return result;
 }
+/* Divide by zero test
+ * 
+ * Test divide by zero exception for exception handler. 
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: IDT Exception handler
+ * Files: idt.c
+ */
 
 // add more tests here
 /* Checkpoint 1 tests*/
@@ -56,12 +65,30 @@ int div_zero_test(){
 	return i ? PASS: FAIL;
 }
 
+/* RTC test
+ * 
+ * Test to set and enable RTC. 
+ * Inputs: None
+ * Outputs: 1
+ * Side Effects: None
+ * Coverage: RTC
+ * Files: rtc.c
+ */
 int rtc_test() {
 	TEST_HEADER;
 	rtc_change_rate(8);
 	return 1;
 }
 
+/* Derefrence NULL test
+ * 
+ * Test derefrence a null pointer for exception handler. 
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: IDT Exception handler
+ * Files: idt.c
+ */
 int derefence_null(){  // needs to have page set up before testing, should trigger page fault
 	TEST_HEADER;
 	int * j = NULL;
@@ -69,11 +96,29 @@ int derefence_null(){  // needs to have page set up before testing, should trigg
 	return (*j) ? PASS: FAIL;
 }
 
+/* System call  test
+ * 
+ * Inputs: None
+ * Outputs: PASS
+ * Side Effects: None
+ * Coverage: System Call
+ */
 int system_call_test(){
 	TEST_HEADER;
 	asm volatile("int $0x80");
 	return PASS;
 }
+
+
+/* paging test
+ * 
+ * Check if memory address can be derefrenced. 
+ * Inputs: None
+ * Outputs: PASS
+ * Side Effects: None
+ * Coverage: memory from paging. 
+ * Files: paging.c
+ */
 
 int paging_test_no_fault(){
 	TEST_HEADER;
@@ -85,6 +130,16 @@ int paging_test_no_fault(){
 	return PASS;
 }
 
+
+/* Overflow test
+ * 
+ * Test Overflow for exception handler. 
+ * Inputs: None
+ * Outputs: PASS
+ * Side Effects: None
+ * Coverage: IDT Exception handler
+ * Files: idt.c
+ */
 int overflow_exception_test(){
 	TEST_HEADER;
 	asm volatile("int $4");
