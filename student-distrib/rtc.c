@@ -12,6 +12,8 @@ static void rtc_change_rate(int frequency);
 
 /* Local variable */
 int flag;
+int rtc_f;
+int count = 0;
 
 /* Initialize RTC */
 void rtc_init(void) {
@@ -20,6 +22,7 @@ void rtc_init(void) {
     char prev=inb(RTC_DATA);	        // read the current value of register B
     outb(REG_B | DIS_NMI, RTC_PORT);	// set the index again (a read will reset the index to register D)
     outb(prev | 0x40, RTC_DATA);	    // write the previous value ORed with 0x40. This turns on bit 6 of register B
+    rtc_change_rate(3);                 // set to maximum frequency: 1024Hz
 }
 
 /* Handle RTC interrupt */
@@ -29,8 +32,13 @@ void rtc_handler(void) {
 
     // use to test rtc refleshing screen
     // test_interrupts();
-    flag = 0;
-    
+    if (count > 1024/rtc_f) {
+        flag = 0;
+        count = 0;
+    } else {
+        count ++;
+    }
+
     outb(REG_C, RTC_PORT);	// select register C
     inb(RTC_DATA);		// just throw away contents
     sti();
@@ -38,8 +46,7 @@ void rtc_handler(void) {
 
 /* Initialize RTC frequency to 2Hz */
 int rtc_open(void) {
-    // rate = 16-log2(f) = 16-1 = 15
-    rtc_change_rate(15);
+    rtc_f = 2;  // set frequency
     return 1;
 }
 
@@ -52,11 +59,13 @@ int rtc_read(void) {
 
 /* Set the frequency */
 int rtc_write(int* frequency) {
-    int rtc_f;
-    memcpy(&rtc_f, frequency, sizeof(int));
-    int rate = 16 - log2_helper(rtc_f);     // convert frequency to rate
-    if (rate <=2 || rate >=16) return -1;   // input is not power of 2 or rate is not in the valid range
-    rtc_change_rate(rate);
+    int input_f;
+    memcpy(&input_f, frequency, sizeof(int)); // set frequency
+    if (input_f>0 && input_f<=8192) {
+        rtc_f = input_f;
+    } else {
+        return -1;
+    }
     return 0;
 }
 
