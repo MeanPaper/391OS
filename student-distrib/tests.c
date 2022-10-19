@@ -65,20 +65,20 @@ int div_zero_test(){
 	return i ? PASS: FAIL;
 }
 
-/* RTC test
- * 
- * Test to set and enable RTC. 
- * Inputs: None
- * Outputs: 1
- * Side Effects: None
- * Coverage: RTC
- * Files: rtc.c
- */
-int rtc_test() {
-	TEST_HEADER;
-	rtc_change_rate(8);
-	return 1;
-}
+// /* RTC test
+//  * 
+//  * Test to set and enable RTC. 
+//  * Inputs: None
+//  * Outputs: 1
+//  * Side Effects: None
+//  * Coverage: RTC
+//  * Files: rtc.c
+//  */
+// int rtc_test() {
+// 	TEST_HEADER;
+// 	rtc_change_rate(8);
+// 	return 1;
+// }
 
 /* Derefrence NULL test
  * 
@@ -147,6 +147,38 @@ int overflow_exception_test(){
 	return PASS;
 }
 /* Checkpoint 2 tests */
+
+/* RTC test
+ * 
+ * Test to set and enable RTC. 
+ * Inputs: None
+ * Outputs: 1
+ * Side Effects: None
+ * Coverage: RTC
+ * Files: rtc.c
+ */
+int rtc_test() {
+	TEST_HEADER;
+	rtc_open();
+	int idx, loop, f;
+	loop = 0;
+	f = 2;
+	while(loop < 10) {
+		idx = 0;
+		while(idx < 4) {
+			rtc_read();
+			putc('1');
+			idx++;
+		}
+		f = 2 * f;
+		rtc_write(&f);
+		loop ++;
+	}
+	rtc_close();
+	putc('\n');
+	return 1;
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -160,7 +192,7 @@ void launch_tests(){
 
 	// checkpoint 1 test
 	/* expect screen to be constantly changing */
-	// TEST_OUTPUT("rtc_test", rtc_test());
+	TEST_OUTPUT("rtc_test", rtc_test());
 	
 	/* expect to have div by 0 exception */
 	// TEST_OUTPUT("divide by 0 test", div_zero_test());
@@ -175,5 +207,5 @@ void launch_tests(){
 	// TEST_OUTPUT("deference correct page pointer", paging_test_no_fault()); 
 
 	/* expect to have overflow exception */
-	TEST_OUTPUT("overflow exception rise", overflow_exception_test()); 
+	// TEST_OUTPUT("overflow exception rise", overflow_exception_test()); 
 }
