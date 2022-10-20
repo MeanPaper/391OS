@@ -3,11 +3,6 @@
 
 #include "types.h"
 
-#define BLOCK_SIZE      4096    // number of bytes for each data block
-#define BLOCK_ARRAY     0         
-
-
-
 
 typedef struct dentry{
     uint8_t file_name[32];  // file name is 32 byte
@@ -17,11 +12,11 @@ typedef struct dentry{
 }dentry_t;
 
 
-typedef struct inode
-{   // index 0 of the content: the size of the file = sum(number of bytes used in the data blocks)
-    // index > 0: the data block index number
-    uint32_t content[1024];
-}inode_t;
+// typedef struct inode
+// {   // index 0 of the content: the size of the file = sum(number of bytes used in the data blocks)
+//     // index > 0: the data block index number
+//     uint32_t content[1024];
+// }inode_t;
 
 typedef struct boot_block
 {   
@@ -31,6 +26,19 @@ typedef struct boot_block
     uint8_t     reserved[52];
     dentry_t    files[63];  // index 0 of this array is file "."
 }boot_block_t;
+
+extern void init_file_system(uint32_t* file_system_ptr);
+
+// open file system
+extern int32_t open();
+
+// close file system
+extern int32_t close();
+
+// read from file system
+extern int32_t read();
+
+extern int32_t write();
 
 extern int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry);
 
