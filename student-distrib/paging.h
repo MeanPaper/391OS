@@ -2,6 +2,12 @@
 #define _PAGING_H
 
 #include "types.h"
+
+#define ARRAY_SIZE      1024
+#define ALIGNMENT       4096
+
+/* Initialize struct for 4MB page directory */
+// The number of bits below is from intel manual pg.91
 typedef union page_directory_4MB_entry {
     uint32_t val;
     struct {
@@ -21,6 +27,8 @@ typedef union page_directory_4MB_entry {
     } __attribute__ ((packed));
 } page_directory_4MB_entry_t;
 
+/* Initialize struct for  page directory */
+// The number of bits below is from intel manual pg.90
 typedef union page_directory_entry {
     uint32_t val;
     struct {
@@ -39,6 +47,8 @@ typedef union page_directory_entry {
     } __attribute__ ((packed));
 } page_directory_entry_t;
 
+/* Initialize struct for page table */
+// The number of bits below is from intel manual pg.90
 typedef union page_table_entry {
     uint32_t val;
     struct {
@@ -56,12 +66,32 @@ typedef union page_table_entry {
     } __attribute__ ((packed));
 } page_table_entry_t;
 
-uint32_t page_directory[1024] __attribute__ ((aligned(4096)));
-uint32_t first_page_table[1024] __attribute__ ((aligned(4096)));
 
+
+/* Initialize page directory and table array */
+uint32_t page_directory[ARRAY_SIZE] __attribute__ ((aligned(ALIGNMENT)));
+uint32_t first_page_table[ARRAY_SIZE] __attribute__ ((aligned(ALIGNMENT)));
+
+/* void page_init();
+ * Inputs: none
+ * Return Value: none
+ * Function: initialize page with video mem page and kernel page */
 extern void page_init();
 
+/* void loadPageDirectory(uint32_t* page_directory);
+ * Inputs: uint32_t* page_directory = the pointer to our page directory
+ * Return Value: none
+ * Function: In ASM, set CR3(PDBR) to the base addr of our page directory */
 extern void loadPageDirectory(uint32_t* page_directory);
+
+
+/* void enablePaging();
+ * Inputs: none
+ * Return Value: none
+ * Function: In ASM, we need to enable several bits in CR0 and CR4 
+ *           - PG: Paging (bit 31 of CR0)
+ *           - PE: Protection Enable (bit 0 of CR0).
+ *           - PSE: Page Size Extensions (bit 4 of CR4) */
 extern void enablePaging();
 
 #endif

@@ -24,6 +24,7 @@ void page_init() {
         first_page_table[i] = 0; // attributes: supervisor level, read/write, present.
     }
 
+    // |3 enables the low two bit which is present and r/w
     page_directory[0] = ((unsigned int)first_page_table) | 3;
 
     page_directory_4MB_entry_t kernel_page;
