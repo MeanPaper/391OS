@@ -7,17 +7,24 @@
 #include "idt_desc.h"
 #include "interrupt.h"
 #include "exception.h"
+
 #define INTRRUPT_START          32    // start of user defined interrupt in IDT
 #define SYSTEM_CALL_INDEX     0x80  // index for system calls
 #define INTEL_LAST_DEF          19    // the last valid intel defined entry
 #define INTEL_RESERVED          15    // on the IDT, 15 is reserved by intel
 #define NMI_INTR                2
+#define EXCEPTION_MSG_NUM       20
 
-void print_intel(){
-    printf(" intel reserved \n");
-    while(1);
-}
-/**
+
+// this function is used to be used by idt index 15
+// for testing purpose
+// void print_intel(){
+//     printf(" intel reserved \n");
+//     while(1);
+// }
+
+
+/*
  * 
  *  Notes from IA-32 documentation page 156, and mp3 documentation appendix D
  * 
@@ -46,14 +53,21 @@ void print_intel(){
  *  |     Segment Selector      |      Offset 15 .. 0          |  0
  *  +----------------------------------------------------------+
  * 
- * the first 20 line of the code should work
- * 
- * 
+ *  the first 20 line of the code should work
  * 
 */
 
-// initialize IDT
 // 0x00 - 0x1F: exceptions, require trap gate settings
+
+/* void init_idt_desc();
+ * Description: initialize idt entry (exceptions, interrupt, system call)
+ *              and connect them to the corresponding handler
+ * 
+ * Inputs: none
+ * Output: none
+ * Return Value: none
+ * Side Effects: idt table changes
+*/
 void init_idt_desc(){
     int i;
     for(i = 0; i < INTEL_LAST_DEF; ++i){
@@ -84,12 +98,6 @@ void init_idt_desc(){
         idt[i].present = 1;  
     }
     idt[SYSTEM_CALL_INDEX].dpl = 3; // system call have dpl = 3
-
-
-
-    // setting up other information
-    // question on setting up idt, for the the first 32 entries as well as the rest of the entries
-    // not sure what to do with them for now
     
     // intel defined part, exception and interrupt
     SET_IDT_ENTRY(idt[0], divide_by_zero);
@@ -107,21 +115,21 @@ void init_idt_desc(){
     SET_IDT_ENTRY(idt[12], stack_segment_fault);
     SET_IDT_ENTRY(idt[13], general_protection);
     SET_IDT_ENTRY(idt[14], page_fault); 
-    SET_IDT_ENTRY(idt[15], print_intel);
     SET_IDT_ENTRY(idt[16], fpu_float_error);
     SET_IDT_ENTRY(idt[17], alignment_check);
     SET_IDT_ENTRY(idt[18], machine_check);
     SET_IDT_ENTRY(idt[19], simd_float_exception); // idt index 19
 
-    // rtc interrupt and keyboard interrupt
+    // user defined interrupts: rtc and keyboard
     SET_IDT_ENTRY(idt[0x21], keyboard_intr_call);
     SET_IDT_ENTRY(idt[0x28], rtc_interrupt_call);
 
-    // user defined part, exception and interrupt
+    // system call
     SET_IDT_ENTRY(idt[0x80], system_call);
 }
 
-const char* exception_message[20] = {
+// there are
+const char* exception_message[EXCEPTION_MSG_NUM] = {
     " Divide by 0 error exception \n ",
     " Debug exception \n",
     " NMI interrupt \n",
@@ -143,9 +151,22 @@ const char* exception_message[20] = {
     " Machine check exception \n",
     " SIMD floating-point exception \n"
 };
+
+/*
+ * void exception_handler(int idt_num)
+ * Description: print exception message base on the corresponding exception idt
+ *              number
+ * 
+ * Inputs:      int idt_num  :  the idt index of the exception
+ * Output: none
+ * Return Value: none
+ * Side Effects: clear screen and output the exception message and force 
+ *               system to stay in loop (for checkpoint 1)
+ * 
+*/
 void exception_handler(int idt_num){
     // clear();
-    if(idt_num < 0 || idt_num > 19){
+    if(idt_num < 0 || idt_num > INTEL_LAST_DEF){    
         printf("oops! reaching the wrong code.");
         while(1);
     }

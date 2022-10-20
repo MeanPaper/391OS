@@ -12,6 +12,17 @@
 # pushfl and popfl are done by the processors so I don't have to save it
 # according to the descriptor file
 
+
+# EXCEPTION
+# Description: exception handler wrapper without error code
+#
+# Input:    func_name : label for function name
+#           idt_num   : label for idt number
+# Output:       none
+# Reture Value: none
+# 
+# 
+
 #define EXCEPTION(func_name, idt_num)        \
     .global func_name                       ;\
     func_name:                              ;\
@@ -24,6 +35,17 @@
         addl $4, %esp                       ;\
         iret               
 
+
+# EXCEPTION_WITH_CODE
+# Description: exception handler wrapper with error code
+#
+# Input:    func_name : label for function name
+#           idt_num   : label for idt number
+# Output:       none
+# Reture Value: none
+# 
+# 
+
 #define EXCEPTION_WITH_CODE(func_name, idt_num) \
     .global func_name                       ;\
     func_name:                              ;\
@@ -35,7 +57,8 @@
         addl $4, %esp                       ;\
         iret        
                 
-
+# connect exception helper function to exception handler 
+# with specific exception number
 EXCEPTION(divide_by_zero, 0)
 EXCEPTION(debug_except, 1)
 EXCEPTION(nmi_intr_except, 2)

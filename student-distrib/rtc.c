@@ -1,19 +1,21 @@
 /* rtc.c - Functions to interact with the RTC
  * vim:ts=4 noexpandtab
+ * reference: https://wiki.osdev.org/RTC
  */
 
 #include "rtc.h"
 #include "lib.h"
 
-int log2_helper(unsigned int input);
+/* Local function */
+static int log2_helper(int input);
 
 /* Initialize RTC */
 void rtc_init(void) {
     enable_irq(RTC_IRQ_NUM);
-    outb(REG_B | DIS_NMI, RTC_PORT);		// select register B, and disable NMI
-    char prev=inb(RTC_DATA);	// read the current value of register B
-    outb(REG_B | DIS_NMI, RTC_PORT);		// set the index again (a read will reset the index to register D)
-    outb(prev | 0x40, RTC_DATA);	// write the previous value ORed with 0x40. This turns on bit 6 of register B
+    outb(REG_B | DIS_NMI, RTC_PORT);	// select register B, and disable NMI
+    char prev=inb(RTC_DATA);	        // read the current value of register B
+    outb(REG_B | DIS_NMI, RTC_PORT);	// set the index again (a read will reset the index to register D)
+    outb(prev | 0x40, RTC_DATA);	    // write the previous value ORed with 0x40. This turns on bit 6 of register B
 }
 
 /* Change frequency */
@@ -43,7 +45,11 @@ void rtc_handler(void) {
     sti();
 }
 
-int log2_helper(unsigned int input) {
+/* log2_helper(int input)
+ *   Inputs: int input
+ *   Return Value: int count
+ *   Function: Compute count = log2(input) */
+int log2_helper(int input) {
     int count = 0;
     int curr_num = 1;
     while (curr_num <= input) {
