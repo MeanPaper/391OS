@@ -148,6 +148,8 @@ void entry(unsigned long magic, unsigned long addr) {
     char lookup = ['A', 'B']
     putc(lookup[char_code])
     */
+    module_t* mod = ((module_t*)mbi->mods_addr)->mod_start; // the start of the file system, referred to the discussion slides please
+
     
     page_init();
    
