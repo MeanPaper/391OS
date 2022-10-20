@@ -8,9 +8,10 @@
 // #define BLOCK_SIZE  4096
 // #define FOUR_BYTE_COUNT 1024
 
-
+#define INODE_ARRAY_SIZE 1023
 #define FILE_NAME_LENGTH 32
 #define DENTRY_RESERVED 24
+#define MAX_DENTRY_NUM  63
 
 /* define the struct for Directory Entries */
 typedef struct dentry{
@@ -24,14 +25,8 @@ typedef struct dentry{
 /* define the struct for index nodes (inode) */
 typedef struct inode
 { 
-    uint32_t length;            // 4B for the total length of bytes
-    uint32_t content[1023];     // 1023 is because it is a 4KB block
-                                // the first 4B block is used to specify the length in B
-    /* content:
-     * each index of content contains a data block # 
-     * this could be sparse, ex. 9, 13, 37
-     * However, in the eye of the file, they are continous, it will be read continously
-     */
+    uint32_t length;
+    uint32_t content[INODE_ARRAY_SIZE];
 }inode_t;
 
 /* define the struck for boot block */
