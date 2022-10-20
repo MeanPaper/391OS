@@ -24,9 +24,15 @@ typedef struct dentry{
 
 /* define the struct for index nodes (inode) */
 typedef struct inode
-{ 
-    uint32_t length;
-    uint32_t content[INODE_ARRAY_SIZE];
+{    
+    uint32_t length;             // 4B for the total length of bytes
+    uint32_t content[INODE_ARRAY_SIZE]; // 1023 is because it is a 4KB block
+                                        // the first 4B block is used to specify the length in B
+    /* content:
+     * each index of content contains a data block # 
+     * this could be sparse, ex. 9, 13, 37
+     * However, in the eye of the file, they are continous, it will be read continously
+     */
 }inode_t;
 
 /* define the struck for boot block */
