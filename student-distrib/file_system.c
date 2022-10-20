@@ -54,6 +54,11 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
     
     inode_t* target_inode;
     uint32_t inode_size;
+    uint32_t blocks;
+    uint32_t remaining;
+
+    uint32_t  data_block_start_index;
+    uint8_t* data_block_ptr;
     // check for invalid inode number
     if(inode > boot_block->total_inode_num || inode < 0){
         return -1;
@@ -66,10 +71,23 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
     if(!buf || offset >= inode_size){
         return -1;
     }
-    // need to check for bad data block number
 
+    blocks = offset / BLOCK_SIZE;   // the block where the data will be store
+    remaining = offset % BLOCK_SIZE; // the data index within the block, that we will start copying in bytes
+
+    // compute the start index of data_block
+    data_block_start_index = boot_block->total_inode_num + 1;
+    
+
+    // first type cast the 4kB pointer into 1B pointer base on the block index
+    // and then adding the remaining bit base on the remainder of the offset to find the starting point
+    // where data should be copied
+    data_block_ptr = (uint8_t*)(boot_block + data_block_start_index + target_inode->content[blocks]) + remaining;
+    
+    memcpy(buf, data_block_ptr, length);
+    
+    
     return 0;
 }
-
 
 
