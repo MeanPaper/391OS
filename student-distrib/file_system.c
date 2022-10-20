@@ -50,5 +50,28 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry){
     return 0;
 }
 
+int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length){
+    
+    inode_t* target_inode;
+    uint32_t inode_size;
+    int i;
+    // check for invalid inode number
+    if(inode > boot_block->total_inode_num || inode < 0){
+        return -1;
+    }
+
+    target_inode = (1 + inode) + boot_block;  // found out the data block location
+    inode_size = target_inode->length;
+    
+    for(i = 0; i < INODE_ARRAY_SIZE; ++i){
+        
+    }
+    
+    
+    // need to check for bad data block number
+
+    return 0;
+}
+
 
 

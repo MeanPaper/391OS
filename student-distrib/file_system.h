@@ -8,9 +8,10 @@
 // #define BLOCK_SIZE  4096
 // #define FOUR_BYTE_COUNT 1024
 
-
+#define INODE_ARRAY_SIZE 1023
 #define FILE_NAME_LENGTH 32
 #define DENTRY_RESERVED 24
+#define MAX_DENTRY_NUM  63
 
 
 typedef struct dentry{
@@ -25,7 +26,7 @@ typedef struct dentry{
 typedef struct inode
 { 
     uint32_t length;
-    uint32_t content[1023];
+    uint32_t content[INODE_ARRAY_SIZE];
 }inode_t;
 
 typedef struct boot_block
