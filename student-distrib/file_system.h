@@ -5,9 +5,10 @@
 
 // #define DENTRY_SIZE 64
 // #define DENTRY_OFFSET (DENTRY_SIZE/4)   // 4 byte pointer + 1, addr increase by 4 address
-// #define BLOCK_SIZE  4096
+
 // #define FOUR_BYTE_COUNT 1024
 
+#define BLOCK_SIZE  4096
 #define INODE_ARRAY_SIZE 1023
 #define FILE_NAME_LENGTH 32
 #define DENTRY_RESERVED 24
