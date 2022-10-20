@@ -12,7 +12,7 @@
 #define FILE_NAME_LENGTH 32
 #define DENTRY_RESERVED 24
 
-
+/* define the struct for Directory Entries */
 typedef struct dentry{
     uint8_t file_name[FILE_NAME_LENGTH];  // file name is 32 byte
     uint32_t file_type;     // 4 byte
@@ -21,25 +21,33 @@ typedef struct dentry{
 }dentry_t;
 
 
-
+/* define the struct for index nodes (inode) */
 typedef struct inode
 { 
-    uint32_t length;
-    uint32_t content[1023];
+    uint32_t length;            // 4B for the total length of bytes
+    uint32_t content[1023];     // 1023 is because it is a 4KB block
+                                // the first 4B block is used to specify the length in B
+    /* content:
+     * each index of content contains a data block # 
+     * this could be sparse, ex. 9, 13, 37
+     * However, in the eye of the file, they are continous, it will be read continously
+     */
 }inode_t;
 
+/* define the struck for boot block */
 typedef struct boot_block
 {   
-    uint32_t    total_dentry_num;
-    uint32_t    total_inode_num;
-    uint32_t    total_data_block_num;
+    uint32_t    total_dentry_num;       // 4B for total directory entry number
+    uint32_t    total_inode_num;        // 4B for total index nodes number
+    uint32_t    total_data_block_num;   // 4B for total data block number
     uint8_t     reserved[52];
     dentry_t    files[63];  // index 0 of this array is file "."
+                            // the rest is each file directory
 }boot_block_t;
 
+
+
 extern void init_file_system(uint32_t* file_system_ptr);
-
-
 
 extern int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry);
 
