@@ -3,20 +3,30 @@
 
 #include "types.h"
 
+// #define DENTRY_SIZE 64
+// #define DENTRY_OFFSET (DENTRY_SIZE/4)   // 4 byte pointer + 1, addr increase by 4 address
+// #define BLOCK_SIZE  4096
+// #define FOUR_BYTE_COUNT 1024
+
+
+#define FILE_NAME_LENGTH 32
+#define DENTRY_RESERVED 24
+
 
 typedef struct dentry{
-    uint8_t file_name[32];  // file name is 32 byte
+    uint8_t file_name[FILE_NAME_LENGTH];  // file name is 32 byte
     uint32_t file_type;     // 4 byte
     uint32_t inode_num;     // 4 byte
-    uint8_t reserved[24];   // reserve 24 byte
+    uint8_t reserved[DENTRY_RESERVED];
 }dentry_t;
 
 
-// typedef struct inode
-// {   // index 0 of the content: the size of the file = sum(number of bytes used in the data blocks)
-//     // index > 0: the data block index number
-//     uint32_t content[1024];
-// }inode_t;
+
+typedef struct inode
+{ 
+    uint32_t length;
+    uint32_t content[1023];
+}inode_t;
 
 typedef struct boot_block
 {   
@@ -29,22 +39,17 @@ typedef struct boot_block
 
 extern void init_file_system(uint32_t* file_system_ptr);
 
-// open file system
-extern int32_t open();
 
-// close file system
-extern int32_t close();
-
-// read from file system
-extern int32_t read();
-
-extern int32_t write();
 
 extern int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry);
 
 extern int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry);
 
 extern int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length);
+
+extern void dentry_read();
+
+extern void file_read();
 
 
 #endif
