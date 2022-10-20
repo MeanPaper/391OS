@@ -46,17 +46,82 @@ typedef struct boot_block
 }boot_block_t;
 
 
-
+/* void init_file_system(uint32_t* file_system_ptr);
+ * Inputs: 
+ *      uint32_t* file_system_ptr: pointer to a section of memory
+ * Return Value: none
+ * Function: initialize the file system with the boot block */
 extern void init_file_system(uint32_t* file_system_ptr);
 
+
+
+
+/* int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry);
+ * Inputs: 
+ *      const uint8_t* fname: file name that we need to match
+ *      dentry_t* dentry: the dentry ptr that we want to copy to
+ * Outputs:
+ *      dentry_t* dentry: should have the copy of the file now
+ * Return Value:
+ *      0: Success
+ *      -1: Failed
+ * Function: 
+ *      Find the correct directory entry by its file name and return
+ *      the copy of it.                                                 */
 extern int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry);
 
+
+
+
+/* int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry);
+ * Inputs: 
+ *      uint32_t index: file index that we need to match
+ *      dentry_t* dentry: the dentry ptr that we want to copy to
+ * Outputs:
+ *      dentry_t* dentry: should have the copy of the file now
+ * Return Value:
+ *      0: Success
+ *      -1: Failed
+ * Function: 
+ *      Find the correct directory entry by its index and return
+ *      the copy of it.                                                 */
 extern int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry);
 
+
+
+
+/* int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length);
+ * Inputs: 
+ *      uint32_t inode: 
+ *      uint32_t offset: 
+ *      uint8_t* buf:
+ *      uint32_t length:
+ * Outputs:
+ *      dentry_t* dentry: should have the copy of the file now
+ * Return Value:
+ *      0: Success
+ *      -1: Failed
+ * Function: 
+ *                                                       */
 extern int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length);
 
+
+
+
+/* void dentry_read();
+ * Inputs: none
+ * Return Value: none
+ * Function: read from directory entry */
 extern void dentry_read();
 
+
+
+
+
+/* void file_read();
+ * Inputs: none
+ * Return Value: none
+ * Function: read from file */
 extern void file_read();
 
 
