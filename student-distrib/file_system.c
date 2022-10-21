@@ -2,6 +2,8 @@
 #include "lib.h"
 
 dentry_t current_file;
+int32_t file_counter = 0;   // keep track of the current file index
+
 
 boot_block_t * boot_block;
 void init_file_system(uint32_t* file_system_ptr){
@@ -120,11 +122,18 @@ int32_t directory_open(const char* file_name){
     return read_dentry_by_name(file_name, &current_file);
 }
 
-int32_t directory_close(const char* file_name){
+int32_t directory_close(int fd){
     return 0;
 }
 
 int32_t directory_read(int fd, void *buf, uint32_t nbytes){
+    file_counter += 1;
+    if(file_counter > 63){
+        return -1;
+    }
+    read_dentry_by_index(file_counter, &current_file);  // get the file by index  
+    memcpy(buf, &(current_file.file_name), nbytes);     // get the name
+    return 0;
 }
 
 
@@ -133,9 +142,21 @@ int32_t directory_write(int fd, void *buf, uint32_t nbytes){
 }
 
 
+int32_t file_open(const uint8_t* file_name){
+    return read_dentry_by_name(file_name, &current_file);
+}
+
+int32_t file_close(int fd){
+    return 0;
+}
+
+int32_t file_write(int fd, void *buf, uint32_t nbytes){
+    return -1;
+}
 int32_t file_read(int fd, void *buf, uint32_t nbytes){
     dentry_t temp_dir_entry;
     return fd;
 }
+
 
 

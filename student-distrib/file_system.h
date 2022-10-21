@@ -108,6 +108,8 @@ extern int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t
 
 
 
+extern int32_t directory_open(const uint8_t* file_name);
+extern int32_t directory_close(int fd);
 
 /* void dentry_read();
  * Inputs: none
@@ -118,6 +120,8 @@ extern int32_t directory_write(int fd, void *buf, uint32_t nbytes);
 
 
 
+extern int32_t file_read(const uint8_t* file_name);
+extern int32_t file_close(int fd);
 
 /* void file_read();
  * Inputs: none
