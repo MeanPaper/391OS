@@ -1,20 +1,27 @@
 #include "file_system.h"
 #include "lib.h"
 
-dentry_t * current_file;
+dentry_t current_file;
 int32_t file_counter = 0;   // keep track of the current file index
 
 
 boot_block_t * boot_block;
 void init_file_system(uint32_t* file_system_ptr){
     boot_block = (boot_block_t*) file_system_ptr;
+
+    
 }
 
 int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry){
     int i;
     dentry_t *temp;
     
-    for(i = 0; i < boot_block->total_dentry_num - 1; ++i){
+    if(!fname || !dentry || !strlen((int8_t*)fname)){
+        return -1;
+    }
+
+    int total_file = boot_block->total_dentry_num;
+    for(i = 0; i < total_file; ++i){
         // go the next file dentry
         temp = &(boot_block->files[i]);
         // using string compare to compare the file name and the name that it request
@@ -24,10 +31,12 @@ int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry){
             // destination: input dentry
             // source:  found dentry
             // size: always 32 bytes
-            strncpy((int8_t*)(dentry->file_name), (int8_t*)(temp->file_name), FILE_NAME_LENGTH);
-            dentry->file_type = temp->file_type;
-            dentry->inode_num = temp->inode_num;
-            strncpy((int8_t*)(dentry->reserved), (int8_t*)(temp->reserved), DENTRY_RESERVED);
+            
+            memcpy(dentry, temp, sizeof(dentry_t));
+            // strncpy((int8_t*)(dentry->file_name), (int8_t*)(temp->file_name), FILE_NAME_LENGTH);
+            // dentry->file_type = temp->file_type;
+            // dentry->inode_num = temp->inode_num;
+            // strncpy((int8_t*)(dentry->reserved), (int8_t*)(temp->reserved), DENTRY_RESERVED);
             return 0;
         }
     }
@@ -38,8 +47,8 @@ int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry){
 int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry){
 
     dentry_t *temp;
-    
-    if(index >= 63){
+
+    if(index >= 63 || !dentry){
         return -1;
     }   
 
@@ -47,10 +56,12 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry){
     temp = &(boot_block->files[index]);
 
     // copy all the information to the dentry parameter
-    strncpy((int8_t*)(dentry->file_name), (int8_t*)(temp->file_name), FILE_NAME_LENGTH);
-    dentry->file_type = temp->file_type;
-    dentry->inode_num = temp->inode_num;
-    strncpy((int8_t*)(dentry->reserved), (int8_t*)(temp->reserved), DENTRY_RESERVED);
+    memcpy(dentry, temp, sizeof(dentry_t));
+  
+    // strncpy((int8_t*)(dentry->file_name), (int8_t*)(temp->file_name), FILE_NAME_LENGTH);
+    // dentry->file_type = temp->file_type;
+    // dentry->inode_num = temp->inode_num;
+    // strncpy((int8_t*)(dentry->reserved), (int8_t*)(temp->reserved), DENTRY_RESERVED);
 
     return 0;
 }
@@ -89,7 +100,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
     data_block_start_index = boot_block->total_inode_num + 1;
     
     // check if it is read out of bounds
-    if(length > remaining_file_size){
+    if(length >= remaining_file_size){
         length = remaining_file_size;
     }
 
@@ -131,17 +142,14 @@ int32_t directory_read(int fd, void *buf, uint32_t nbytes){
         return -1;
     }
     read_dentry_by_index(file_counter, &current_file);  // get the file by index  
-    memcpy(buf, &(current_file->file_name), nbytes);     // get the name
+    memcpy(buf, current_file.file_name, nbytes);        // get the name
     file_counter += 1;
     return 0;
 }
 
-
 int32_t directory_write(int fd, void *buf, uint32_t nbytes){
     return -1;
 }
-
-
 int32_t file_open(const uint8_t* file_name){
     return read_dentry_by_name(file_name, &current_file);
 }
@@ -154,8 +162,6 @@ int32_t file_write(int fd, void *buf, uint32_t nbytes){
     return -1;
 }
 int32_t file_read(int fd, void *buf, uint32_t nbytes){
-    return fd;
+    inode_t * data_block_start_index = (inode_t*)(boot_block + 1 + current_file.inode_num);
+    return read_data(current_file.inode_num, 0, buf, data_block_start_index->length);
 }
-
-
-

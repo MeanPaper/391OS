@@ -155,11 +155,36 @@ int ls_test(){
 	clear();
 	TEST_HEADER;
 	int i;
-	char file_name[FILE_NAME_SIZE];
+	uint8_t file_name[FILE_NAME_SIZE+1];
+	file_name[FILE_NAME_SIZE] = '\0';
+
 	for(i = 0; i<63; ++i){
-		directory_read(0, file_name, FILE_NAME_SIZE);
-		printf("%s\n",file_name);
+		if(-1 != directory_read(0, file_name, FILE_NAME_SIZE)) 
+			printf("%s\n",file_name);
 	}
+	return PASS;
+}
+
+
+int fish_frame_zero(){
+	TEST_HEADER;
+	char * file = "frame0.txt";
+	char buf[10000];
+	memset(buf,0,sizeof(buf));
+	file_open((uint8_t*)file);
+	file_read(0, buf, 0);
+	printf("%s", buf);
+	return PASS;
+}
+
+int fish_frame_one(){
+	TEST_HEADER;
+	char * file = "frame1.txt";
+	char buf[10000];
+	memset(buf,0,sizeof(buf));
+	file_open((uint8_t*)file);
+	file_read(0, buf, 0);
+	printf("%s", buf);
 	return PASS;
 }
 /* Checkpoint 3 tests */
@@ -194,6 +219,8 @@ void launch_tests(){
 	// TEST_OUTPUT("overflow exception rise", overflow_exception_test()); 
 
 	/* Checkpoint 2 test start here */
-	TEST_OUTPUT("ls_test", ls_test());
-	// TEST_OUTPUT("idt_test", idt_test());
+	// TEST_OUTPUT("ls_test", ls_test());
+	TEST_OUTPUT("fish frame zero", fish_frame_zero());
+	TEST_OUTPUT("fish frame one", fish_frame_one());
+
 }

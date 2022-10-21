@@ -14,6 +14,7 @@
 #define DENTRY_RESERVED 24
 #define MAX_DENTRY_NUM  63
 
+
 /* define the struct for Directory Entries */
 typedef struct dentry{
     uint8_t file_name[FILE_NAME_LENGTH];  // file name is 32 byte
