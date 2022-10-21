@@ -93,34 +93,89 @@ extern int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry);
 
 /* int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length);
  * Inputs: 
- *      uint32_t inode: 
- *      uint32_t offset: 
- *      uint8_t* buf:
- *      uint32_t length:
+ *      uint32_t inode: inode number
+ *      uint32_t offset: offset of the file, ie. where do we want to start
+ *      uint8_t* buf: where we want to read the data into
+ *      uint32_t length: the length of the bytes that we want to read
  * Outputs:
- *      dentry_t* dentry: should have the copy of the file now
+ *      uint8_t* buf: should have the copy of the file that we want to read
  * Return Value:
  *      0: Success
  *      -1: Failed
  * Function: 
- *                                                       */
+ *      Read the file by its inode number. User can identity the length of the file
+ *  they want to read as well as where they want to start. In the end, the part of file 
+ *  being read will be inside buf.                                                      */
 extern int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length);
 
 
-
+/* int32_t directory_open(const uint8_t* file_name);
+ * Inputs: 
+ *      const uint8_t* fname: file name that we want to open
+ * Return Value:
+ *      0: Success
+ *      -1: Failed
+ * Function: 
+ *      Open the dentry by its name                           */
 extern int32_t directory_open(const uint8_t* file_name);
+
+/* int32_t directory_close(int fd);
+ * Inputs: 
+ *      int fd: file descriptor
+ * Return Value:
+ *      0: Success
+ *      -1: Failed
+ * Function: 
+ *      close the dentry by file descriptor */
 extern int32_t directory_close(int fd);
 
-/* void dentry_read();
- * Inputs: none
- * Return Value: none
+/* int32_t directory_read(int fd, void *buf, uint32_t nbytes);
+ * Inputs: 
+ *      int fd: file descriptor
+ *      void *buf: file name should be in the buf
+ *      uint32_t nbytes: number of bytes we want to copy
+ * Outputs:
+ *      void *buf: file name should be in the buf
+ * Return Value: 
+ *      0: Success
+ *      -1: Failed
  * Function: read from directory entry */
 extern int32_t directory_read(int fd, void *buf, uint32_t nbytes);
+
+
+/* int32_t directory_write(int fd, void *buf, uint32_t nbytes);
+ * Inputs: 
+ *      int fd: file descriptor
+ *      void *buf: file name should be in the buf
+ *      uint32_t nbytes: number of bytes we want to write
+ * Outputs: none
+ * Return Value: 
+ *      0: Success
+ *      -1: Failed
+ * Function: read from directory entry */
 extern int32_t directory_write(int fd, void *buf, uint32_t nbytes);
 
 
+/* int32_t file_read(const uint8_t* file_name);
+ * Inputs: 
+ *      const uint8_t* file_name: the file name we want to match
+ * Outputs: none
+ * Return Value: 
+ *      0: Success
+ *      -1: Failed
+ * Function: 
+ *      Reading the file by its file_name */
+extern int32_t file_read(const uint8_t* file_name);
 
-extern int32_t file_open(const uint8_t* file_name);
+/* int32_t file_close(int fd);
+ * Inputs: 
+ *      int fd: file descriptor
+ * Outputs: none
+ * Return Value: 
+ *      0: Success
+ *      -1: Failed
+ * Function: 
+ *      Close the file by its file_name */
 extern int32_t file_close(int fd);
 
 /* void file_read();
