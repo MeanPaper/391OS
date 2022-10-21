@@ -109,6 +109,8 @@ extern int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry);
 extern int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length);
 
 
+
+
 /* int32_t directory_open(const uint8_t* file_name);
  * Inputs: 
  *      const uint8_t* fname: file name that we want to open
@@ -119,6 +121,9 @@ extern int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t
  *      Open the dentry by its name                           */
 extern int32_t directory_open(const uint8_t* file_name);
 
+
+
+
 /* int32_t directory_close(int fd);
  * Inputs: 
  *      int fd: file descriptor
@@ -128,6 +133,9 @@ extern int32_t directory_open(const uint8_t* file_name);
  * Function: 
  *      close the dentry by file descriptor */
 extern int32_t directory_close(int fd);
+
+
+
 
 /* int32_t directory_read(int fd, void *buf, uint32_t nbytes);
  * Inputs: 
@@ -143,6 +151,8 @@ extern int32_t directory_close(int fd);
 extern int32_t directory_read(int fd, void *buf, uint32_t nbytes);
 
 
+
+
 /* int32_t directory_write(int fd, void *buf, uint32_t nbytes);
  * Inputs: 
  *      int fd: file descriptor
@@ -156,7 +166,9 @@ extern int32_t directory_read(int fd, void *buf, uint32_t nbytes);
 extern int32_t directory_write(int fd, void *buf, uint32_t nbytes);
 
 
-/* int32_t file_read(const uint8_t* file_name);
+
+
+/* int32_t file_open(const uint8_t* file_name);
  * Inputs: 
  *      const uint8_t* file_name: the file name we want to match
  * Outputs: none
@@ -164,8 +176,11 @@ extern int32_t directory_write(int fd, void *buf, uint32_t nbytes);
  *      0: Success
  *      -1: Failed
  * Function: 
- *      Reading the file by its file_name */
-extern int32_t file_read(const uint8_t* file_name);
+ *      Open the file by its file_name */
+extern int32_t file_open(const uint8_t* file_name);
+
+
+
 
 /* int32_t file_close(int fd);
  * Inputs: 
@@ -178,13 +193,37 @@ extern int32_t file_read(const uint8_t* file_name);
  *      Close the file by its file_name */
 extern int32_t file_close(int fd);
 
-/* void file_read();
- * Inputs: none
- * Return Value: none
- * Function: read from file */
+
+
+
+/* int32_t file_read(int fd, void *buf, uint32_t nbytes)
+ * Inputs: 
+ *      int fd: file descriptor
+ *      void *buf: buffer that we want to read the bytes into
+ *      uint32_t nbytes: num bytes we want to read
+ * Outputs: 
+ *      void *buf: buffer that we want to read the bytes into
+ * Return Value: 
+ *      0: Success
+ *      -1: Failed
+ * Function: 
+ *      Read the file by the file descriptor. Read number of bytes into buf */
 extern int32_t file_read(int fd, void *buf, uint32_t nbytes);
+
+
+
+
+/* int32_t file_read(int fd, void *buf, uint32_t nbytes)
+ * Inputs: 
+ *      int fd: file descriptor
+ *      void *buf: buffer contains the bytes we want to write into our file
+ *      uint32_t nbytes: num bytes we want write
+ * Outputs: none
+ * Return Value: 
+ *      0: Success
+ *      -1: Failed
+ * Function: 
+ *      Find the file by the file descriptor. write number of bytes into the file */
 extern int32_t file_write(int fd, void *buf, uint32_t nbytes);
-
-
 
 #endif
