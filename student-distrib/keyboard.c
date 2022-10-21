@@ -8,10 +8,10 @@ static uint8_t shift_pressed_cons = 0;
 static uint8_t caps_pressed_cons = 0;
 static uint8_t alt_pressed_cons = 0;
 static uint8_t control_pressed_cons = 0;
-volatile uint8_t *key_buffer;
+volatile uint8_t key_buffer[127];
 static uint8_t buffer_index = 0;
 /* Mapping scancode to ascii */
-const char keyboard_ch[4][59] = {'\0', '\0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\0', '\0',
+const char keyboard_ch[4][59] = {{'\0', '\0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\0', '\0',
 	 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\0', '\0', 'a', 's',
 	 'd', 'f', 'g', 'h', 'j', 'k', 'l' , ';', '\'', '`', '\0', '\\', 'z', 'x', 'c', 'v', 
 	 'b', 'n', 'm',',', '.', '/', '\0', '*', '\0', ' ', '\0'},
@@ -29,7 +29,7 @@ const char keyboard_ch[4][59] = {'\0', '\0', '1', '2', '3', '4', '5', '6', '7', 
 	{'\0', '\0', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '\0', '\0',
 	 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '{', '}', '\0', '\0', 'a', 's',
 	 'd', 'f', 'g', 'h', 'j', 'k', 'l' , ':', '"', '~', '\0', '\\', 'z', 'x', 'c', 'v', 
-	 'b', 'n', 'm', '<', '>', '?', '\0', '*', '\0', ' ', '\0'}
+	 'b', 'n', 'm', '<', '>', '?', '\0', '*', '\0', ' ', '\0'}};
 
 /* Initialize keyboard */
 void keyboard_init(){
@@ -44,14 +44,11 @@ void keyboard_init(){
 void keyboard_interrupt(){
 	cli();
 	uint32_t scan_code;
-	while(1) {
-		if (inb(KEYBOARD_PORT) != 0) {
-			scan_code = inb(KEYBOARD_PORT);
-			if (scan_code > 0) {
-				break;
-			}
-		}
-	}
+	
+	scan_code = inb(KEYBOARD_PORT);
+			
+		
+	
 
 	switch(scan_code){
 		case LEFT_SHIFT_PRESSED:
@@ -97,7 +94,7 @@ void display_on_screen(uint32_t scan_code){
 		if(scan_code == 0x26){
 			//if control l is pressed; 
 			clear();
-			set_screen_pos(0,0);
+		//	set_screen_pos(0,0);
 		}
 		return;		
 	}

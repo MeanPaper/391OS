@@ -25,9 +25,9 @@ void set_screen_pos(uint32_t x_pos, uint32_t y_pos){
 }
 
 void set_cursor_position(){
-    uint16_t position = screen_y * NUM_COLS + screen_x;
-    OUTW(0x03D4, (position & 0xFF00) | 0x0C);
-    OUTW(0x03D4, ((position & 0x00FF) << 8) | 0x0D);
+    int position = screen_y * NUM_COLS + screen_x;
+    outw( (position & 0xFF00) | 0x0C,0x03D4);
+    outw( ((position & 0x00FF) << 8) | 0x0D,0x03D4);
 }
 
 void scrow_up(){
@@ -35,11 +35,11 @@ void scrow_up(){
     int y;
     for(y = 0 ; y < NUM_ROWS; y++){
         for(x = 0 ; x < NUM_COLS; x++){
-            *(uint8_t *)(video_mem + (NUM_COLS * y + x) << 1) = *(uint8_t *)(video_mem + (NUM_COLS * (y+1) + x) << 1);
+            *(uint8_t *)(video_mem + (((NUM_COLS * y + x)) << 1)) = *(uint8_t *)(video_mem + ((NUM_COLS * (y+1) + x) << 1));
         }
     }
     for(x = 0; x < NUM_COLS; x++){
-        *(uint8_t *)(video_mem + (x + (NUM_ROWS-1) * NUM_COLS << 1)) = ' ';
+        *(uint8_t *)(video_mem + ((x + (NUM_ROWS-1) * NUM_COLS) << 1)) = ' ';
     }
 }   
     
@@ -59,7 +59,6 @@ void clear(void) {
 }
 
 void backspace(){
-    int32_t i;
     if(screen_x == 0){
         set_screen_pos(79,screen_y - 1);
     }

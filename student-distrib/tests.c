@@ -175,5 +175,5 @@ void launch_tests(){
 	// TEST_OUTPUT("deference correct page pointer", paging_test_no_fault()); 
 
 	/* expect to have overflow exception */
-	TEST_OUTPUT("overflow exception rise", overflow_exception_test()); 
+	//TEST_OUTPUT("overflow exception rise", overflow_exception_test()); 
 }
