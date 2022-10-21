@@ -120,7 +120,7 @@ extern int32_t directory_write(int fd, void *buf, uint32_t nbytes);
 
 
 
-extern int32_t file_read(const uint8_t* file_name);
+extern int32_t file_open(const uint8_t* file_name);
 extern int32_t file_close(int fd);
 
 /* void file_read();

@@ -12,6 +12,7 @@
 #include "paging.h"
 #include "rtc.h"
 #include "keyboard.h"
+#include "file_system.h"
 
 #define RUN_TESTS
 
@@ -36,7 +37,8 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Set MBI to the address of the Multiboot information structure. */
     mbi = (multiboot_info_t *) addr;
-
+    module_t* file_sys_ptr = (module_t*)mbi->mods_addr; // the start of the file system, referred to the discussion slides please
+    uint32_t* file_sys_start = (uint32_t *)(file_sys_ptr->mod_start);
     /* Print out the flags. */
     printf("flags = 0x%#x\n", (unsigned)mbi->flags);
 
@@ -148,16 +150,15 @@ void entry(unsigned long magic, unsigned long addr) {
     char lookup = ['A', 'B']
     putc(lookup[char_code])
     */
-    module_t* mod = ((module_t*)mbi->mods_addr)->mod_start; // the start of the file system, referred to the discussion slides please
-
-    
     page_init();
-   
+    // loading file system
+
     /* Init the PIC */    
     i8259_init();
     
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
+    init_file_system(file_sys_start);
     rtc_init();
     keyboard_init();
 

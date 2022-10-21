@@ -3,6 +3,8 @@
 #include "lib.h"
 #include "rtc.h"
 #include "paging.h"
+#include "file_system.h"
+
 
 #define PASS 1
 #define FAIL 0
@@ -147,6 +149,19 @@ int overflow_exception_test(){
 	return PASS;
 }
 /* Checkpoint 2 tests */
+#define TOTAL_FILE_NUM 63
+#define FILE_NAME_SIZE 32 
+int ls_test(){
+	clear();
+	TEST_HEADER;
+	int i;
+	char file_name[FILE_NAME_SIZE];
+	for(i = 0; i<63; ++i){
+		directory_read(0, file_name, FILE_NAME_SIZE);
+		printf("%s\n",file_name);
+	}
+	return PASS;
+}
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -155,7 +170,8 @@ int overflow_exception_test(){
 /* Test suite entry point */
 void launch_tests(){
 	clear();
-	TEST_OUTPUT("idt_test", idt_test());
+	printf("\n\n");
+	// TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
 
 	// checkpoint 1 test
@@ -176,4 +192,8 @@ void launch_tests(){
 
 	/* expect to have overflow exception */
 	// TEST_OUTPUT("overflow exception rise", overflow_exception_test()); 
+
+	/* Checkpoint 2 test start here */
+	TEST_OUTPUT("ls_test", ls_test());
+	// TEST_OUTPUT("idt_test", idt_test());
 }
