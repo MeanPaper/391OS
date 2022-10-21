@@ -113,8 +113,8 @@ extern int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t
  * Inputs: none
  * Return Value: none
  * Function: read from directory entry */
-extern void dentry_read();
-
+extern int32_t directory_read(int fd, void *buf, uint32_t nbytes);
+extern int32_t directory_write(int fd, void *buf, uint32_t nbytes);
 
 
 
@@ -123,7 +123,9 @@ extern void dentry_read();
  * Inputs: none
  * Return Value: none
  * Function: read from file */
-extern void file_read();
+extern int32_t file_read(int fd, void *buf, uint32_t nbytes);
+extern int32_t file_write(int fd, void *buf, uint32_t nbytes);
+
 
 
 #endif
