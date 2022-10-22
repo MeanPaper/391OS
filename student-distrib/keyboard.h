@@ -21,6 +21,15 @@
 #define ALT_RELEASED 0xB8
 #define CONTROL_PRESSED 0x1D
 #define CONTROL_RELEASED 0x9D
+#define ENTER_RELEASE 0x9C
+static uint8_t shift_pressed_cons = 0;
+static uint8_t caps_pressed_cons = 0;
+static uint8_t alt_pressed_cons = 0;
+static uint8_t control_pressed_cons = 0;
+volatile uint8_t key_buffer[128];
+static uint8_t buffer_index = 0;
+volatile uint8_t ENTER_PRESSED = 0;
+
 /* keyboard_init(void)
  *   Inputs: none
  *   Return Value: none

@@ -12,28 +12,76 @@ static int screen_x;
 static int screen_y;
 static char* video_mem = (char *)VIDEO;
 
-void set_screen_pos(uint32_t x_pos, uint32_t y_pos){
-    screen_x = x_pos;
-    if(y_pos >= NUM_ROWS){
-        scrow_up();
-        screen_y = NUM_ROWS - 1;
+// void set_screen_pos(uint32_t x_pos, uint32_t y_pos){
+//     screen_x = x_pos;
+//     if(y_pos >= NUM_ROWS){
+//         scrow_up();
+//         screen_y = NUM_ROWS - 1;
+//     }
+//     else{
+//         screen_y = y_pos;
+//     }
+//     set_cursor_position();
+// }
+
+void update_cursor(int mode){
+    screen_x ++;
+    if(mode == 0){
+        // increment x;
+        if(screen_x == 80 && screen_y == 24){
+            scrow_up();
+            screen_x = 0;
+            screen_y= 24;
+            set_cursor_position();
+        }
+        // else if(screen_x == 79){
+        //     set_screen_pos(0,screen_y+1);
+        // }
+        else{
+            set_cursor_position();
+            
+        }
     }
-    else{
-        screen_y = y_pos;
+    else if(mode == 1){
+        screen_x = 0;
+        screen_y = 0;
+        set_cursor_position();
     }
-    set_cursor_position();
+    else if(mode == 2){
+        screen_x = 0;
+        screen_y = 24;
+        set_cursor_position();
+    }
 }
 
 void set_cursor_position(){
     int position = screen_y * NUM_COLS + screen_x;
-    outw( (position & 0xFF00) | 0x0C,0x03D4);
-    outw( ((position & 0x00FF) << 8) | 0x0D,0x03D4);
+    // if(screen_x == 80 && screen_y == 24 ){ //screen_y == 25
+    //     screen_x = 0;
+    //     screen_y = 24;
+    // }
+    if(screen_y > 24) {
+        screen_y = 24;
+        screen_x = 0;
+    }
+    else if(screen_x == 80 ){ //screen_y == 25
+        screen_x = 0;
+        screen_y += 1;
+    }
+    else if(screen_x < 0)screen_x = 0;
+    else if(screen_y < 0) screen_y = 0;
+    // outw( (position & 0xFF00) | 0x0C,0x03D4);
+    // outw( ((position & 0x00FF) << 8) | 0x0D,0x03D4);
+    outb(0x0F,0x3D4);
+    outb((uint8_t)(position & 0xFF),0x3D5);
+    outb(0x0E,0x3D4);
+    outb((uint8_t)((position >> 8) & 0xFF),0x3D5);
 }
 
 void scrow_up(){
     int x;
     int y;
-    for(y = 0 ; y < NUM_ROWS; y++){
+    for(y = 0 ; y < NUM_ROWS-1; y++){
         for(x = 0 ; x < NUM_COLS; x++){
             *(uint8_t *)(video_mem + (((NUM_COLS * y + x)) << 1)) = *(uint8_t *)(video_mem + ((NUM_COLS * (y+1) + x) << 1));
         }
@@ -56,20 +104,42 @@ void clear(void) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
+    
 }
 
 void backspace(){
     if(screen_x == 0){
-        set_screen_pos(79,screen_y - 1);
+        if(screen_y == 0){
+
+            set_cursor_position();
+        }
+        else{
+            screen_x = 79;
+            screen_y -= 1;
+            set_cursor_position();
+        }
     }
     else{
-        set_screen_pos(screen_x-1,screen_y);
+        // set_screen_pos(screen_x-1,screen_y);
+        screen_x --;
+        screen_y--;
+        set_cursor_position();
     }
     *(uint8_t *)(video_mem + ((screen_x + screen_y * 80) << 1)) = ' ';
    
 }
 void enter(){
-    set_screen_pos(0,screen_y+1);
+    screen_x = 0;
+    screen_y += 1;
+    // set_screen_pos(0,screen_y+1);
+    if(screen_y >= 25){
+        scrow_up();
+        screen_y = 24;
+        
+    }
+    set_cursor_position();
+
+
 }
 /* Standard printf().
  * Only supports the following format strings:
@@ -209,7 +279,10 @@ int32_t puts(int8_t* s) {
     }
     return index;
 }
-
+void kbd_putc(uint8_t c) {
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
+}
 /* void putc(uint8_t c);
  * Inputs: uint_8* c = character to print
  * Return Value: void
@@ -226,6 +299,7 @@ void putc(uint8_t c) {
         screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
     }
 }
+
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
  * Inputs: uint32_t value = number to convert

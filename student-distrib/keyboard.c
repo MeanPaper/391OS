@@ -4,17 +4,12 @@
 
 #include "keyboard.h"
 #include "lib.h"
-static uint8_t shift_pressed_cons = 0;
-static uint8_t caps_pressed_cons = 0;
-static uint8_t alt_pressed_cons = 0;
-static uint8_t control_pressed_cons = 0;
-volatile uint8_t key_buffer[127];
-static uint8_t buffer_index = 0;
+
 /* Mapping scancode to ascii */
-const char keyboard_ch[4][59] = {{'\0', '\0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\0', '\0',
+const char keyboard_ch[4][60] = {{'\0', '\0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\0', '\0',
 	 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\0', '\0', 'a', 's',
 	 'd', 'f', 'g', 'h', 'j', 'k', 'l' , ';', '\'', '`', '\0', '\\', 'z', 'x', 'c', 'v', 
-	 'b', 'n', 'm',',', '.', '/', '\0', '*', '\0', ' ', '\0'},
+	 'b', 'n', 'm',',', '.', '/', '\0', '*', '\0', ' ', '\0'}, 
 	// no caps / shift
 	{'\0', '\0', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '\0', '\0',
 	 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\0', '\0', 'A', 'S',
@@ -34,6 +29,12 @@ const char keyboard_ch[4][59] = {{'\0', '\0', '1', '2', '3', '4', '5', '6', '7',
 /* Initialize keyboard */
 void keyboard_init(){
 	enable_irq(KEYBOARD_IRQ);
+	outb( 0x0A,0x3D4);
+	outb((inb(0x3D5) & 0xC0) | 0,0x3D5);
+ 
+	outb (0x0B,(0x3D4));
+	outb( (inb(0x3D5) & 0xE0) | 24,0x3D5);
+	update_cursor(2);
 }
 
 // control, shift, caps lock
@@ -66,9 +67,14 @@ void keyboard_interrupt(){
 			handle_backspace();
 			break;
 		case ENTER:
+			ENTER_PRESSED = 1;
 			handle_enter();
 			break;
+		case ENTER_RELEASE:
+			ENTER_PRESSED = 0;
+			break;
 		case ALT_PRESSED:
+		//right alt need to be add
 			alt_pressed_cons = 1;
 			break;
 		case ALT_RELEASED:
@@ -94,7 +100,7 @@ void display_on_screen(uint32_t scan_code){
 		if(scan_code == 0x26){
 			//if control l is pressed; 
 			clear();
-		//	set_screen_pos(0,0);
+			update_cursor(1);
 		}
 		return;		
 	}
@@ -102,24 +108,27 @@ void display_on_screen(uint32_t scan_code){
 	if(alt_pressed_cons == 1){
 		return;
 	}
-
+	
 	uint8_t keyword = keyboard_ch[shift_pressed_cons+2*caps_pressed_cons][scan_code];
 	append_to_buffer(keyword);
-	puts(keyword);
+	//kbd_putc(keyword);
+	update_cursor(0);
 	return;
 }
 
 void append_to_buffer(uint8_t keyword){
-	if(buffer_index < 128){ //buffer size; 
+	if(buffer_index < 127){ //buffer size; 
 		key_buffer[buffer_index] = keyword;
 		buffer_index ++;
 	}
+	// update_cursor();
 }
 
 void handle_backspace(){
 	if(buffer_index > 0){
-		key_buffer[buffer_index] = '\0';
-		buffer_index --;
+		key_buffer[--buffer_index] = '\0';
+		
+		
 	}
 	backspace();
 	//delete the char in buffer and update in memory, set the cursor to the new location. 
@@ -131,6 +140,7 @@ void handle_enter(){
 	//need to set the memory
 
 }
+
 
 // void clear(){
 // 	//set the memory. 

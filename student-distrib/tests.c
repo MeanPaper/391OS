@@ -155,7 +155,7 @@ int overflow_exception_test(){
 /* Test suite entry point */
 void launch_tests(){
 	clear();
-	TEST_OUTPUT("idt_test", idt_test());
+	//TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
 
 	// checkpoint 1 test
