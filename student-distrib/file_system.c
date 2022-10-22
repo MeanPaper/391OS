@@ -48,7 +48,7 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry){
 
     dentry_t *temp;
 
-    if(index >= 63 || !dentry){
+    if(index >= MAX_DENTRY_NUM || !dentry){
         return -1;
     }   
 
@@ -130,7 +130,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 }
 
 int32_t directory_open(const uint8_t* file_name){
-    return read_dentry_by_name(file_name, &current_file);
+    return read_dentry_by_index(0, &current_file);
 }
 
 int32_t directory_close(int fd){

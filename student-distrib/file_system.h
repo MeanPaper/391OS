@@ -43,7 +43,7 @@ typedef struct boot_block
     uint32_t    total_inode_num;        // 4B for total index nodes number
     uint32_t    total_data_block_num;   // 4B for total data block number
     uint8_t     reserved[52];
-    dentry_t    files[63];  // index 0 of this array is file "."
+    dentry_t    files[MAX_DENTRY_NUM];  // index 0 of this array is file "."
                             // the rest is each file directory
 }boot_block_t;
 
