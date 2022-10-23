@@ -290,7 +290,7 @@ int rtc_test_2() {
 		}
 		loop2++;
 		loop = 0;
-		putc('\n');
+		// putc('\n');
 	}
 	rtc_close();
 	return 1;
