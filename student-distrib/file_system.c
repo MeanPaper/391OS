@@ -6,11 +6,17 @@ int32_t file_counter = 0;   // keep track of the current file index
 
 
 boot_block_t * boot_block;
+
+
+
 void init_file_system(uint32_t* file_system_ptr){
     boot_block = (boot_block_t*) file_system_ptr;
 
     
 }
+
+
+
 
 int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry){
     int i;
@@ -43,6 +49,9 @@ int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry){
     return -1;
 }
 
+
+
+
 // read by ls command
 int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry){
 
@@ -65,6 +74,9 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry){
 
     return 0;
 }
+
+
+
 
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length){
     
@@ -129,13 +141,22 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
     return length; // return the number of bytes copied
 }
 
+
+
+
 int32_t directory_open(const uint8_t* file_name){
     return read_dentry_by_index(0, &current_file);
 }
 
+
+
+
 int32_t directory_close(int fd){
     return 0;
 }
+
+
+
 
 int32_t directory_read(int fd, void *buf, uint32_t nbytes){
     if(file_counter >= boot_block->total_dentry_num){
@@ -147,20 +168,36 @@ int32_t directory_read(int fd, void *buf, uint32_t nbytes){
     return 0;
 }
 
+
+
+
 int32_t directory_write(int fd, void *buf, uint32_t nbytes){
     return -1;
 }
+
+
+
 int32_t file_open(const uint8_t* file_name){
     return read_dentry_by_name(file_name, &current_file);
 }
+
+
+
 
 int32_t file_close(int fd){
     return 0;
 }
 
+
+
+
 int32_t file_write(int fd, void *buf, uint32_t nbytes){
     return -1;
 }
+
+
+
+
 int32_t file_read(int fd, void *buf, uint32_t nbytes){
     inode_t * data_block_start_index = (inode_t*)(boot_block + 1 + current_file.inode_num);
     return read_data(current_file.inode_num, 0, buf, data_block_start_index->length);
