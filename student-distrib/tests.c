@@ -245,6 +245,42 @@ int very_large_file_with_long_name_ok(){
 	return PASS;
 }
 
+/* RTC test
+ * 
+ * Test RTC driver
+ * Inputs: None
+ * Outputs: 1
+ * Side Effects: None
+ * Coverage: RTC
+ * Files: rtc.c
+ */
+int rtc_test_2() {
+	TEST_HEADER;
+	rtc_open();
+	int idx, loop, loop2, f;
+	loop = 0;
+	loop2 = 0;
+	f = 2;
+	while(loop2<5) {
+		while(loop < 10) {
+			idx = 0;
+			while(idx < 8) {
+				rtc_read();
+				putc('1');
+				idx++;
+			}
+			f = 2 * f;
+			rtc_write(&f);
+			loop ++;
+		}
+		loop2++;
+		loop = 0;
+		putc('\n');
+	}
+	rtc_close();
+	return 1;
+}
+
 
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -273,6 +309,9 @@ void launch_tests(){
 	// TEST_OUTPUT("overflow exception rise", overflow_exception_test()); 
 
 	/* Checkpoint 2 test start here */
+
+	/* expect screen to print "1" with increasing speed */
+	TEST_OUTPUT("rtc_test_2", rtc_test_2());
 
 	/* output all the file within the directory including "." */
 	// TEST_OUTPUT("ls_test", ls_test());
