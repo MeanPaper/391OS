@@ -10,23 +10,35 @@ const char keyboard_ch[4][60] = {{'\0', '\0', '1', '2', '3', '4', '5', '6', '7',
 	 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\0', '\0', 'a', 's',
 	 'd', 'f', 'g', 'h', 'j', 'k', 'l' , ';', '\'', '`', '\0', '\\', 'z', 'x', 'c', 'v', 
 	 'b', 'n', 'm',',', '.', '/', '\0', '*', '\0', ' ', '\0'}, 
-	// no caps / shift
+	 //normal keyboard
+
 	{'\0', '\0', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '\0', '\0',
 	 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\0', '\0', 'A', 'S',
 	 'D', 'F', 'G', 'H', 'J', 'K', 'L' , ':', '"', '~', '\0', '|', 'Z', 'X', 'C', 'V', 
 	 'B', 'N', 'M', '<', '>', '?', '\0', '*', '\0', ' ', '\0'},
-	// caps / no shift
+	//keyboard when shift is pressed and capslock is off.
+
 	{'\0', '\0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\0', '\0',
 	 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\0', '\0', 'A', 'S',
 	 'D', 'F', 'G', 'H', 'J', 'K', 'L' , ';', '\'', '`', '\0', '\\', 'Z', 'X', 'C', 'V', 
 	 'B', 'N', 'M', ',', '.', '/', '\0', '*', '\0', ' ', '\0'},
-	// caps / shift
+	 //keyboard when capslock is on and shift is not pressed. 
+
 	{'\0', '\0', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '\0', '\0',
 	 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '{', '}', '\0', '\0', 'a', 's',
 	 'd', 'f', 'g', 'h', 'j', 'k', 'l' , ':', '"', '~', '\0', '\\', 'z', 'x', 'c', 'v', 
 	 'b', 'n', 'm', '<', '>', '?', '\0', '*', '\0', ' ', '\0'}};
+	 //keyboard when capslock is on, shift is also pressed. 
 
 /* Initialize keyboard */
+/* void keyboard_init();
+ * Description: initialize the keyboard and enable the cursor
+ * 
+ * Inputs: none
+ * Output: none
+ * Return Value: none
+ * Side Effects: update cursor position to the last line. 
+*/
 void keyboard_init(){
 	enable_irq(KEYBOARD_IRQ);
 	outb( 0x0A,0x3D4);
@@ -41,16 +53,21 @@ void keyboard_init(){
 // static uint32_t control_code;
 
 /* Handle keyboard interrupt */
-
+/* void keyboard_interrupt();
+ * Description: handle keyboard interrupt, depends on the keyboard input, output different things to the screen. 
+ * 
+ * Inputs: none
+ * Output: none
+ * Return Value: none
+ * Side Effects: set the corresponding global flag variable, i.e. caps/shift/alt/ctrl 
+*/
 void keyboard_interrupt(){
 	cli();
 	uint32_t scan_code;
 	
 	scan_code = inb(KEYBOARD_PORT);
 			
-		
-	
-
+	//read the input to see if it's a special key. 
 	switch(scan_code){
 		case LEFT_SHIFT_PRESSED:
 		case RIGHT_SHIFT_PRESSED:
@@ -73,30 +90,31 @@ void keyboard_interrupt(){
 		case ENTER_RELEASE:
 			ENTER_PRESSED = 0;
 			break;
-		case ALT_PRESSED:
-		//right alt need to be add
+		case LEFT_ALT_PRESSED:
 			alt_pressed_cons = 1;
 			break;
-		case ALT_RELEASED:
+		case LEFT_ALT_RELEASED:
 			alt_pressed_cons = 0;
 			break;
-		case CONTROL_PRESSED:
+		case LEFT_CONTROL_PRESSED:
 			control_pressed_cons = 1;
 			break;
-		case CONTROL_RELEASED:
+		case LEFT_CONTROL_RELEASED:
 			control_pressed_cons = 0;
 			break;
-		default:
+		default:  //if not special character,it's either a char or num, display it. 
 			display_on_screen(scan_code);
 			break;
 	}
-	send_eoi(KEYBOARD_IRQ);
+	send_eoi(KEYBOARD_IRQ); //end of eoi. 
 	sti();
 }
 
 void display_on_screen(uint32_t scan_code){
+	//check if the scan code is in range, aka a char or num. 
 	if(scan_code >= 60 || scan_code < 0)return;
 	if(control_pressed_cons == 1){
+		//if control+l, clear the screen and update cursor to top left. 
 		if(scan_code == 0x26){
 			//if control l is pressed; 
 			clear();
@@ -105,17 +123,28 @@ void display_on_screen(uint32_t scan_code){
 		return;		
 	}
 
+//if alt is pressed, do nothing. 
 	if(alt_pressed_cons == 1){
 		return;
 	}
 	
+	//output the keyword according to scan_code and shift/control flag status. 
 	uint8_t keyword = keyboard_ch[shift_pressed_cons+2*caps_pressed_cons][scan_code];
 	append_to_buffer(keyword);
 	//kbd_putc(keyword);
+	//update the cursor to the new position. 
 	update_cursor(0);
 	return;
 }
 
+/* void append_to_buffer();
+ * Description: add the input char/num to the kbd buffer. 
+ * 
+ * Inputs: none
+ * Output: none
+ * Return Value: none
+ * Side Effects: increment the buffer_index 
+*/
 void append_to_buffer(uint8_t keyword){
 	if(buffer_index < 127){ //buffer size; 
 		key_buffer[buffer_index] = keyword;
@@ -124,6 +153,15 @@ void append_to_buffer(uint8_t keyword){
 	// update_cursor();
 }
 
+
+/* void handle_backspace();
+ * Description: delete the last letter in keyboard buffer, and change the position of the cursor. 
+ * 
+ * Inputs: none
+ * Output: none
+ * Return Value: none
+ * Side Effects: decrement the buffer_index 
+*/
 void handle_backspace(){
 	if(buffer_index > 0){
 		key_buffer[--buffer_index] = '\0';
@@ -134,6 +172,14 @@ void handle_backspace(){
 	//delete the char in buffer and update in memory, set the cursor to the new location. 
 }
 
+/* void handle_enter();
+ * Description: handle everything if user hit enter.  
+ * 
+ * Inputs: none
+ * Output: none
+ * Return Value: none
+ * Side Effects: none
+*/
 void handle_enter(){
 	key_buffer[buffer_index] = '\n';
 	enter();

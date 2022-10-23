@@ -17,11 +17,13 @@
 #define CAPS_PRESSED 0x3A
 #define BACKSPACE 0x0E
 #define ENTER 0x1C
-#define ALT_PRESSED 0x38
-#define ALT_RELEASED 0xB8
-#define CONTROL_PRESSED 0x1D
-#define CONTROL_RELEASED 0x9D
+#define LEFT_ALT_PRESSED 0x38
+#define LEFT_ALT_RELEASED 0xB8
+#define LEFT_CONTROL_PRESSED 0x1D
+#define LEFT_CONTROL_RELEASED 0x9D
 #define ENTER_RELEASE 0x9C
+
+//status flag.
 static uint8_t shift_pressed_cons = 0;
 static uint8_t caps_pressed_cons = 0;
 static uint8_t alt_pressed_cons = 0;
