@@ -149,6 +149,16 @@ int overflow_exception_test(){
 	return PASS;
 }
 /* Checkpoint 2 tests */
+
+/* ls test
+ * 
+ * Test Overflow for exception handler. 
+ * Inputs: None
+ * Outputs: PASS
+ * Side Effects: None
+ * Coverage: IDT Exception handler
+ * Files: idt.c
+ */
 int ls_test(){
 	clear();
 	TEST_HEADER;

@@ -11,14 +11,13 @@ boot_block_t * boot_block;
 
 void init_file_system(uint32_t* file_system_ptr){
     boot_block = (boot_block_t*) file_system_ptr;
-
-    
 }
 
 
 
 
 int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry){
+    if(!fname || !dentry) return -1;
     int i;
     dentry_t *temp;
     
@@ -54,6 +53,7 @@ int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry){
 
 // read by ls command
 int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry){
+    if(!dentry) return -1;
 
     dentry_t *temp;
 
@@ -79,6 +79,7 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry){
 
 
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length){
+    if(!buf) return -1;
     
     inode_t* target_inode;
     uint32_t file_size;
@@ -145,6 +146,8 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 
 
 int32_t directory_open(const uint8_t* file_name){
+    if(*file_name) return -1;
+
     return read_dentry_by_index(0, &current_file);
 }
 
@@ -159,6 +162,8 @@ int32_t directory_close(int fd){
 
 
 int32_t directory_read(int fd, void *buf, uint32_t nbytes){
+    if(!buf) return -1;
+
     if(file_counter >= boot_block->total_dentry_num){
         return -1;
     }
@@ -172,12 +177,16 @@ int32_t directory_read(int fd, void *buf, uint32_t nbytes){
 
 
 int32_t directory_write(int fd, void *buf, uint32_t nbytes){
+    if(!buf) return -1;
+
     return -1;
 }
 
 
 
 int32_t file_open(const uint8_t* file_name){
+    if(!file_name) return -1;
+    
     return read_dentry_by_name(file_name, &current_file);
 }
 
@@ -192,6 +201,8 @@ int32_t file_close(int fd){
 
 
 int32_t file_write(int fd, void *buf, uint32_t nbytes){
+    if(!buf) return -1;
+
     return -1;
 }
 
@@ -199,6 +210,8 @@ int32_t file_write(int fd, void *buf, uint32_t nbytes){
 
 
 int32_t file_read(int fd, void *buf, uint32_t nbytes){
+    if(!buf) return -1;
+
     inode_t * data_block_start_index = (inode_t*)(boot_block + 1 + current_file.inode_num);
     return read_data(current_file.inode_num, 0, buf, data_block_start_index->length);
 }
