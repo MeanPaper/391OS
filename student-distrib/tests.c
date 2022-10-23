@@ -3,6 +3,8 @@
 #include "lib.h"
 #include "rtc.h"
 #include "paging.h"
+#include "file_system.h"
+
 
 #define PASS 1
 #define FAIL 0
@@ -147,6 +149,93 @@ int overflow_exception_test(){
 	return PASS;
 }
 /* Checkpoint 2 tests */
+int ls_test(){
+	clear();
+	TEST_HEADER;
+	int i;
+	uint8_t file_name[FILE_NAME_LENGTH+1];
+	file_name[FILE_NAME_LENGTH] = '\0';
+
+	for(i = 0; i<MAX_DENTRY_NUM; ++i){
+		if(-1 != directory_read(0, file_name, FILE_NAME_LENGTH)) 
+			printf("%s\n",file_name);
+	}
+	return PASS;
+}
+
+
+int fish_frame_zero(){
+	TEST_HEADER;
+	char * file = "frame0.txt";
+	char buf[10000];
+	memset(buf,0,sizeof(buf));
+	file_open((uint8_t*)file);
+	file_read(0, buf, 0);
+	printf("%s", buf);
+	return PASS;
+}
+
+int fish_frame_one(){
+	TEST_HEADER;
+	char * file = "frame1.txt";
+	char buf[10000];
+	memset(buf,0,sizeof(buf));
+	file_open((uint8_t*)file);
+	file_read(0, buf, 0);
+	printf("%s", buf);
+	return PASS;
+}
+
+int read_non_txt(char* file_name, int range){
+	TEST_HEADER;
+	if(range < 0){
+		printf("Invalid range \n");
+		return FAIL;
+	}
+	printf("\nfile name: %s \n", file_name);
+	unsigned char buf[40000];
+	memset(buf,0,sizeof(buf));
+	file_open((uint8_t*)file_name);
+	file_read(0, buf, 0);
+	int i;
+	for(i = 0; i < range; ++i){
+		// if(i > 0 && !(i % 80)){	to print the stuff at the end
+		// 	printf("\n");
+		// }
+		putc(buf[i]);
+	}
+	return PASS;
+}
+
+int very_large_file_with_long_name_test(){
+	TEST_HEADER;
+	char * file = "verylargetextwithverylongname.txt";
+	char buf[40000];
+	memset(buf,0,sizeof(buf));
+	if(-1 == file_open((uint8_t*)file)){
+		printf("File does not exists\n");
+		return PASS;
+	}
+	file_read(0, buf, 0);
+	printf("%s", buf);
+	return FAIL;
+}
+
+int very_large_file_with_long_name_ok(){
+	TEST_HEADER;
+	char * file = "verylargetextwithverylongname.tx";
+	char buf[40000];
+	memset(buf,0,sizeof(buf));
+	if(-1 == file_open((uint8_t*)file)){
+		printf("File does not exists\n");
+		return FAIL;
+	}
+	file_read(0, buf, 0);
+	printf("%s", buf);
+	return PASS;
+}
+
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -155,25 +244,52 @@ int overflow_exception_test(){
 /* Test suite entry point */
 void launch_tests(){
 	clear();
-	TEST_OUTPUT("idt_test", idt_test());
+	printf("\n\n");
+	// TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
 
 	// checkpoint 1 test
 	/* expect screen to be constantly changing */
 	// TEST_OUTPUT("rtc_test", rtc_test());
-	
 	/* expect to have div by 0 exception */
 	// TEST_OUTPUT("divide by 0 test", div_zero_test());
-
 	/* expect to have system call and program stay in a loop */
 	// TEST_OUTPUT("System call test", system_call_test());
-
 	/* expect to have a page fault */
 	// TEST_OUTPUT("deference null pointer", derefence_null()); 
-
 	/* expect to have no page fault */
 	// TEST_OUTPUT("deference correct page pointer", paging_test_no_fault()); 
-
 	/* expect to have overflow exception */
-	TEST_OUTPUT("overflow exception rise", overflow_exception_test()); 
+	// TEST_OUTPUT("overflow exception rise", overflow_exception_test()); 
+
+	/* Checkpoint 2 test start here */
+
+	/* output all the file within the directory including "." */
+	// TEST_OUTPUT("ls_test", ls_test());
+	
+	// /* output frame0.txt file */
+	// TEST_OUTPUT("fish frame zero", fish_frame_zero());
+	
+	// /* ouptut frame1.txt file */
+	// TEST_OUTPUT("fish frame one", fish_frame_one());
+	
+	// /* fish file test */
+	// this test is strange, 36000 is an approximation of fish file size
+	// TEST_OUTPUT("fish file test", read_non_txt("fish", 36000));
+ 	// printf(" =============================================================== \n");
+		
+	/* grep exe read test */
+	// TEST_OUTPUT("grep file test", read_non_txt("grep", 8000));
+ 	// printf(" =============================================================== \n");
+	
+	/* ls exe read test */
+	// TEST_OUTPUT("ls file test", read_non_txt("ls", 8000));
+ 	// printf(" =============================================================== \n");
+	
+	/* output verylargetextwithverylongname.txt, only pass when the file cannot be opened */
+	// TEST_OUTPUT("long name file test", very_large_file_with_long_name_test());
+	
+	/* successfully read the file and output the content */
+	// TEST_OUTPUT("read the long name file", very_large_file_with_long_name_ok());
+	// printf(" =============================================================== \n");
 }
