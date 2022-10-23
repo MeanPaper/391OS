@@ -60,6 +60,7 @@ void update_cursor(int mode){
         screen_y = (NUM_ROWS-1);
         set_cursor_position();
     }
+    
 }
 
 /* void set_cursor_position();
@@ -144,8 +145,7 @@ void clear(void) {
 void backspace(){
     if(screen_x == 0){
         if(screen_y == 0){
-
-            set_cursor_position();
+            ;
         }
         else{
             screen_x = 79;
@@ -156,7 +156,7 @@ void backspace(){
     else{
         // set_screen_pos(screen_x-1,screen_y);
         screen_x --;
-        screen_y--;
+        // screen_y--;
         set_cursor_position();
     }
     *(uint8_t *)(video_mem + ((screen_x + screen_y * 80) << 1)) = ' ';
@@ -182,8 +182,19 @@ void enter(){
         
     }
     set_cursor_position();
+}
 
-
+void tab(){
+    screen_x += 4 ;
+    if(screen_x >= NUM_COLS){
+        screen_x -= NUM_COLS;
+        screen_y += 1;
+    }
+    if(screen_y >= NUM_ROWS){
+        screen_y = NUM_ROWS -1;
+        scrow_up();
+    }
+    set_cursor_position();
 }
 /* Standard printf().
  * Only supports the following format strings:
@@ -332,16 +343,22 @@ void kbd_putc(uint8_t c) {
  * Return Value: void
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
-    if(c == '\n' || c == '\r') {
+    if(c == '\n' || c == '\r') { //screen_x == 79
         screen_y++;
         screen_x = 0;
     } else {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
-        screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
     }
+    screen_y = (screen_y + (screen_x / NUM_COLS)); //%NUM_ROWS;
+    screen_x %= NUM_COLS;
+    if(screen_y >= NUM_ROWS){
+        screen_y = NUM_ROWS - 1;
+        scrow_up();
+    }
+    
+    set_cursor_position();
 }
 
 

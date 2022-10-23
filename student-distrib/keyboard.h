@@ -5,7 +5,6 @@
 #ifndef _KEYBOARD_H
 #define _KEYBOARD_H
 
-#include "lib.h"
 #include "i8259.h"
 
 #define KEYBOARD_IRQ 1
@@ -22,15 +21,11 @@
 #define LEFT_CONTROL_PRESSED 0x1D
 #define LEFT_CONTROL_RELEASED 0x9D
 #define ENTER_RELEASE 0x9C
+#define TAB_PRESSED 0x0F
 
 //status flag.
-static uint8_t shift_pressed_cons = 0;
-static uint8_t caps_pressed_cons = 0;
-static uint8_t alt_pressed_cons = 0;
-static uint8_t control_pressed_cons = 0;
 volatile uint8_t key_buffer[128];
-static uint8_t buffer_index = 0;
-volatile uint8_t ENTER_PRESSED = 0;
+volatile uint8_t ENTER_PRESSED;
 
 /* keyboard_init(void)
  *   Inputs: none
@@ -49,5 +44,5 @@ void append_to_buffer(uint8_t keyword);
 void handle_backspace();
 
 void handle_enter();
-
+void handle_tab();
 #endif

@@ -32,6 +32,7 @@ void backspace();
 void enter();
 void update_cursor();
 void kbd_putc(uint8_t c);
+void tab();
 /* Userspace address-check functions */
 int32_t bad_userspace_addr(const void* addr, int32_t len);
 int32_t safe_strncpy(int8_t* dest, const int8_t* src, int32_t n);

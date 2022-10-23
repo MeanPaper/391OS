@@ -3,6 +3,8 @@
 #include "lib.h"
 #include "rtc.h"
 #include "paging.h"
+#include "terminal.h"
+#include "keyboard.h"
 
 #define PASS 1
 #define FAIL 0
@@ -147,6 +149,22 @@ int overflow_exception_test(){
 	return PASS;
 }
 /* Checkpoint 2 tests */
+int test_terminal_read_full(){
+	uint8_t data[128];
+	memset(data, 0, sizeof(data));
+	// int i;
+	// printf("\n");
+	
+	// for(i = 0; i < 80; ++i){
+    //     putc(key_buffer[i]);
+    // }
+	terminal_read(0, data, 128);
+	terminal_write(0, data, 128);
+	// printf((int8_t*)key_buffer);
+	// printf("\n");
+	return PASS;
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -176,4 +194,7 @@ void launch_tests(){
 
 	/* expect to have overflow exception */
 	//TEST_OUTPUT("overflow exception rise", overflow_exception_test()); 
+	
+	TEST_OUTPUT("test terminal read full", test_terminal_read_full());
+	
 }

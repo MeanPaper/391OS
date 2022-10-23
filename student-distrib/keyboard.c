@@ -5,6 +5,13 @@
 #include "keyboard.h"
 #include "lib.h"
 
+uint8_t shift_pressed_cons;
+uint8_t caps_pressed_cons;
+uint8_t alt_pressed_cons;
+uint8_t control_pressed_cons;
+uint8_t buffer_index;
+
+
 /* Mapping scancode to ascii */
 const char keyboard_ch[4][60] = {{'\0', '\0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\0', '\0',
 	 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\0', '\0', 'a', 's',
@@ -89,6 +96,7 @@ void keyboard_interrupt(){
 			break;
 		case ENTER_RELEASE:
 			ENTER_PRESSED = 0;
+			memset((void*)key_buffer, 0, sizeof(key_buffer));
 			break;
 		case LEFT_ALT_PRESSED:
 			alt_pressed_cons = 1;
@@ -102,6 +110,8 @@ void keyboard_interrupt(){
 		case LEFT_CONTROL_RELEASED:
 			control_pressed_cons = 0;
 			break;
+		case TAB_PRESSED:
+			handle_tab();
 		default:  //if not special character,it's either a char or num, display it. 
 			display_on_screen(scan_code);
 			break;
@@ -118,6 +128,8 @@ void display_on_screen(uint32_t scan_code){
 		if(scan_code == 0x26){
 			//if control l is pressed; 
 			clear();
+			memset((void*)key_buffer, 0, sizeof(key_buffer));
+			buffer_index = 0;
 			update_cursor(1);
 		}
 		return;		
@@ -131,7 +143,7 @@ void display_on_screen(uint32_t scan_code){
 	//output the keyword according to scan_code and shift/control flag status. 
 	uint8_t keyword = keyboard_ch[shift_pressed_cons+2*caps_pressed_cons][scan_code];
 	append_to_buffer(keyword);
-	//kbd_putc(keyword);
+	kbd_putc(keyword);
 	//update the cursor to the new position. 
 	update_cursor(0);
 	return;
@@ -150,6 +162,7 @@ void append_to_buffer(uint8_t keyword){
 		key_buffer[buffer_index] = keyword;
 		buffer_index ++;
 	}
+	key_buffer[127] = '\0';
 	// update_cursor();
 }
 
@@ -165,8 +178,6 @@ void append_to_buffer(uint8_t keyword){
 void handle_backspace(){
 	if(buffer_index > 0){
 		key_buffer[--buffer_index] = '\0';
-		
-		
 	}
 	backspace();
 	//delete the char in buffer and update in memory, set the cursor to the new location. 
@@ -183,11 +194,20 @@ void handle_backspace(){
 void handle_enter(){
 	key_buffer[buffer_index] = '\n';
 	enter();
+	// memset((void*)key_buffer, 0, sizeof(key_buffer));
 	//need to set the memory
 
 }
 
-
+void handle_tab(){
+	int i;
+	for(i = 0; i < 4; i++){
+		key_buffer[buffer_index+i] = ' ';
+		kbd_putc(' ');
+	}
+	buffer_index += 4;
+	tab();
+}
 // void clear(){
 // 	//set the memory. 
 // 	int i;
