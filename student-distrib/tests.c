@@ -150,7 +150,6 @@ int overflow_exception_test(){
 	return PASS;
 }
 /* Checkpoint 2 tests */
-<<<<<<< student-distrib/tests.c
 int test_terminal_read_full(){
 	uint8_t data[128];
 	memset(data, 0, sizeof(data));
@@ -166,9 +165,6 @@ int test_terminal_read_full(){
 	// printf("\n");
 	return PASS;
 }
-
-=======
-
 /* ls test
  * 
  * Test Overflow for exception handler. 
