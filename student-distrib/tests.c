@@ -67,20 +67,20 @@ int div_zero_test(){
 	return i ? PASS: FAIL;
 }
 
-/* RTC test
- * 
- * Test to set and enable RTC. 
- * Inputs: None
- * Outputs: 1
- * Side Effects: None
- * Coverage: RTC
- * Files: rtc.c
- */
-int rtc_test() {
-	TEST_HEADER;
-	rtc_change_rate(8);
-	return 1;
-}
+// /* RTC test
+//  * 
+//  * Test to set and enable RTC. 
+//  * Inputs: None
+//  * Outputs: 1
+//  * Side Effects: None
+//  * Coverage: RTC
+//  * Files: rtc.c
+//  */
+// int rtc_test() {
+// 	TEST_HEADER;
+// 	rtc_change_rate(8);
+// 	return 1;
+// }
 
 /* Derefrence NULL test
  * 
