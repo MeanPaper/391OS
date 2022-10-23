@@ -162,6 +162,7 @@ void entry(unsigned long magic, unsigned long addr) {
     rtc_init();
     keyboard_init();
 
+    
 
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your

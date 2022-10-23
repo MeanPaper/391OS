@@ -26,3 +26,12 @@
 ### Difficulty to fix:
     Need to initialize PIC before enable interrupt. PIC code is also buggy.
 ---
+## Bug #: 3
+### Date: 10/22/2022
+### Symptom: 
+    Keyboard can puts all characters and numbers, including ctrl and shift. But when trying to add the input to the buffer, it will output page fault exception. 
+### Difficulty to find: 
+    
+### Difficulty to fix:
+    
+---

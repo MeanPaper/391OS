@@ -3,8 +3,9 @@
 #include "lib.h"
 #include "rtc.h"
 #include "paging.h"
+#include "terminal.h"
+#include "keyboard.h"
 #include "file_system.h"
-
 
 #define PASS 1
 #define FAIL 0
@@ -149,6 +150,24 @@ int overflow_exception_test(){
 	return PASS;
 }
 /* Checkpoint 2 tests */
+<<<<<<< student-distrib/tests.c
+int test_terminal_read_full(){
+	uint8_t data[128];
+	memset(data, 0, sizeof(data));
+	// int i;
+	// printf("\n");
+	
+	// for(i = 0; i < 80; ++i){
+    //     putc(key_buffer[i]);
+    // }
+	terminal_read(0, data, 128);
+	terminal_write(0, data, 128);
+	// printf((int8_t*)key_buffer);
+	// printf("\n");
+	return PASS;
+}
+
+=======
 
 /* ls test
  * 
@@ -282,6 +301,7 @@ int rtc_test_2() {
 }
 
 
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -290,6 +310,9 @@ int rtc_test_2() {
 /* Test suite entry point */
 void launch_tests(){
 	clear();
+
+	//TEST_OUTPUT("idt_test", idt_test());
+
 	printf("\n\n");
 	// TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
@@ -306,8 +329,8 @@ void launch_tests(){
 	/* expect to have no page fault */
 	// TEST_OUTPUT("deference correct page pointer", paging_test_no_fault()); 
 	/* expect to have overflow exception */
-	// TEST_OUTPUT("overflow exception rise", overflow_exception_test()); 
-
+	//TEST_OUTPUT("overflow exception rise", overflow_exception_test()); 
+		
 	/* Checkpoint 2 test start here */
 
 	/* expect screen to print "1" with increasing speed */
@@ -341,4 +364,5 @@ void launch_tests(){
 	/* successfully read the file and output the content */
 	// TEST_OUTPUT("read the long name file", very_large_file_with_long_name_ok());
 	// printf(" =============================================================== \n");
+	TEST_OUTPUT("test terminal read full", test_terminal_read_full());
 }
