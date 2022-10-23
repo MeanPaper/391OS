@@ -29,16 +29,34 @@
  *   Function: Initialize RTC */
 extern void rtc_init(void);
 
+/* rtc_open(void)
+ *   Inputs: none
+ *   Return Value: 0
+ *   Function: Initialize RTC frequency to 2Hz */
+extern int rtc_open(void);
+
+/* rtc_read(void)
+ *   Inputs: none
+ *   Return Value: 0
+ *   Function: Block until the next interrupt */
+extern int rtc_read(void);
+
+/* rtc_write(int frequency)
+ *   Inputs: int frequency - how fast the RTC generates interrupts
+ *   Return Value: 0 if success; -1 if fail
+ *   Function: Set the frequency of the RTC interrupts generations */
+extern int rtc_write(int* frequency);
+
+/* rtc_close(void)
+ *   Inputs: none
+ *   Return Value: 0
+ *   Function: Nothing */
+extern int rtc_close(void);
+
 /* rtc_handler(void)
  *   Inputs: none
  *   Return Value: none
  *   Function: RTC interrupts handler */
 extern void rtc_handler(void);
-
-/* rtc_change_rate(int frequency)
- *   Inputs: none
- *   Return Value: int frequency - how fast the RTC generates interrupts
- *   Function: Set the frequency of the RTC interrupts generations */
-extern void rtc_change_rate(int frequency);
 
 #endif /* _RTC_H */
