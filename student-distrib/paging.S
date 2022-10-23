@@ -17,12 +17,12 @@ enablePaging:
 
     # start with cr4 
     mov %cr4, %eax
-    or $0x010, %eax          # bit 7 and bit 4 of CR4
+    or $0x010, %eax          # bit 4 of CR4
     mov %eax, %cr4
 
     # and then cr0
     mov %cr0, %eax
-    or $0x80000001, %eax    # bit 31 of CR0
+    or $0x80000001, %eax    # bit 31 and 0 of CR0
     mov %eax, %cr0
 
     leave
