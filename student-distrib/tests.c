@@ -150,7 +150,7 @@ int overflow_exception_test(){
 
 /* RTC test
  * 
- * Test to set and enable RTC. 
+ * Test RTC driver
  * Inputs: None
  * Outputs: 1
  * Side Effects: None
@@ -160,22 +160,26 @@ int overflow_exception_test(){
 int rtc_test() {
 	TEST_HEADER;
 	rtc_open();
-	int idx, loop, f;
+	int idx, loop, loop2, f;
 	loop = 0;
 	f = 2;
-	while(loop < 10) {
-		idx = 0;
-		while(idx < 4) {
-			rtc_read();
-			putc('1');
-			idx++;
+	while(loop2<5) {
+		while(loop < 10) {
+			idx = 0;
+			while(idx < 8) {
+				rtc_read();
+				putc('1');
+				idx++;
+			}
+			f = 2 * f;
+			rtc_write(&f);
+			loop ++;
 		}
-		f = 2 * f;
-		rtc_write(&f);
-		loop ++;
+		loop2++;
+		loop = 0;
+		putc('\n');
 	}
 	rtc_close();
-	putc('\n');
 	return 1;
 }
 

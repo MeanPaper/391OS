@@ -29,7 +29,7 @@ void rtc_handler(void) {
 
     // use to test rtc refleshing screen
     // test_interrupts();
-    flag = 0;
+    flag = 0;   // clear flag
     
     outb(REG_C, RTC_PORT);	// select register C
     inb(RTC_DATA);		// just throw away contents
@@ -45,7 +45,7 @@ int rtc_open(void) {
 
 /* Block until the next interrupt */
 int rtc_read(void) {
-    flag = 1;
+    flag = 1;   // set flag
     while(flag==1);
     return 1;
 }
