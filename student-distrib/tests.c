@@ -5,6 +5,8 @@
 #include "paging.h"
 #include "file_system.h"
 
+#include "terminal.h"
+#include "keyboard.h"
 
 #define PASS 1
 #define FAIL 0
@@ -236,6 +238,22 @@ int very_large_file_with_long_name_ok(){
 }
 
 
+int test_terminal_read_full(){
+	uint8_t data[128];
+	memset(data, 0, sizeof(data));
+	// int i;
+	// printf("\n");
+	
+	// for(i = 0; i < 80; ++i){
+    //     putc(key_buffer[i]);
+    // }
+	terminal_read(0, data, 128);
+	terminal_write(0, data, 128);
+	// printf((int8_t*)key_buffer);
+	// printf("\n");
+	return PASS;
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -246,6 +264,7 @@ void launch_tests(){
 	clear();
 	printf("\n\n");
 	// TEST_OUTPUT("idt_test", idt_test());
+	//TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
 
 	// checkpoint 1 test
@@ -263,7 +282,6 @@ void launch_tests(){
 	// TEST_OUTPUT("overflow exception rise", overflow_exception_test()); 
 
 	/* Checkpoint 2 test start here */
-
 	/* output all the file within the directory including "." */
 	// TEST_OUTPUT("ls_test", ls_test());
 	
@@ -275,15 +293,15 @@ void launch_tests(){
 	
 	// /* fish file test */
 	// this test is strange, 36000 is an approximation of fish file size
-	// TEST_OUTPUT("fish file test", read_non_txt("fish", 36000));
+	// TEST_OUTPUT("fish file test", read_non_txt("fish", 1000));
  	// printf(" =============================================================== \n");
 		
-	/* grep exe read test */
-	// TEST_OUTPUT("grep file test", read_non_txt("grep", 8000));
+	// /* grep exe read test */
+	// TEST_OUTPUT("grep file test", read_non_txt("grep", 2000));
  	// printf(" =============================================================== \n");
 	
 	/* ls exe read test */
-	// TEST_OUTPUT("ls file test", read_non_txt("ls", 8000));
+	// TEST_OUTPUT("ls file test", read_non_txt("ls", 2000));
  	// printf(" =============================================================== \n");
 	
 	/* output verylargetextwithverylongname.txt, only pass when the file cannot be opened */
@@ -292,4 +310,7 @@ void launch_tests(){
 	/* successfully read the file and output the content */
 	// TEST_OUTPUT("read the long name file", very_large_file_with_long_name_ok());
 	// printf(" =============================================================== \n");
+	
+	TEST_OUTPUT("test terminal read full", test_terminal_read_full());
+	
 }

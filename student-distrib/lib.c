@@ -12,18 +12,190 @@ static int screen_x;
 static int screen_y;
 static char* video_mem = (char *)VIDEO;
 
+// void set_screen_pos(uint32_t x_pos, uint32_t y_pos){
+//     screen_x = x_pos;
+//     if(y_pos >= NUM_ROWS){
+//         scrow_up();
+//         screen_y = NUM_ROWS - 1;
+//     }
+//     else{
+//         screen_y = y_pos;
+//     }
+//     set_cursor_position();
+// }
+
+/* void update_cursor();
+ * Description: update the cursor to the next position.  
+ * 
+ * Inputs: none
+ * Output: none
+ * Return Value: none
+ * Side Effects: change the screen_x, screen_y variable. 
+*/
+void update_cursor(int mode){
+    screen_x ++;
+    if(mode == 0){
+        // increment x;
+        if(screen_x == NUM_COLS && screen_y == (NUM_ROWS-1)){
+            scrow_up();
+            screen_x = 0;
+            screen_y= (NUM_ROWS-1);
+            set_cursor_position();
+        }
+        // else if(screen_x == 79){
+        //     set_screen_pos(0,screen_y+1);
+        // }
+        else{
+            set_cursor_position();
+            
+        }
+    }
+    else if(mode == 1){
+        screen_x = 0;
+        screen_y = 0;
+        set_cursor_position();
+    }
+    else if(mode == 2){
+        screen_x = 0;
+        screen_y = (NUM_ROWS-1);
+        set_cursor_position();
+    }
+    
+}
+
+/* void set_cursor_position();
+ * Description: son function of update_cursor.  
+ * 
+ * Inputs: none
+ * Output: none
+ * Return Value: none
+ * Side Effects: none. 
+*/
+void set_cursor_position(){
+    int position = screen_y * NUM_COLS + screen_x;
+    // if(screen_x == 80 && screen_y == 24 ){ //screen_y == 25
+    //     screen_x = 0;
+    //     screen_y = 24;
+    // }
+    if(screen_y > (NUM_ROWS-1)) {
+        screen_y = (NUM_ROWS-1);
+        screen_x = 0;
+    }
+    else if(screen_x == NUM_COLS ){ //screen_y == 25
+        screen_x = 0;
+        screen_y += 1;
+    }
+    else if(screen_x < 0)screen_x = 0;
+    else if(screen_y < 0) screen_y = 0;
+    // outw( (position & 0xFF00) | 0x0C,0x03D4);
+    // outw( ((position & 0x00FF) << 8) | 0x0D,0x03D4);
+
+    //change the cursor position in memory. 
+    outb(0x0F,0x3D4);
+    outb((uint8_t)(position & 0xFF),0x3D5);
+    outb(0x0E,0x3D4);
+    outb((uint8_t)((position >> 8) & 0xFF),0x3D5);
+}
+
+/* void scrow_up();
+ * Description: move the memory, line1 ->line 0, line2->line1.....line25 ->line 24, new line25 will be blank.  
+ * 
+ * Inputs: none
+ * Output: none
+ * Return Value: none
+ * Side Effects: none. 
+*/
+void scrow_up(){
+    int x;
+    int y;
+    for(y = 0 ; y < NUM_ROWS-1; y++){
+        for(x = 0 ; x < NUM_COLS; x++){
+            *(uint8_t *)(video_mem + (((NUM_COLS * y + x)) << 1)) = *(uint8_t *)(video_mem + ((NUM_COLS * (y+1) + x) << 1));
+        }
+    }
+    for(x = 0; x < NUM_COLS; x++){
+        *(uint8_t *)(video_mem + ((x + (NUM_ROWS-1) * NUM_COLS) << 1)) = ' ';
+    }
+}   
+    
+
+
 /* void clear(void);
  * Inputs: void
  * Return Value: none
  * Function: Clears video memory */
+
 void clear(void) {
     int32_t i;
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
+    
 }
 
+/* void backspace();
+ * Description: son function of handle_backspace.  
+ * 
+ * Inputs: none
+ * Output: none
+ * Return Value: none
+ * Side Effects: update the position of cursor. 
+*/
+void backspace(){
+    if(screen_x == 0){
+        if(screen_y == 0){
+            ;
+        }
+        else{
+            screen_x = 79;
+            screen_y -= 1;
+            set_cursor_position();
+        }
+    }
+    else{
+        // set_screen_pos(screen_x-1,screen_y);
+        screen_x --;
+        // screen_y--;
+        set_cursor_position();
+    }
+    *(uint8_t *)(video_mem + ((screen_x + screen_y * 80) << 1)) = ' ';
+   
+}
+
+
+/* void enter();
+ * Description: son function of handle_enter.  
+ * 
+ * Inputs: none
+ * Output: none
+ * Return Value: none
+ * Side Effects: update the position of cursor. 
+*/
+void enter(){
+    screen_x = 0;
+    screen_y += 1;
+    // set_screen_pos(0,screen_y+1);
+    if(screen_y >= 25){
+        scrow_up();
+        screen_y = 24;
+        
+    }
+    set_cursor_position();
+}
+
+void tab(){
+    screen_x += 4 ;
+    if(screen_x >= NUM_COLS){
+        screen_x -= NUM_COLS;
+        screen_y += 1;
+    }
+    if(screen_y >= NUM_ROWS){
+        screen_y = NUM_ROWS -1;
+        scrow_up();
+    }
+    set_cursor_position();
+}
 /* Standard printf().
  * Only supports the following format strings:
  * %%  - print a literal '%' character
@@ -162,23 +334,33 @@ int32_t puts(int8_t* s) {
     }
     return index;
 }
-
+void kbd_putc(uint8_t c) {
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
+}
 /* void putc(uint8_t c);
  * Inputs: uint_8* c = character to print
  * Return Value: void
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
-    if(c == '\n' || c == '\r') {
+    if(c == '\n' || c == '\r') { //screen_x == 79
         screen_y++;
         screen_x = 0;
     } else {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
-        screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
     }
+    screen_y = (screen_y + (screen_x / NUM_COLS)); //%NUM_ROWS;
+    screen_x %= NUM_COLS;
+    if(screen_y >= NUM_ROWS){
+        screen_y = NUM_ROWS - 1;
+        scrow_up();
+    }
+    
+    set_cursor_position();
 }
+
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
  * Inputs: uint32_t value = number to convert
