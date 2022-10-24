@@ -44,7 +44,7 @@ const char keyboard_ch[4][60] = {{'\0', '\0', '1', '2', '3', '4', '5', '6', '7',
  * Inputs: none
  * Output: none
  * Return Value: none
- * Side Effects: update cursor position to the last line. 
+ * Side Effects: update cursor position to the last line and draw it. 
 */
 void keyboard_init(){
 	enable_irq(KEYBOARD_IRQ);

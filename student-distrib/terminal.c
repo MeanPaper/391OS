@@ -20,7 +20,7 @@ void terminal_init(){
  * Description: terminal_open, but do nothing.   
  * 
  * Inputs: none
- * Output: none
+ * Output: 0
  * Return Value: none
  * Side Effects: none
 */
@@ -33,7 +33,7 @@ int32_t terminal_open(){
  * Description: terminal_close, but do nothing.   
  * 
  * Inputs: none
- * Output: none
+ * Output: 0
  * Return Value: none
  * Side Effects: none
 */
@@ -46,10 +46,10 @@ int32_t terminal_close(){
 /* void terminal_read();
  * Description: read the keyboard buffer into the terminal buffer, than read into user buffer.  
  * 
- * Inputs: none
+ * Inputs: int fd,void * buf, uint32_t n_bytes
  * Output: none
- * Return Value: none
- * Side Effects: none
+ * Return Value: 0
+ * Side Effects: write the terminal and user buffer
 */
 int32_t terminal_read(int fd,void * buf, uint32_t n_bytes){
     if(!buf) return -1;
@@ -72,9 +72,9 @@ int32_t terminal_read(int fd,void * buf, uint32_t n_bytes){
 /* void terminal_write();
  * Description: write from the user buffer to the screen using putc. .  
  * 
- * Inputs: none
- * Output: none
- * Return Value: none
+ * Inputs: int fd,void * buf, uint32_t n_bytes
+ * Output: put user buffer information onto the screen
+ * Return Value: 0
  * Side Effects: none
 */
 int32_t terminal_write(int fd,void * buf, uint32_t n_bytes){

@@ -27,7 +27,7 @@ static char* video_mem = (char *)VIDEO;
 /* void update_cursor();
  * Description: update the cursor to the next position.  
  * 
- * Inputs: none
+ * Inputs: mode 
  * Output: none
  * Return Value: none
  * Side Effects: change the screen_x, screen_y variable. 
