@@ -58,7 +58,7 @@ int32_t terminal_read(int fd,void * buf, uint32_t n_bytes){
     cli();
     strncpy((int8_t*)(terminal.terminal_buf), (int8_t*)key_buffer, 127);
 
-    if(n_bytes >= 128){ //buffer size is 128, if n_bytes>-128, only write 128 bytes. 
+    if(n_bytes >= 128){ //buffer size is 128, if n_bytes >= 128, only write 128 bytes. 
         n_bytes = 128;
     }
     terminal.terminal_buf[n_bytes-1] = '\0';

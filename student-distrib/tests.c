@@ -152,7 +152,7 @@ int overflow_exception_test(){
 /* Checkpoint 2 tests */
 int test_terminal_read_full(){
 	TEST_HEADER;
-	uint8_t data[128];
+	uint8_t data[128]; // 128 because the buffer is only 128 byte long 
 	memset(data, 0, sizeof(data));
 	// int i;
 	// printf("\n");
@@ -160,8 +160,9 @@ int test_terminal_read_full(){
 	// for(i = 0; i < 80; ++i){
     //     putc(key_buffer[i]);
     // }
-	terminal_read(0, data, 128);
-	terminal_write(0, data, 128);
+	// 128 is the buffer size 
+	terminal_read(0, data, 128);	// read the whole buffer
+	terminal_write(0, data, 128);   // write the whole buffer
 	// printf((int8_t*)key_buffer);
 	// printf("\n");
 	return PASS;
@@ -202,7 +203,7 @@ int ls_test(){
 int fish_frame_zero(){
 	TEST_HEADER;
 	char * file = "frame0.txt";
-	char buf[10000];
+	char buf[10000]; // create a large buffer, default to 10000 so that the data can fit
 	memset(buf,0,sizeof(buf));
 	file_open((uint8_t*)file);
 	file_read(0, buf, 0);
@@ -222,7 +223,7 @@ int fish_frame_zero(){
 int fish_frame_one(){
 	TEST_HEADER;
 	char * file = "frame1.txt";
-	char buf[10000];
+	char buf[10000]; // create a large buffer, default to 10000 so that the data can fit
 	memset(buf,0,sizeof(buf));
 	file_open((uint8_t*)file);
 	file_read(0, buf, 0);
@@ -251,7 +252,7 @@ int read_non_txt(char* file_name, int range){
 		return FAIL;
 	}
 	printf("\nfile name: %s \n", file_name);
-	unsigned char buf[40000];
+	unsigned char buf[40000]; // create a large buffer, default to 40000 so that the data can fit
 	memset(buf,0,sizeof(buf));
 	file_open((uint8_t*)file_name);
 	file_read(0, buf, 0);
@@ -278,7 +279,7 @@ int read_non_txt(char* file_name, int range){
 int very_large_file_with_long_name_test(){
 	TEST_HEADER;
 	char * file = "verylargetextwithverylongname.txt";
-	char buf[40000];
+	char buf[40000]; // create a large buffer, default to 40000 so that the data can fit
 	memset(buf,0,sizeof(buf));
 	if(-1 == file_open((uint8_t*)file)){
 		printf("File does not exists\n");
@@ -299,19 +300,19 @@ int very_large_file_with_long_name_test(){
  * Coverage: reading file with a name long but with in the file name range
  * Files: file_system.c
  */
-// int very_large_file_with_long_name_ok(){
-// 	TEST_HEADER;
-// 	char * file = "verylargetextwithverylongname.tx";
-// 	char buf[40000];
-// 	memset(buf,0,sizeof(buf));
-// 	if(-1 == file_open((uint8_t*)file)){
-// 		printf("File does not exists\n");
-// 		return FAIL;
-// 	}
-// 	file_read(0, buf, 0);
-// 	printf("%s", buf);
-// 	return PASS;
-// }
+int very_large_file_with_long_name_ok(){
+	TEST_HEADER;
+	char * file = "verylargetextwithverylongname.tx";
+	char buf[40000]; // create a large buffer, default to 40000 so that the data can fit
+	memset(buf,0,sizeof(buf));
+	if(-1 == file_open((uint8_t*)file)){
+		printf("File does not exists\n");
+		return FAIL;
+	}
+	file_read(0, buf, 0);
+	printf("%s", buf);
+	return PASS;
+}
 
 /* RTC test
  * 
@@ -328,16 +329,16 @@ int rtc_test_2() {
 	int idx, loop, loop2, f;
 	loop = 0;
 	loop2 = 0;
-	f = 2;
-	while(loop2<5) {
-		while(loop < 10) {
+	f = 2;	// base frequency is 2 
+	while(loop2<5) { // loop 5 times
+		while(loop < 10) { // loop 10 times
 			idx = 0;
-			while(idx < 8) {
+			while(idx < 8) {	// loop for outputing 8 char at a time 
 				rtc_read();
 				putc('1');
 				idx++;
 			}
-			f = 2 * f;
+			f = 2 * f;	// increase frequency
 			rtc_write(&f);
 			loop ++;
 		}
@@ -395,16 +396,18 @@ void launch_tests(){
 	// TEST_OUTPUT("fish frame one", fish_frame_one());
 	
 	// /* fish file test */
-	// this test is strange, 36000 is an approximation of fish file size
-	// TEST_OUTPUT("fish file test", read_non_txt("fish", 36000));
+	// default read range to 2000 bytes
+	// TEST_OUTPUT("fish file test", read_non_txt("fish", 2000));
  	// printf(" =============================================================== \n");
 		
 	/* grep exe read test */
-	// TEST_OUTPUT("grep file test", read_non_txt("grep", 8000));
+	// default reading range to 2000 Bytes
+	// TEST_OUTPUT("grep file test", read_non_txt("grep", 2000));
  	// printf(" =============================================================== \n");
 	
 	/* ls exe read test */
-	// TEST_OUTPUT("ls file test", read_non_txt("ls", 8000));
+	// default reading range to 2000 Bytes
+	// TEST_OUTPUT("ls file test", read_non_txt("ls", 2000));
  	// printf(" =============================================================== \n");
 	
 	/* output verylargetextwithverylongname.txt, only pass when the file cannot be opened */

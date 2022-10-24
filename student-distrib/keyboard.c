@@ -13,6 +13,7 @@ uint8_t buffer_index;
 
 
 /* Mapping scancode to ascii */
+// 4 conditions, 60 different inputs. includes char, number and special keys. 
 const char keyboard_ch[4][60] = {{'\0', '\0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\0', '\0',
 	 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\0', '\0', 'a', 's',
 	 'd', 'f', 'g', 'h', 'j', 'k', 'l' , ';', '\'', '`', '\0', '\\', 'z', 'x', 'c', 'v', 
@@ -122,10 +123,10 @@ void keyboard_interrupt(){
 
 void display_on_screen(uint32_t scan_code){
 	//check if the scan code is in range, aka a char or num. 
-	if(scan_code >= 60 || scan_code < 0)return;
+	if(scan_code >= 60 || scan_code < 0)return; //check if in char array range
 	if(control_pressed_cons == 1){
 		//if control+l, clear the screen and update cursor to top left. 
-		if(scan_code == 0x26){
+		if(scan_code == 0x26){ 
 			//if control l is pressed; 
 			clear();
 			memset((void*)key_buffer, 0, sizeof(key_buffer));
@@ -142,7 +143,7 @@ void display_on_screen(uint32_t scan_code){
 	
 	//output the keyword according to scan_code and shift/control flag status. 
 	uint8_t keyword = keyboard_ch[shift_pressed_cons+2*caps_pressed_cons][scan_code];
-	if(buffer_index >= 127)return;
+	if(buffer_index >= 127)return; //buffer max is 127, letter after 127th input will not be recorded. 
 	append_to_buffer(keyword);
 	kbd_putc(keyword);
 	//update the cursor to the new position. 
@@ -163,7 +164,7 @@ void append_to_buffer(uint8_t keyword){
 		key_buffer[buffer_index] = keyword;
 		buffer_index ++;
 	}
-	key_buffer[127] = '\0';
+	key_buffer[127] = '\0'; //last char is null. 
 	// update_cursor();
 }
 
@@ -214,7 +215,7 @@ void handle_tab(){
 		key_buffer[buffer_index+i] = ' ';
 		kbd_putc(' ');
 	}
-	buffer_index += 4;
+	buffer_index += 4; //4space = 1tab
 	tab();
 }
 // void clear(){
