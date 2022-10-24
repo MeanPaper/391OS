@@ -142,6 +142,7 @@ void display_on_screen(uint32_t scan_code){
 	
 	//output the keyword according to scan_code and shift/control flag status. 
 	uint8_t keyword = keyboard_ch[shift_pressed_cons+2*caps_pressed_cons][scan_code];
+	if(buffer_index >= 127)return;
 	append_to_buffer(keyword);
 	kbd_putc(keyword);
 	//update the cursor to the new position. 

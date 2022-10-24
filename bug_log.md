@@ -31,7 +31,16 @@
 ### Symptom: 
     Keyboard can puts all characters and numbers, including ctrl and shift. But when trying to add the input to the buffer, it will output page fault exception. 
 ### Difficulty to find: 
-    
+    medium
 ### Difficulty to fix:
-    
+    easy. use puts instead of puc
+---
+## Bug #: 4
+### Date: 10/22/2022
+### Symptom: 
+    Cursor position is not at thte correct location afte enter/backspace. 
+### Difficulty to find: 
+    medium
+### Difficulty to fix:
+    medium, write out own function of kbd_putc to handle kbd input. But the putc is fixed after that. 
 ---
