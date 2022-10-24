@@ -199,6 +199,14 @@ void handle_enter(){
 
 }
 
+/* void handle_tab();
+ * Description: handle tab if user hit tab.  
+ * 
+ * Inputs: none
+ * Output: none
+ * Return Value: none
+ * Side Effects: none
+*/
 void handle_tab(){
 	int i;
 	for(i = 0; i < 4; i++){
