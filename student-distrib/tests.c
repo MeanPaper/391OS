@@ -165,14 +165,15 @@ int test_terminal_read_full(){
 	// printf("\n");
 	return PASS;
 }
+
 /* ls test
  * 
- * Test Overflow for exception handler. 
+ * Test read_dentry_by_index
  * Inputs: None
  * Outputs: PASS
  * Side Effects: None
- * Coverage: IDT Exception handler
- * Files: idt.c
+ * Coverage: directory_read
+ * Files: file_system.c
  */
 int ls_test(){
 	clear();
@@ -188,7 +189,15 @@ int ls_test(){
 	return PASS;
 }
 
-
+/* fish_frame_zero
+ * 
+ * Test read_dentry_by_name, read_data 
+ * Inputs: None
+ * Outputs: PASS
+ * Side Effects: None
+ * Coverage: reading files and data in the files with small files 
+ * Files: file_system.c
+ */
 int fish_frame_zero(){
 	TEST_HEADER;
 	char * file = "frame0.txt";
@@ -200,6 +209,15 @@ int fish_frame_zero(){
 	return PASS;
 }
 
+/* fish_frame_one
+ * 
+ * Test read_dentry_by_name, read_data 
+ * Inputs: None
+ * Outputs: PASS
+ * Side Effects: None
+ * Coverage: reading files and data in the files with small files 
+ * Files: file_system.c
+ */
 int fish_frame_one(){
 	TEST_HEADER;
 	char * file = "frame1.txt";
@@ -211,8 +229,22 @@ int fish_frame_one(){
 	return PASS;
 }
 
+/* read_non_txt
+ * 
+ * Test read_dentry_by_name, read_data  
+ * Inputs: char* file_name :	the name of the file
+ *         int range:	number of bytes going to output
+ * Outputs: PASS: for successful read
+ * 	        FAIL: for invalid read range, invalid file
+ * Side Effects: None
+ * Coverage: file reading with various file names and file types
+ * Files: file_system.c
+ */
 int read_non_txt(char* file_name, int range){
 	TEST_HEADER;
+	if(file_name == NULL){
+		return FAIL;
+	}
 	if(range < 0){
 		printf("Invalid range \n");
 		return FAIL;
@@ -232,6 +264,16 @@ int read_non_txt(char* file_name, int range){
 	return PASS;
 }
 
+/* very_large_file_with_long_name_test
+ * 
+ * Test read_dentry_by_name, read_data  
+ * Inputs: None
+ * Outputs: PASS: file does not exist
+ * 	        FAIL: file can be found and opened
+ * Side Effects: None
+ * Coverage: reading file with a name long then 32
+ * Files: file_system.c
+ */
 int very_large_file_with_long_name_test(){
 	TEST_HEADER;
 	char * file = "verylargetextwithverylongname.txt";
@@ -246,19 +288,29 @@ int very_large_file_with_long_name_test(){
 	return FAIL;
 }
 
-int very_large_file_with_long_name_ok(){
-	TEST_HEADER;
-	char * file = "verylargetextwithverylongname.tx";
-	char buf[40000];
-	memset(buf,0,sizeof(buf));
-	if(-1 == file_open((uint8_t*)file)){
-		printf("File does not exists\n");
-		return FAIL;
-	}
-	file_read(0, buf, 0);
-	printf("%s", buf);
-	return PASS;
-}
+/* very_large_file_with_long_name_ok
+ * 
+ * Test read_dentry_by_name, read_data  
+ * Inputs: None
+ * Outputs: FAIL: file does not exist
+ * 	        PASS: file can be found and opened
+ * Side Effects: None
+ * Coverage: reading file with a name long but with in the file name range
+ * Files: file_system.c
+ */
+// int very_large_file_with_long_name_ok(){
+// 	TEST_HEADER;
+// 	char * file = "verylargetextwithverylongname.tx";
+// 	char buf[40000];
+// 	memset(buf,0,sizeof(buf));
+// 	if(-1 == file_open((uint8_t*)file)){
+// 		printf("File does not exists\n");
+// 		return FAIL;
+// 	}
+// 	file_read(0, buf, 0);
+// 	printf("%s", buf);
+// 	return PASS;
+// }
 
 /* RTC test
  * 
