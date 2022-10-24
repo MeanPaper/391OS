@@ -151,6 +151,7 @@ int overflow_exception_test(){
 }
 /* Checkpoint 2 tests */
 int test_terminal_read_full(){
+	TEST_HEADER;
 	uint8_t data[128];
 	memset(data, 0, sizeof(data));
 	// int i;

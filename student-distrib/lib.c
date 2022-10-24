@@ -55,7 +55,7 @@ void update_cursor(int mode){
         screen_y = 0;
         set_cursor_position();
     }
-    else if(mode == 2){  /set the cursor to last line. 
+    else if(mode == 2){  // set the cursor to last line. 
         screen_x = 0;
         screen_y = (NUM_ROWS-1);
         set_cursor_position();
