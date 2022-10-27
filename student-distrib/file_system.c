@@ -1,21 +1,29 @@
 #include "file_system.h"
 #include "lib.h"
 
+// this temporary dentry, only for checkpoint 2
 dentry_t current_file;
+
+// this temporary for now, checkpoint 2
 int32_t file_counter = 0;   // keep track of the current file index
 
 
-boot_block_t * boot_block;
+boot_block_t * boot_block; // pointer to the boot block of the file system
+
+
+// initialize all the variable used by the file system
 void init_file_system(uint32_t* file_system_ptr){
     boot_block = (boot_block_t*) file_system_ptr;
-
-    
 }
 
+
+
+// read a dentry from the file system based on the file name
 int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry){
     int i;
     dentry_t *temp;
     
+    // sanity check for file name, dentry
     if(!fname || !dentry || !strlen((int8_t*)fname)){
         return -1;
     }
@@ -43,8 +51,12 @@ int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry){
     return -1;
 }
 
-// read by ls command
+
+
+
+// read a dentry by the index
 int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry){
+    if(!dentry) return -1;
 
     dentry_t *temp;
 
@@ -66,7 +78,11 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry){
     return 0;
 }
 
+
+
+
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length){
+    if(!buf) return -1;
     
     inode_t* target_inode;
     uint32_t file_size;
@@ -84,7 +100,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
     }
 
     target_inode = (inode_t*)((1 + inode) + boot_block);  // found out the data block location
-    file_size = target_inode->length;
+    file_size = target_inode->length;                     // getting the file size
 
     // check offset validation and 
     if(offset >= file_size){
@@ -129,39 +145,63 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
     return length; // return the number of bytes copied
 }
 
+
+
+// open a directory and read the directory
 int32_t directory_open(const uint8_t* file_name){
+    if(*file_name) return -1;
+
     return read_dentry_by_index(0, &current_file);
 }
 
+// directory_close, do nothing
 int32_t directory_close(int fd){
     return 0;
 }
 
+// directory_read, read a file name from the current directory
 int32_t directory_read(int fd, void *buf, uint32_t nbytes){
+    if(!buf) return -1;
+
     if(file_counter >= boot_block->total_dentry_num){
         return -1;
     }
     read_dentry_by_index(file_counter, &current_file);  // get the file by index  
     memcpy(buf, current_file.file_name, nbytes);        // get the name
-    file_counter += 1;
+    file_counter += 1;                                  // 
     return 0;
 }
 
+// directory_write, do nothing
 int32_t directory_write(int fd, void *buf, uint32_t nbytes){
+    if(!buf) return -1;
     return -1;
 }
-int32_t file_open(const uint8_t* file_name){
+
+// open a file, and read the file entry by the file name, need to modify later on
+int32_t file_open(const uint8_t* file_name){    
+    if(!file_name) return -1;
+    
     return read_dentry_by_name(file_name, &current_file);
 }
 
+// close a file
 int32_t file_close(int fd){
     return 0;
 }
 
+// write to a file
 int32_t file_write(int fd, void *buf, uint32_t nbytes){
+    if(!buf) return -1;
+
     return -1;
 }
+
+// read the data from the file
+// this is a simple implementation, need to modify later on
 int32_t file_read(int fd, void *buf, uint32_t nbytes){
+    if(!buf) return -1;
+
     inode_t * data_block_start_index = (inode_t*)(boot_block + 1 + current_file.inode_num);
     return read_data(current_file.inode_num, 0, buf, data_block_start_index->length);
 }

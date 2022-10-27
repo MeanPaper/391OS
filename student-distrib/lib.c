@@ -27,7 +27,7 @@ static char* video_mem = (char *)VIDEO;
 /* void update_cursor();
  * Description: update the cursor to the next position.  
  * 
- * Inputs: none
+ * Inputs: mode 
  * Output: none
  * Return Value: none
  * Side Effects: change the screen_x, screen_y variable. 
@@ -50,12 +50,12 @@ void update_cursor(int mode){
             
         }
     }
-    else if(mode == 1){
+    else if(mode == 1){  //set the cursor to top-left
         screen_x = 0;
         screen_y = 0;
         set_cursor_position();
     }
-    else if(mode == 2){
+    else if(mode == 2){  // set the cursor to last line. 
         screen_x = 0;
         screen_y = (NUM_ROWS-1);
         set_cursor_position();
@@ -148,8 +148,8 @@ void backspace(){
             ;
         }
         else{
-            screen_x = 79;
-            screen_y -= 1;
+            screen_x = NUM_COLS-1; // if at first position of any line;
+            screen_y -= 1; //backspace will bring cursor to previous line, position 79. 
             set_cursor_position();
         }
     }
@@ -159,7 +159,7 @@ void backspace(){
         // screen_y--;
         set_cursor_position();
     }
-    *(uint8_t *)(video_mem + ((screen_x + screen_y * 80) << 1)) = ' ';
+    *(uint8_t *)(video_mem + ((screen_x + screen_y * NUM_COLS) << 1)) = ' ';
    
 }
 
@@ -176,21 +176,29 @@ void enter(){
     screen_x = 0;
     screen_y += 1;
     // set_screen_pos(0,screen_y+1);
-    if(screen_y >= 25){
+    if(screen_y >= NUM_ROWS){
         scrow_up();
-        screen_y = 24;
+        screen_y = NUM_ROWS - 1;
         
     }
     set_cursor_position();
 }
 
+/* void tab();
+ * Description: handle tab.  
+ * 
+ * Inputs: none
+ * Output: none
+ * Return Value: none
+ * Side Effects: update screen_x, sceen_y position. 
+*/
 void tab(){
-    screen_x += 4 ;
-    if(screen_x >= NUM_COLS){
+    screen_x += 4 ; //4 space = 1 tab
+    if(screen_x >= NUM_COLS){ //see if we need to move to the next line
         screen_x -= NUM_COLS;
         screen_y += 1;
     }
-    if(screen_y >= NUM_ROWS){
+    if(screen_y >= NUM_ROWS){ //or scrow up
         screen_y = NUM_ROWS -1;
         scrow_up();
     }

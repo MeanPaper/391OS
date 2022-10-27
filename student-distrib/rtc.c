@@ -8,6 +8,10 @@
 
 /* Local function */
 static int log2_helper(int input);
+static void rtc_change_rate(int frequency);
+
+/* Local variable */
+int flag;
 
 /* Initialize RTC */
 void rtc_init(void) {
@@ -18,20 +22,6 @@ void rtc_init(void) {
     outb(prev | 0x40, RTC_DATA);	    // write the previous value ORed with 0x40. This turns on bit 6 of register B
 }
 
-/* Change frequency */
-// frequency =  32768 >> (rate-1);
-void rtc_change_rate(int frequency) {
-    int rate = 16 - log2_helper(frequency); // the higher the rate, the smaller the frequency
-    if (rate > 2 && rate < 16) {
-        cli();
-        outb(REG_A | DIS_NMI, RTC_PORT);
-        char prev = inb(RTC_DATA);
-        outb(REG_A | DIS_NMI, RTC_PORT);
-        outb((prev & 0xF0) | rate, RTC_DATA); // rate is the buttom 4 bits
-        sti();
-    }
-}
-
 /* Handle RTC interrupt */
 void rtc_handler(void) {
     cli();
@@ -39,9 +29,51 @@ void rtc_handler(void) {
 
     // use to test rtc refleshing screen
     // test_interrupts();
+    flag = 0;   // clear flag
     
     outb(REG_C, RTC_PORT);	// select register C
     inb(RTC_DATA);		// just throw away contents
+    sti();
+}
+
+/* Initialize RTC frequency to 2Hz */
+int rtc_open(void) {
+    // rate = 16-log2(f) = 16-1 = 15
+    rtc_change_rate(15);
+    return 1;
+}
+
+/* Block until the next interrupt */
+int rtc_read(void) {
+    flag = 1;   // set flag
+    while(flag==1);
+    return 1;
+}
+
+/* Set the frequency */
+int rtc_write(int* frequency) {
+    int rtc_f;
+    memcpy(&rtc_f, frequency, sizeof(int));
+    int rate = 16 - log2_helper(rtc_f);     // convert frequency to rate
+    if (rate <=2 || rate >=16) return -1;   // input is not power of 2 or rate is not in the valid range
+    rtc_change_rate(rate);
+    return 0;
+}
+
+int rtc_close(void) {
+    return 0;
+}
+
+/* rtc_change_rate(int rate)
+ *   Inputs: none
+ *   Return Value: int rate - how fast the RTC generates interrupts, frequency =  32768 >> (rate-1)
+ *   Function: Set the frequency of the RTC interrupts generations */
+void rtc_change_rate(int rate) {
+    cli();
+    outb(REG_A | DIS_NMI, RTC_PORT);
+    char prev = inb(RTC_DATA);
+    outb(REG_A | DIS_NMI, RTC_PORT);
+    outb((prev & 0xF0) | rate, RTC_DATA); // rate is the buttom 4 bits
     sti();
 }
 
@@ -52,10 +84,10 @@ void rtc_handler(void) {
 int log2_helper(int input) {
     int count = 0;
     int curr_num = 1;
-    while (curr_num <= input) {
+    while (curr_num != input) {
         curr_num = curr_num * 2;
         count++;
+        if (curr_num>input) return -1;
     }
-    count--;
     return count;
 }

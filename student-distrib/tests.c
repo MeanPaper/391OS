@@ -3,10 +3,9 @@
 #include "lib.h"
 #include "rtc.h"
 #include "paging.h"
-#include "file_system.h"
-
 #include "terminal.h"
 #include "keyboard.h"
+#include "file_system.h"
 
 #define PASS 1
 #define FAIL 0
@@ -69,20 +68,20 @@ int div_zero_test(){
 	return i ? PASS: FAIL;
 }
 
-/* RTC test
- * 
- * Test to set and enable RTC. 
- * Inputs: None
- * Outputs: 1
- * Side Effects: None
- * Coverage: RTC
- * Files: rtc.c
- */
-int rtc_test() {
-	TEST_HEADER;
-	rtc_change_rate(8);
-	return 1;
-}
+// /* RTC test
+//  * 
+//  * Test to set and enable RTC. 
+//  * Inputs: None
+//  * Outputs: 1
+//  * Side Effects: None
+//  * Coverage: RTC
+//  * Files: rtc.c
+//  */
+// int rtc_test() {
+// 	TEST_HEADER;
+// 	rtc_change_rate(8);
+// 	return 1;
+// }
 
 /* Derefrence NULL test
  * 
@@ -151,6 +150,33 @@ int overflow_exception_test(){
 	return PASS;
 }
 /* Checkpoint 2 tests */
+int test_terminal_read_full(){
+	TEST_HEADER;
+	uint8_t data[128]; // 128 because the buffer is only 128 byte long 
+	memset(data, 0, sizeof(data));
+	// int i;
+	// printf("\n");
+	
+	// for(i = 0; i < 80; ++i){
+    //     putc(key_buffer[i]);
+    // }
+	// 128 is the buffer size 
+	terminal_read(0, data, 128);	// read the whole buffer
+	terminal_write(0, data, 128);   // write the whole buffer
+	// printf((int8_t*)key_buffer);
+	// printf("\n");
+	return PASS;
+}
+
+/* ls test
+ * 
+ * Test read_dentry_by_index
+ * Inputs: None
+ * Outputs: PASS
+ * Side Effects: None
+ * Coverage: directory_read
+ * Files: file_system.c
+ */
 int ls_test(){
 	clear();
 	TEST_HEADER;
@@ -165,11 +191,19 @@ int ls_test(){
 	return PASS;
 }
 
-
+/* fish_frame_zero
+ * 
+ * Test read_dentry_by_name, read_data 
+ * Inputs: None
+ * Outputs: PASS
+ * Side Effects: None
+ * Coverage: reading files and data in the files with small files 
+ * Files: file_system.c
+ */
 int fish_frame_zero(){
 	TEST_HEADER;
 	char * file = "frame0.txt";
-	char buf[10000];
+	char buf[10000]; // create a large buffer, default to 10000 so that the data can fit
 	memset(buf,0,sizeof(buf));
 	file_open((uint8_t*)file);
 	file_read(0, buf, 0);
@@ -177,10 +211,19 @@ int fish_frame_zero(){
 	return PASS;
 }
 
+/* fish_frame_one
+ * 
+ * Test read_dentry_by_name, read_data 
+ * Inputs: None
+ * Outputs: PASS
+ * Side Effects: None
+ * Coverage: reading files and data in the files with small files 
+ * Files: file_system.c
+ */
 int fish_frame_one(){
 	TEST_HEADER;
 	char * file = "frame1.txt";
-	char buf[10000];
+	char buf[10000]; // create a large buffer, default to 10000 so that the data can fit
 	memset(buf,0,sizeof(buf));
 	file_open((uint8_t*)file);
 	file_read(0, buf, 0);
@@ -188,14 +231,28 @@ int fish_frame_one(){
 	return PASS;
 }
 
+/* read_non_txt
+ * 
+ * Test read_dentry_by_name, read_data  
+ * Inputs: char* file_name :	the name of the file
+ *         int range:	number of bytes going to output
+ * Outputs: PASS: for successful read
+ * 	        FAIL: for invalid read range, invalid file
+ * Side Effects: None
+ * Coverage: file reading with various file names and file types
+ * Files: file_system.c
+ */
 int read_non_txt(char* file_name, int range){
 	TEST_HEADER;
+	if(file_name == NULL){
+		return FAIL;
+	}
 	if(range < 0){
 		printf("Invalid range \n");
 		return FAIL;
 	}
 	printf("\nfile name: %s \n", file_name);
-	unsigned char buf[40000];
+	unsigned char buf[40000]; // create a large buffer, default to 40000 so that the data can fit
 	memset(buf,0,sizeof(buf));
 	file_open((uint8_t*)file_name);
 	file_read(0, buf, 0);
@@ -209,10 +266,20 @@ int read_non_txt(char* file_name, int range){
 	return PASS;
 }
 
+/* very_large_file_with_long_name_test
+ * 
+ * Test read_dentry_by_name, read_data  
+ * Inputs: None
+ * Outputs: PASS: file does not exist
+ * 	        FAIL: file can be found and opened
+ * Side Effects: None
+ * Coverage: reading file with a name long then 32
+ * Files: file_system.c
+ */
 int very_large_file_with_long_name_test(){
 	TEST_HEADER;
 	char * file = "verylargetextwithverylongname.txt";
-	char buf[40000];
+	char buf[40000]; // create a large buffer, default to 40000 so that the data can fit
 	memset(buf,0,sizeof(buf));
 	if(-1 == file_open((uint8_t*)file)){
 		printf("File does not exists\n");
@@ -223,10 +290,20 @@ int very_large_file_with_long_name_test(){
 	return FAIL;
 }
 
+/* very_large_file_with_long_name_ok
+ * 
+ * Test read_dentry_by_name, read_data  
+ * Inputs: None
+ * Outputs: FAIL: file does not exist
+ * 	        PASS: file can be found and opened
+ * Side Effects: None
+ * Coverage: reading file with a name long but with in the file name range
+ * Files: file_system.c
+ */
 int very_large_file_with_long_name_ok(){
 	TEST_HEADER;
 	char * file = "verylargetextwithverylongname.tx";
-	char buf[40000];
+	char buf[40000]; // create a large buffer, default to 40000 so that the data can fit
 	memset(buf,0,sizeof(buf));
 	if(-1 == file_open((uint8_t*)file)){
 		printf("File does not exists\n");
@@ -237,22 +314,43 @@ int very_large_file_with_long_name_ok(){
 	return PASS;
 }
 
-
-int test_terminal_read_full(){
-	uint8_t data[128];
-	memset(data, 0, sizeof(data));
-	// int i;
-	// printf("\n");
-	
-	// for(i = 0; i < 80; ++i){
-    //     putc(key_buffer[i]);
-    // }
-	terminal_read(0, data, 128);
-	terminal_write(0, data, 128);
-	// printf((int8_t*)key_buffer);
-	// printf("\n");
-	return PASS;
+/* RTC test
+ * 
+ * Test RTC driver
+ * Inputs: None
+ * Outputs: 1
+ * Side Effects: None
+ * Coverage: RTC
+ * Files: rtc.c
+ */
+int rtc_test_2() {
+	TEST_HEADER;
+	rtc_open();
+	int idx, loop, loop2, f;
+	loop = 0;
+	loop2 = 0;
+	f = 2;	// base frequency is 2 
+	while(loop2<5) { // loop 5 times
+		while(loop < 10) { // loop 10 times
+			idx = 0;
+			while(idx < 8) {	// loop for outputing 8 char at a time 
+				rtc_read();
+				putc('1');
+				idx++;
+			}
+			f = 2 * f;	// increase frequency
+			rtc_write(&f);
+			loop ++;
+		}
+		loop2++;
+		loop = 0;
+		// putc('\n');
+	}
+	rtc_close();
+	return 1;
 }
+
+
 
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -262,9 +360,11 @@ int test_terminal_read_full(){
 /* Test suite entry point */
 void launch_tests(){
 	clear();
+
+	//TEST_OUTPUT("idt_test", idt_test());
+
 	printf("\n\n");
 	// TEST_OUTPUT("idt_test", idt_test());
-	//TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
 
 	// checkpoint 1 test
@@ -274,14 +374,12 @@ void launch_tests(){
 	// TEST_OUTPUT("divide by 0 test", div_zero_test());
 	/* expect to have system call and program stay in a loop */
 	// TEST_OUTPUT("System call test", system_call_test());
-	/* expect to have a page fault */
-	// TEST_OUTPUT("deference null pointer", derefence_null()); 
-	/* expect to have no page fault */
-	// TEST_OUTPUT("deference correct page pointer", paging_test_no_fault()); 
-	/* expect to have overflow exception */
-	// TEST_OUTPUT("overflow exception rise", overflow_exception_test()); 
-
+		
 	/* Checkpoint 2 test start here */
+
+	/* expect screen to print "1" with increasing speed */
+	TEST_OUTPUT("rtc_test_2", rtc_test_2());
+
 	/* output all the file within the directory including "." */
 	// TEST_OUTPUT("ls_test", ls_test());
 	
@@ -301,6 +399,7 @@ void launch_tests(){
  	// printf(" =============================================================== \n");
 	
 	/* ls exe read test */
+	// default reading range to 2000 Bytes
 	// TEST_OUTPUT("ls file test", read_non_txt("ls", 2000));
  	// printf(" =============================================================== \n");
 	
@@ -310,7 +409,5 @@ void launch_tests(){
 	/* successfully read the file and output the content */
 	// TEST_OUTPUT("read the long name file", very_large_file_with_long_name_ok());
 	// printf(" =============================================================== \n");
-	
 	TEST_OUTPUT("test terminal read full", test_terminal_read_full());
-	
 }
