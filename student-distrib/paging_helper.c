@@ -1,6 +1,10 @@
 #include "paging.h"
 #include "lib.h"
 
+#define FIRST_PROG_VIRTUAL 0x08000000
+#define FOUR_MB_PAGE       0x400000
+#define PROG_FIRST_PAGE    0x800000
+#define FOUR_MB_SHIFT      22
 
 // initialize page
 // reference: https://wiki.osdev.org/Setting_Up_Paging
@@ -60,4 +64,23 @@ void page_init() {
     //enable paging
     enablePaging();
 
+}
+
+int32_t map_program_page(int pid_num){
+    page_directory_4MB_entry_t prog_page; // global page directory entry?
+    prog_page.val = 0; // clean the page
+    prog_page.page_base_addr = (PROG_FIRST_PAGE + pid_num * FOUR_MB_PAGE) >> FOUR_MB_SHIFT;    // 
+    prog_page.present = 1;
+    prog_page.rw = 1;
+    prog_page.size = 1;
+    prog_page.user_super = 1;                                           
+    page_directory[(FIRST_PROG_VIRTUAL ) >> 22] = prog_page.val;       // loading the 4MB page directory entries 
+    return 0;
+}
+// void addpage
+// pm addr >> 22
+// void removepage
+
+int32_t remove_program_page(int pid_num){
+    return 0;
 }

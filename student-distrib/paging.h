@@ -94,4 +94,7 @@ extern void loadPageDirectory(uint32_t* page_directory);
  *           - PSE: Page Size Extensions (bit 4 of CR4) */
 extern void enablePaging();
 
+extern int32_t map_program_page(int pid_num);
+extern int32_t remove_program_page(int pid_num);
+
 #endif

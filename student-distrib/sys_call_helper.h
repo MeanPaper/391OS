@@ -6,9 +6,12 @@
 #include "terminal.h"
 #include "rtc.h"
 #include "lib.h"
+#include "paging.h"
+#include "system_call.h"
 
 #define FD_ARRAY_SIZE       8
 #define PROGRAM_ENTRY       24      // program eip starts at byte 24
+#define PROGRAM_ENTRY_END   27
 #define ENTRY_ADDR_SIZE     4       // program eip range [24,27]
 #define ELF_MAGIC_SIZE      4
 
@@ -28,6 +31,9 @@ typedef struct file_descriptor{
 typedef struct pcb{
     uint32_t pid;                   // process id 
     uint32_t parent_pid;            // or uint32_t* paren_pcb 
+    uint32_t save_ebp;
+    uint32_t save_esp;
+    uint8_t active;
     // uint32_t * process_addr;
     file_descriptor_t[FD_ARRAY_SIZE]; // file descriptor array for the current process
 }pcb_t;

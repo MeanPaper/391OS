@@ -8,5 +8,7 @@
 
 //system call function
 extern int32_t system_call();
+extern void flush_TLB();
+extern void context_switch(uint32_t entry_start_addr);
 
 #endif
