@@ -7,6 +7,7 @@
 #include "idt_desc.h"
 #include "interrupt.h"
 #include "exception.h"
+#include "system_call.h"
 
 #define INTRRUPT_START          32    // start of user defined interrupt in IDT
 #define SYSTEM_CALL_INDEX     0x80  // index for system calls

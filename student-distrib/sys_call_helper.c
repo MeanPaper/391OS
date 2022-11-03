@@ -1,4 +1,4 @@
-#include "interrupt.h"
+#include "sys_call_helper.h"
 #include "lib.h"
 
 /*
@@ -9,8 +9,9 @@
  * Return value: none
  * 
 */
-void system_call_helper(){
-    clear();
-    printf(" System call, reach IDT 0x80 \n");
-    while(1);  
-}
+// void system_call_helper(){
+//     clear();
+//     printf(" System call, reach IDT 0x80 \n");
+//     while(1);  
+// }
+
