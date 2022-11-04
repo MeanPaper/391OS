@@ -1,9 +1,9 @@
 #include "paging.h"
 #include "lib.h"
 
-#define FIRST_PROG_VIRTUAL 0x08000000
+#define FIRST_PROG_VIRTUAL 0x08000000 // 128 MB?
 #define FOUR_MB_PAGE       0x400000
-#define PROG_FIRST_PAGE    0x800000
+#define PROG_FIRST_PAGE    0x800000 // 8 MB?
 #define FOUR_MB_SHIFT      22
 
 // initialize page
@@ -69,7 +69,7 @@ void page_init() {
 int32_t map_program_page(int pid_num){
     page_directory_4MB_entry_t prog_page; // global page directory entry?
     prog_page.val = 0; // clean the page
-    prog_page.page_base_addr = (PROG_FIRST_PAGE + pid_num * FOUR_MB_PAGE) >> FOUR_MB_SHIFT;    // 
+    prog_page.page_base_addr = (PROG_FIRST_PAGE + (pid_num-1) * FOUR_MB_PAGE) >> FOUR_MB_SHIFT;    // 
     prog_page.present = 1;
     prog_page.rw = 1;
     prog_page.size = 1;

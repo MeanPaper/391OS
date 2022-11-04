@@ -1,6 +1,6 @@
 #ifndef _IDT_DESC_H
 #define _IDT_DESC_H
-
+#include "sys_call_helper.h"
 /* initialize IDT */
 extern void init_idt_desc();
 
