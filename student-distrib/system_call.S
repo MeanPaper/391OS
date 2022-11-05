@@ -7,12 +7,19 @@
 
 system_call:
     # eax will have sys_call number
+    
     cmpl $LAST_SYS_CALL, %eax       # sys call num > 10 ?
     jg invalid_sys_call
     cmpl $FIRST_SYS_CALL, %eax      # sys call num < 1 ?
     jl invalid_sys_call
     
-    pushal
+    pushl %ebp
+    pushl %ebx
+    pushl %ecx
+    pushl %edx
+    pushl %esi
+    pushl %edi
+    pushl %esp
     pushfl
     # pus h 3 special regs (inputs), first argument in ebx, then ecx, then edx
     pushl %edx
@@ -28,7 +35,13 @@ invalid_sys_call:
     addl $-1, %eax
 return_to_user:
     popfl
-    popal
+    popl %esp
+    popl %edi
+    popl %esi
+    popl %edx
+    popl %ecx
+    popl %ebx
+    popl %ebp
     iret
 
 # num range is 1 to 9

@@ -106,7 +106,7 @@ int32_t execute (const uint8_t* command){
     uint8_t command_buf[128];
     int i;
 
-    
+    memset(command_buf, 0, sizeof(command_buf));
     if(!command){
         return -1;
     }

@@ -163,15 +163,14 @@ int32_t directory_close(int fd){
 // directory_read, read a file name from the current directory
 int32_t directory_read(int fd, void *buf, int32_t nbytes){
     if(!buf) return -1;
-
     if(file_counter >= boot_block->total_dentry_num){
-        return -1;
+        return 0;
     }
     if (nbytes > 32) nbytes = 32;
     read_dentry_by_index(file_counter, &current_file);  // get the file by index  
     memcpy(buf, current_file.file_name, nbytes);        // get the name
     file_counter += 1;                                  // 
-    return nbytes;
+    return 0;
 }
 
 // directory_write, do nothing
