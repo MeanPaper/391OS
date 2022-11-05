@@ -72,7 +72,7 @@ int32_t map_program_page(int pid_num){
     prog_page.page_base_addr = (PROG_FIRST_PAGE + (pid_num-1) * FOUR_MB_PAGE) >> FOUR_MB_SHIFT;    // 
     prog_page.present = 1;
     prog_page.rw = 1;
-    prog_page.size = 1;
+    prog_page.page_size = 1;
     prog_page.user_super = 1;                                           
     page_directory[(FIRST_PROG_VIRTUAL ) >> 22] = prog_page.val;       // loading the 4MB page directory entries 
     return 0;
@@ -82,5 +82,6 @@ int32_t map_program_page(int pid_num){
 // void removepage
 
 int32_t remove_program_page(int pid_num){
+    page_directory[(FIRST_PROG_VIRTUAL ) >> 22] &= 0x0;
     return 0;
 }

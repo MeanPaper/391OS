@@ -1,29 +1,28 @@
 #include "sys_call_helper.h"
 #include "lib.h"
 
-#define FOUR_MB   0x400000
-#define EIGHT_MB   0x80000
-#define PROG_LOAD_ADDR  0x08048000
-#define USER_PROG 0x840000 // 132 MB
-#define EIGHT_KB      8192
-// #define USER_CS     0x0023
-// #define USER_DS     0x002B
-#define GET_PCB(n) EIGHT_MB-(n)*FOUR_MB
+
 // #define GET_
 /* Local function declaration*/
 
 /* file operations jump table associtated with the correct file type*/
-fot_t rtc_fot, file_fot, dir_fot, stdin_fot, stdout_fot;
+// fot_t rtc_fot, file_fot, dir_fot, stdin_fot, stdout_fot;
 
 // the magic header of elf
 uint8_t elf_magic[ELF_MAGIC_SIZE] = {0x7f, 0x45, 0x4c, 0x46}; // "DEL,E,L,F"
-uint32_t current_pid_num = 1;
+uint32_t current_pid_num = 0;
 uint32_t exception = 0;
 
 void set_exception_flag(uint32_t num){
     exception = num;
 }
- 
+
+uint32_t get_current_pid() {
+    return current_pid_num;
+}
+
+file_descriptor_t set_up_stdin();
+file_descriptor_t set_up_stdout();
 /*
  * system_call_helper 
  * Description: output system call message and put system in loop for now
@@ -37,33 +36,17 @@ void set_exception_flag(uint32_t num){
 //     printf(" System call, reach IDT 0x80 \n");
 //     while(1);  
 // }
-/* stdin: read-only file corresponding to keyboard input */
-file_descriptor_t set_up_stdin(){
-    file_descriptor_t stdin;
-    stdin.file_op_ptr = &stdin_fot;
-    stdin.file_pos = 0;
-    stdin.flags = 1;
-    return stdin;
-}
-/* stdout: write-only file corresponding to terminal */
-file_descriptor_t set_up_stdout(){
-    file_descriptor_t stdout;
-    stdout.file_op_ptr = &stdout_fot;
-    stdout.file_pos = 0;
-    stdout.flags = 1;
-    return stdout;
-}
 
 int32_t halt (uint8_t status){
     /* halt must return a value to the parent execute system call so that 
      * we know how the program ended */
     
     // uint32_t return_value
-
     if(exception){
         exception = 0;
-        return 256;
+        return 256; // return to execute, and use the value 256
     }
+    
     pcb_t * current = (pcb_t*)(GET_PCB(current_pid_num));
     pcb_t * parent = (pcb_t*)(GET_PCB(current->parent_pid)); 
 
@@ -74,7 +57,7 @@ int32_t halt (uint8_t status){
      * we can achieve this by check the pid that we are trying to halt
      * if the pid is 1(the first pid) 
      *      then we will just return */
-
+    remove_program_page(current_pid_num);
     // Restore parent data
     
 
@@ -94,21 +77,30 @@ int32_t halt (uint8_t status){
     current->active = 0;
 
     // check if main shell
-    if(current_pid_num == 1){
-        // set up some return value
+    if(current->parent_pid == parent->pid && current_pid_num == 1){
+        execute((uint8_t*)"shell");
+    }
+    else{
+        current_pid_num -= 1;
     }
     
     // Jump to execute return
     // TODO: need more information here 
     asm volatile(
-        "jmp execute_end"
+        "movl  %2, %%esp; "
+        "movl  %1, %%ebp; "
+        "movl  %0, %%eax; "
+        "jmp execute_end; "
+        :
+        :"r"((int32_t)status), "r"(parent->save_ebp), "r"(parent->save_esp)
+        :"eax", "ebp", "esp"
     );
-    return 0;
+    return status;
 }
 
 int32_t execute (const uint8_t* command){ 
     dentry_t entry;     // file entry 
-    pcb_t entry_pcb;    // the process block
+    pcb_t * entry_pcb;    // the process block
     uint32_t s_ebp;
     uint32_t s_esp;
     uint8_t command_buf[128];
@@ -140,34 +132,37 @@ int32_t execute (const uint8_t* command){
         // failed to find magic ELF, the file is not executable
         return -1;                          
     }
-
+    ++current_pid_num;
+    entry_pcb = (pcb_t *)(GET_PCB(current_pid_num));
+    memset(entry_pcb, 0, sizeof(pcb_t));
+    // memcpy(pcb_target_addr, &entry_pcb, sizeof(entry_pcb));
     // clean up local var
-    memset(&entry_pcb, 0, sizeof(entry_pcb));
-    entry_pcb.active = 1; 
+    // memset(entry_pcb, 0, sizeof(entry_pcb));
+    entry_pcb->pid = current_pid_num;
+    entry_pcb->active = 1; 
     if(current_pid_num == 1){
-        entry_pcb.parent_pid = 1;
+        entry_pcb->parent_pid = 1;
     }
     else{
-        entry_pcb.parent_pid = current_pid_num - 1;
+        entry_pcb->parent_pid = current_pid_num - 1;
     }
-    entry_pcb.pid = current_pid_num++;
+   
     // TODO: save esp and save ebp
     asm volatile(
         "movl %%ebp, %0;"
         "movl %%esp, %1;"
         : "=r"(s_ebp), "=r"(s_esp)
     );
-    entry_pcb.save_ebp = s_ebp;
-    entry_pcb.save_esp = s_esp;
+    entry_pcb->save_ebp = s_ebp;
+    entry_pcb->save_esp = s_esp;
 
     // open stdin and stdout
-    entry_pcb.fd_array[0] = set_up_stdin(); 
-    entry_pcb.fd_array[1] = set_up_stdout();
+    entry_pcb->fd_array[0] = set_up_stdin(); 
+    entry_pcb->fd_array[1] = set_up_stdout();
 
     // find out the memory address for the process control block
     // 8MB - num * 8KB
-    uint8_t * pcb_target_addr = (uint8_t *)(GET_PCB(current_pid_num));
-    memcpy(pcb_target_addr, &entry_pcb, sizeof(entry_pcb));
+
 
     // Check for executable
     // Set up paging
@@ -195,161 +190,92 @@ int32_t execute (const uint8_t* command){
     // context_switch(user_code_start_addr); // this function is not finish
     //register uint32_t saved_ebp asm("ebp");
     asm volatile (
-        "pushl %0;
-         pushl %1;
-         pushfl;
-         popl %%eax;
-         orl $0x200, %%eax;
-         pushl %%eax;
-         pushl %2;
-         pushl %3;
-         iret;
-         execute_end:
-         leave;
-         ret;"
+        "mov $0x2B, %%ax;"
+        "mov %%ax, %%ds;"
+        "pushl %0; "
+        "pushl %1; "
+        "pushfl;"
+        "popl %%eax;"
+        "orl $0x200, %%eax;"
+        "pushl %%eax;"
+        "pushl %2;"
+        "pushl %3; "
+        "iret;"
+        "execute_end:;"
+        "leave;"
+        "ret;"
         :           /* output */
-        :"r"(USER_DS), "r"(USER_PROG - sizeof(uint32_t)), \
-         "r"(USER_CS), "r"(user_code_start_addr)         /* input */
-        :          /* clobbered register*/
+        :"r"(USER_DS), "r"(USER_PROG - sizeof(uint32_t)), "r"(USER_CS), "r"(user_code_start_addr) /* input */
+        :"eax"          /* clobbered register*/
     );
     
     // Push IRET context to kernel stack
     return 0;
 }
 
-/**
- * file operation for RTC
- */
-int32_t rtc_read_handler (int32_t fd, void* buf, int32_t nbytes){
-    return rtc_read();
-}
-
-int32_t rtc_write_handler (int32_t fd, const void* buf, int32_t nbytes){
-    return rtc_write(buf);
-}
-
-int32_t rtc_open_handler (const uint8_t* filename){
-    int tmp = common_open(filename);
-    if (tmp == 0) {
-        return rtc_open();
-    } else {
-        return -1;
-    }
-}
-
-int32_t rtc_close_handler(int32_t fd){
-    common_close(fd);
-    return rtc_close();
-}
-
-
-/**
- * file operation for regular file
- */
-int32_t file_read_handler (int32_t fd, void* buf, int32_t nbytes){
-    // to the end of the file OR to the end of buffer
-    common_read(fd, buf, nbytes);
-}
-
-int32_t file_write_handler (int32_t fd, const void* buf, int32_t nbytes){
-    return -1;  // the file system is read-only
-}
-
-int32_t file_open_handler (const uint8_t* filename){
-    common_open(filename);
-}
-
-int32_t file_close_handler(int32_t fd){
-    common_close(fd);
-}
-
-/**
- * file operation for directory
- */
-int32_t dir_read_handler (int32_t fd, void* buf, int32_t nbytes){
-    // provide the filename (as much as fits, or all 32 bytes)
-    // subsequent reads should read from successive directory entries until the last is reached
-    // then, repeatedly return 0
-    dir_read(fd,buf,nbytes);
-}
-
-int32_t dir_write_handler (int32_t fd, const void* buf, int32_t nbytes){
-    return -1;  // the file system is read-only
-}
-
-int32_t dir_open_handler (const uint8_t* filename){
-    
-}
-
-int32_t dir_close_handler(int32_t fd){
-    
-}
-
-/**
- * file operation for stdin
- */
-int32_t stdin_read_handler (int32_t fd, void* buf, int32_t nbytes){
-    // read data from the keyboard
-    // return data from one line that has been terminated by pressing Enter
-    // or as much as fits in the buffer from one such line
-    // include the line feed character
-    return terminal_read(fd, buf, n_bytes);
-}
-
-/**
- * file operation for stdout
- */
-int32_t stdout_write_handler (int32_t fd, const void* buf, int32_t nbytes){
-    // write data to terminal, display to the screen immediately
-    return terminal_write(fd, buf, n_bytes);
-}
-
-rtc_fot = {
-    .read = &rtc_read_handler,
-    .write = &rtc_write_handler,
-    .open = &rtc_open_handler,
-    .close = &rtc_close_handler
+fot_t rtc_fot = {
+    .read = &rtc_read,
+    .write = &rtc_write,
+    .open = &rtc_open,
+    .close = &rtc_close
 };
-file_fot = {
-    .read = &file_read_handler,
-    .write = &file_write_handler,
-    .open = &file_open_handler,
-    .close = &file_close_handler
+fot_t file_fot = {
+    .read = &file_read,
+    .write = &file_write,
+    .open = &file_open,
+    .close = &file_close
 };
-dir_fot = {
-    .read = &dir_read_handler,
-    .write = &dir_write_handler,
-    .open = &dir_open_handler,
-    .close = &dir_close_handler
+fot_t dir_fot = {
+    .read = &directory_read,
+    .write = &directory_write,
+    .open = &directory_open,
+    .close = &directory_close
 };
-stdin_fot = {
-    .read = &dir_read_handler,
+fot_t stdin_fot = {
+    .read = &terminal_read,
     .write = NULL,
-    .open = NULL,
-    .close = NULL
+    .open = &terminal_open,
+    .close = terminal_close
 };
-stdout_fot = {
+fot_t stdout_fot = {
     .read = NULL,
-    .write = &dir_write_handler,
-    .open = NULL,
-    .close = NULL
+    .write = &terminal_write,
+    .open = &terminal_open,
+    .close = &terminal_close
 };
 
-int32_t common_read(int32_t fd, void* buf, int32_t nbytes){
-    // for normal files and the directory
-    //  If the initial file position is at or beyond the end of file, return -1
-    if(fd < 0 || fd >= 8)return -1;
-    if(nbytes< 0)return -1;
-    uint8_t * temp = (EIGHT_MB - (EIGHT_KB * current_pid_num));
-    pcb_t* location = (pcb_t*)temp;
-    dentry_t entry;     // file entry
+/* stdin: read-only file corresponding to keyboard input */
+file_descriptor_t set_up_stdin(){
+    file_descriptor_t stdin;
+    stdin.file_op_ptr = stdin_fot;
+    stdin.file_pos = 0;
+    stdin.flags = 1;
+    return stdin;
+}
+/* stdout: write-only file corresponding to terminal */
+file_descriptor_t set_up_stdout(){
+    file_descriptor_t stdout;
+    stdout.file_op_ptr = stdout_fot;
+    stdout.file_pos = 0;
+    stdout.flags = 1;
+    return stdout;
+}
 
-    // find the dentry in the boot block fo the file system base on the file name
-    // Parse args ???
-    // if(entry->file_type == 2){ //file
-        
-    // }
-    return read_data(location->fd_array[fd].inode,location->fd_array[fd].file_pos,buf,nbytes);
+int32_t write(int fd, const void *buf, int32_t nbytes){
+    if(fd < 0 || fd >= 8) return -1;
+    if(nbytes< 0) return -1;
+    if(buf == NULL) return -1;
+    pcb_t* location = (pcb_t*)(EIGHT_MB - (EIGHT_KB * current_pid_num));
+    return ((location->fd_array[fd]).file_op_ptr).write(fd, buf, nbytes);
+}
+
+int32_t read(int32_t fd, void* buf, int32_t nbytes){
+    if(fd < 0 || fd >= 8) return -1;
+    if(nbytes< 0) return -1;
+    if(buf == NULL) return -1;
+    uint8_t * temp = (uint8_t*)(EIGHT_MB - (EIGHT_KB * current_pid_num));
+    pcb_t* location = (pcb_t*)temp;
+    return ((location->fd_array[fd]).file_op_ptr).read(fd, buf, nbytes);
 }
 
 int32_t open(const uint8_t* filename){
@@ -358,7 +284,7 @@ int32_t open(const uint8_t* filename){
     int i;
     int fd = -1;
 
-    uint8_t * temp = (EIGHT_MB - (EIGHT_KB * current_pid_num));
+    uint8_t * temp = (uint8_t*)(EIGHT_MB - (EIGHT_KB * current_pid_num));
     pcb_t* location = (pcb_t*)temp;
     dentry_t entry;     // file entry
 
@@ -371,7 +297,7 @@ int32_t open(const uint8_t* filename){
     //use entry to access inode
     // set the file discriptor array entry
     for(i = 0 ; i < 8; i++){
-        if(location->fd_array[fd].flags == 0){
+        if(location->fd_array[i].flags == 0){
             fd = i;
             break;
         }
@@ -380,30 +306,46 @@ int32_t open(const uint8_t* filename){
 
     location->fd_array[fd].flags = 1;       // set the fda entry as used
     location->fd_array[fd].file_pos = 0;    // set the pos to the start of the file
-    if(entry.file_name == 1){ //directory
-        location->fd_array[fd].file_op_ptr = &dir_fot;  // set file operation table pointer based on file type of the dentry
+    if(entry.file_type == 1){ //directory
+        location->fd_array[fd].file_op_ptr = dir_fot;  // set file operation table pointer based on file type of the dentry
     }
     else if(entry.file_type == 2){ //file
-        location->fd_array[fd].file_op_ptr = &file_fot;  // set file operation table pointer based on file type of the dentry
+        location->fd_array[fd].file_op_ptr = file_fot;  // set file operation table pointer based on file type of the dentry
     }
     else if(entry.file_type == 0){ //RTC
-        location->fd_array[fd].file_op_ptr = &rtc_fot;  // set file operation table pointer based on file type of the dentry
+        location->fd_array[fd].file_op_ptr = rtc_fot;  // set file operation table pointer based on file type of the dentry
     }
     else{
         return -1;
     }
     location->fd_array[fd].inode = entry.inode_num;       // read inode number from the dentry
-    location->fd_array[fd].file_op_ptr->open(filename);
-    return 0;
+    location->fd_array[fd].file_op_ptr.open(filename);
+    return fd;
+    
 } 
 
-int32_t common_close(int32_t fd){
-    if(fd < 0 || fd >= 8){
+int32_t close(int32_t fd){
+    if(fd < 2 || fd >= 8){ // can't close stdin, stdout
         return -1;
     }
     //need to implement a pcb helper function. 
-    uint8_t * temp = (EIGHT_MB - (EIGHT_KB * current_pid_num));
+    uint8_t * temp = (uint8_t*)(EIGHT_MB - (EIGHT_KB * current_pid_num));
     pcb_t* location = (pcb_t*)temp;
     location->fd_array[fd].flags = 0;
-    return 0;
+    return location->fd_array[fd].file_op_ptr.close(fd);
 }    
+
+
+int32_t getargs(uint8_t* buf, int32_t nbytes){
+    return -1; // 7
+}
+int32_t vidmap(uint8_t** screen_start){
+    return -1; // 8
+}    
+int32_t set_handler(int32_t signum, void*handler_address){
+    return -1; // 9
+}
+
+int32_t sigreturn(void){
+    return -1; // 10
+}   

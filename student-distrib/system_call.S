@@ -1,5 +1,9 @@
+
+#define LAST_SYS_CALL 10
+#define FIRST_SYS_CALL 1
+
 .align 4
-.globl system_call, flush_cr3, context_switch
+.globl system_call, flush_TLB, context_switch
 
 system_call:
     # eax will have sys_call number
@@ -38,7 +42,4 @@ flush_TLB:
     ret
 
 context_switch:
-    movl 4(%esp), %eip
-    
-
     iret

@@ -48,13 +48,13 @@ int32_t terminal_close(){
  * 
  * Inputs: int fd,void * buf, uint32_t n_bytes
  * Output: none
- * Return Value: 0
+ * Return Value: the number of byte read
  * Side Effects: write the terminal and user buffer
 */
-int32_t terminal_read(int fd,void * buf, uint32_t n_bytes){
+int32_t terminal_read(int fd,void * buf, int32_t n_bytes){
     if(!buf) return -1;
+    sti();
     while(!ENTER_PRESSED); //wait until user press enter. 
-    
     cli();
     strncpy((int8_t*)(terminal.terminal_buf), (int8_t*)key_buffer, 127);
 
@@ -64,9 +64,10 @@ int32_t terminal_read(int fd,void * buf, uint32_t n_bytes){
     terminal.terminal_buf[n_bytes-1] = '\0';
     strncpy((int8_t*)buf,(int8_t*)(terminal.terminal_buf),n_bytes);
     sti();
-
-    return 0;
-    
+    // return the number of byte read
+    uint32_t read_size = strlen((const int8_t*) buf);
+    if (read_size > n_bytes) return n_bytes;
+    else return read_size;    
 }
 
 /* void terminal_write();
@@ -74,10 +75,10 @@ int32_t terminal_read(int fd,void * buf, uint32_t n_bytes){
  * 
  * Inputs: int fd,void * buf, uint32_t n_bytes
  * Output: put user buffer information onto the screen
- * Return Value: 0
+ * Return Value: the number of byte write
  * Side Effects: none
 */
-int32_t terminal_write(int fd,void * buf, uint32_t n_bytes){
+int32_t terminal_write(int fd, const void * buf, int32_t n_bytes){
     if(!buf) return -1;
     int i;
     uint8_t* temp = (uint8_t*) buf;
@@ -90,5 +91,5 @@ int32_t terminal_write(int fd,void * buf, uint32_t n_bytes){
     }
     // strncpy(buf,terminal.terminal_buf,sizeof(terminal.terminal_buf));
     // puts(terminal.terminal_buf);
-    return 0;
+    return i;
 }

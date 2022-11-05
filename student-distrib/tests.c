@@ -323,32 +323,32 @@ int very_large_file_with_long_name_ok(){
  * Coverage: RTC
  * Files: rtc.c
  */
-int rtc_test_2() {
-	TEST_HEADER;
-	rtc_open();
-	int idx, loop, loop2, f;
-	loop = 0;
-	loop2 = 0;
-	f = 2;	// base frequency is 2 
-	while(loop2<5) { // loop 5 times
-		while(loop < 10) { // loop 10 times
-			idx = 0;
-			while(idx < 8) {	// loop for outputing 8 char at a time 
-				rtc_read();
-				putc('1');
-				idx++;
-			}
-			f = 2 * f;	// increase frequency
-			rtc_write(&f);
-			loop ++;
-		}
-		loop2++;
-		loop = 0;
-		// putc('\n');
-	}
-	rtc_close();
-	return 1;
-}
+// int rtc_test_2() {
+// 	TEST_HEADER;
+// 	rtc_open(NULL);
+// 	int idx, loop, loop2, f;
+// 	loop = 0;
+// 	loop2 = 0;
+// 	f = 2;	// base frequency is 2 
+// 	while(loop2<5) { // loop 5 times
+// 		while(loop < 10) { // loop 10 times
+// 			idx = 0;
+// 			while(idx < 8) {	// loop for outputing 8 char at a time 
+// 				rtc_read();
+// 				putc('1');
+// 				idx++;
+// 			}
+// 			f = 2 * f;	// increase frequency
+// 			rtc_write(&f);
+// 			loop ++;
+// 		}
+// 		loop2++;
+// 		loop = 0;
+// 		// putc('\n');
+// 	}
+// 	rtc_close();
+// 	return 1;
+// }
 
 
 
@@ -384,7 +384,7 @@ void launch_tests(){
 	/* Checkpoint 2 test start here */
 
 	/* expect screen to print "1" with increasing speed */
-	TEST_OUTPUT("rtc_test_2", rtc_test_2());
+	// TEST_OUTPUT("rtc_test_2", rtc_test_2());
 
 	/* output all the file within the directory including "." */
 	// TEST_OUTPUT("ls_test", ls_test());
@@ -416,5 +416,5 @@ void launch_tests(){
 	/* successfully read the file and output the content */
 	// TEST_OUTPUT("read the long name file", very_large_file_with_long_name_ok());
 	// printf(" =============================================================== \n");
-	TEST_OUTPUT("test terminal read full", test_terminal_read_full());
+	// TEST_OUTPUT("test terminal read full", test_terminal_read_full());
 }
