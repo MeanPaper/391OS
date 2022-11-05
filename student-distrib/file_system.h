@@ -149,7 +149,7 @@ extern int32_t directory_close(int fd);
  *      0: Success
  *      -1: Failed
  * Function: read from directory entry */
-extern int32_t directory_read(int fd, void *buf, uint32_t nbytes);
+extern int32_t directory_read(int fd, void *buf, int32_t nbytes);
 
 
 
@@ -164,7 +164,7 @@ extern int32_t directory_read(int fd, void *buf, uint32_t nbytes);
  *      0: Success
  *      -1: Failed
  * Function: read from directory entry */
-extern int32_t directory_write(int fd, void *buf, uint32_t nbytes);
+extern int32_t directory_write(int fd, const void *buf, int32_t nbytes);
 
 
 
@@ -209,7 +209,7 @@ extern int32_t file_close(int fd);
  *      -1: Failed
  * Function: 
  *      Read the file by the file descriptor. Read number of bytes into buf */
-extern int32_t file_read(int fd, void *buf, uint32_t nbytes);
+extern int32_t file_read(int fd, void *buf, int32_t nbytes);
 
 
 
@@ -225,6 +225,6 @@ extern int32_t file_read(int fd, void *buf, uint32_t nbytes);
  *      -1: Failed
  * Function: 
  *      Find the file by the file descriptor. write number of bytes into the file */
-extern int32_t file_write(int fd, void *buf, uint32_t nbytes);
+extern int32_t file_write(int fd, const void *buf, int32_t nbytes);
 
 #endif

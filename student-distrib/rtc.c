@@ -37,30 +37,30 @@ void rtc_handler(void) {
 }
 
 /* Initialize RTC frequency to 2Hz */
-int rtc_open(void) {
+int rtc_open(const uint8_t* file) {
     // rate = 16-log2(f) = 16-1 = 15
     rtc_change_rate(15);
     return 1;
 }
 
 /* Block until the next interrupt */
-int rtc_read(void) {
+int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
     flag = 1;   // set flag
     while(flag==1);
     return 1;
 }
 
 /* Set the frequency */
-int rtc_write(int* frequency) {
+int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes) {
     int rtc_f;
-    memcpy(&rtc_f, frequency, sizeof(int));
+    memcpy(&rtc_f, (int*)buf, sizeof(int));
     int rate = 16 - log2_helper(rtc_f);     // convert frequency to rate
     if (rate <=2 || rate >=16) return -1;   // input is not power of 2 or rate is not in the valid range
     rtc_change_rate(rate);
     return 0;
 }
 
-int rtc_close(void) {
+int rtc_close(int32_t fd) {
     return 0;
 }
 

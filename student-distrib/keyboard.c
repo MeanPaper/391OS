@@ -196,6 +196,7 @@ void handle_backspace(){
 void handle_enter(){
 	key_buffer[buffer_index] = '\n';
 	enter();
+	buffer_index = 0;
 	// memset((void*)key_buffer, 0, sizeof(key_buffer));
 	//need to set the memory
 

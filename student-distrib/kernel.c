@@ -13,6 +13,7 @@
 #include "rtc.h"
 #include "keyboard.h"
 #include "file_system.h"
+#include "sys_call_helper.h"
 
 #define RUN_TESTS
 
@@ -170,13 +171,13 @@ void entry(unsigned long magic, unsigned long addr) {
      * without showing you any output */
     printf("Enabling Interrupts\n");
     sti();
-
 #ifdef RUN_TESTS
     /* Run tests */
+   
     launch_tests(); // comment this if you do not want loop booting
 #endif
     /* Execute the first program ("shell") ... */
-
+    execute((uint8_t*)"shell");
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile (".1: hlt; jmp .1;");
 }
