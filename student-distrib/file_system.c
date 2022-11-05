@@ -170,7 +170,7 @@ int32_t directory_read(int fd, void *buf, int32_t nbytes){
     read_dentry_by_index(file_counter, &current_file);  // get the file by index  
     memcpy(buf, current_file.file_name, nbytes);        // get the name
     file_counter += 1;                                  // 
-    return 0;
+    return nbytes;
 }
 
 // directory_write, do nothing

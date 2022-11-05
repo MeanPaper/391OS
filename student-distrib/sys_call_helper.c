@@ -40,16 +40,22 @@ file_descriptor_t set_up_stdout();
 int32_t halt (uint8_t status){
     /* halt must return a value to the parent execute system call so that 
      * we know how the program ended */
+    pcb_t * current = (pcb_t*)(GET_PCB(current_pid_num));
+    pcb_t * parent = (pcb_t*)(GET_PCB(current->parent_pid));
     
     // uint32_t return_value
     if(exception){
-        exception = 0;
-        return 256; // return to execute, and use the value 256
+        asm volatile(
+            "movl  %2, %%esp; "
+            "movl  %1, %%ebp; "
+            "movl  %0, %%eax; "
+            "jmp execute_end; "
+            :
+            :"r"(256), "r"(parent->save_ebp), "r"(parent->save_esp)
+            :"eax", "ebp", "esp"
+            );
     }
     
-    pcb_t * current = (pcb_t*)(GET_PCB(current_pid_num));
-    pcb_t * parent = (pcb_t*)(GET_PCB(current->parent_pid)); 
-
     /* halting the base shell should either not let the user halt at all or 
      * after halting must re-spawn a new base shell, so there's always one 
      * program that is running
@@ -70,6 +76,7 @@ int32_t halt (uint8_t status){
     for(i = 0; i < FD_ARRAY_SIZE; ++i){
         if(current->fd_array[i].flags){
             close(i);
+            current->fd_array[i].flags = 0;
         }
     }
 
@@ -101,8 +108,8 @@ int32_t halt (uint8_t status){
 int32_t execute (const uint8_t* command){ 
     dentry_t entry;     // file entry 
     pcb_t * entry_pcb;    // the process block
-    uint32_t s_ebp;
-    uint32_t s_esp;
+    // uint32_t s_ebp;
+    // uint32_t s_esp;
     uint8_t command_buf[128];
     int i;
 
@@ -151,10 +158,10 @@ int32_t execute (const uint8_t* command){
     asm volatile(
         "movl %%ebp, %0;"
         "movl %%esp, %1;"
-        : "=r"(s_ebp), "=r"(s_esp)
+        : "=r"(entry_pcb->save_ebp), "=r"(entry_pcb->save_esp)
     );
-    entry_pcb->save_ebp = s_ebp;
-    entry_pcb->save_esp = s_esp;
+    // entry_pcb->save_ebp = s_ebp;
+    // entry_pcb->save_esp = s_esp;
 
     // open stdin and stdout
     entry_pcb->fd_array[0] = set_up_stdin(); 
@@ -325,7 +332,7 @@ int32_t open(const uint8_t* filename){
 } 
 
 int32_t close(int32_t fd){
-    if(fd < 2 || fd >= 8){ // can't close stdin, stdout
+    if(fd < 0 || fd >= 8){ // can't close stdin, stdout
         return -1;
     }
     //need to implement a pcb helper function. 
