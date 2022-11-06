@@ -22,11 +22,11 @@ int32_t close_helper(int32_t fd);
 
 /*
  * halt 
- * Description: Terminate the current program.  
+ * Description: Terminate the current program and close all the relevant fd.  
  *      later. 
  * Input: uint8_t status
  * Output: none
- * Return value: -1 on failure, 0-256 on success. 
+ * Return value: to the parent processor. 
 */
 int32_t halt (uint8_t status){
     /* halt must return a value to the parent execute system call so that 
@@ -360,6 +360,14 @@ int32_t open(const uint8_t* filename){
     
 } 
 
+/*
+ * close_helper
+ * Description: a helper function for our close function
+ * Input: fd
+ * Output: none
+ * Return value: 0 on sucess, and -1 on fail. 
+ * 
+ */
 int32_t close_helper(int32_t fd){
     if(fd < 0 || fd >= 8){ // can't close stdin, stdout, maximum 8 files, so fd cannot be larger than 8
         return -1;
@@ -380,7 +388,7 @@ int32_t close_helper(int32_t fd){
  * Output: none
  * Return value: 0 on sucess, and -1 on fail. 
  * 
-*/
+ */
 int32_t close(int32_t fd){
     // can't close stdin, stdout
     if (fd == 0 || fd == 1) return -1;
