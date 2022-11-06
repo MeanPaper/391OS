@@ -174,7 +174,7 @@ void entry(unsigned long magic, unsigned long addr) {
 #ifdef RUN_TESTS
     /* Run tests */
    
-    launch_tests(); // comment this if you do not want loop booting
+    // launch_tests(); // comment this if you do not want loop booting
 #endif
     /* Execute the first program ("shell") ... */
     execute((uint8_t*)"shell");

@@ -54,7 +54,8 @@ int32_t terminal_close(){
 int32_t terminal_read(int fd,void * buf, int32_t n_bytes){
     if(!buf) return -1;
     sti();
-    while(!ENTER_PRESSED); //wait until user press enter. 
+    while(!ENTER_PRESSED); //wait until user press enter.
+    ENTER_PRESSED = 0; 
     cli();
     strncpy((int8_t*)(terminal.terminal_buf), (int8_t*)key_buffer, 127);
 
@@ -83,7 +84,7 @@ int32_t terminal_write(int fd, const void * buf, int32_t n_bytes){
     int i;
     uint8_t* temp = (uint8_t*) buf;
     for(i = 0; i < n_bytes; ++i){
-        if(temp[i] == '\0') break;
+       // if(temp[i] == '\0') break;
         putc(temp[i]);
     }
     if(i == 127){ //reach the end of line, add \n to go to next line. 

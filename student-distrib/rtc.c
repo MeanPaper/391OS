@@ -45,6 +45,7 @@ int rtc_open(const uint8_t* file) {
 
 /* Block until the next interrupt */
 int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
+    sti();
     flag = 1;   // set flag
     while(flag==1);
     return 1;

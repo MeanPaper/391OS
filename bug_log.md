@@ -79,3 +79,41 @@
 ### Difficulty to fix:
     easy, to fix the bug we rewrote the function that is used to find the data blocks.
 ---
+## Checkpoint 3
+---
+## Bug #: 8
+### Date: 11/4/2022
+### Symptom: 
+    Not able to print new line for "ls"
+### Difficulty to find: 
+    Medium
+### Difficulty to fix:
+    Not too difficult. In our terminal write, we will terminates the buffer with a null at index 32, then we will break. However, this implementation will not allow "ls" program to insert "/n". So we basically comment taht line our. 
+---
+## Bug #: 9
+### Date: 11/5/2022
+### Symptom: 
+    After execute, there will be page fault. We find that when we try to return from halt, our parent esp and parent ebp is not working correctly.
+### Difficulty to find: 
+    Easy. Since it is after execute, so we have a pretty good idea that it is in the halt.
+### Difficulty to fix:
+    Difficult. We did not understand our execute with parent process and child process correctly. So Henry helped us to debug and clarify what's going on. So when halting child process, the child should return to child execute first before return to parent halt/process. 
+---
+## Bug #: 10
+### Date: 11/6/2022
+### Symptom: 
+    In our shell terminal, when we do backspace, we could even delete "391OS> ". 
+### Difficulty to find: 
+    Easy. Since we know this is definitely from our keyboard function. 
+### Difficulty to fix:
+    Easy. In our terminal.c:handle_backspace, we need to make sure that when the buffer is empty, we cannot do backspace. 
+---
+## Bug #: 11
+### Date: 11/7/2022
+### Symptom: 
+    Whenever we do something, our terminal will print multiple times.
+### Difficulty to find: 
+    Easy. Since we know this is definitely from our keyboard function. 
+### Difficulty to fix:
+    Midium. Henry pointed the error location. The fix took awhile since we need to implement a way to prevent multiple press due to human interaction time and CPU respond time. 
+---
