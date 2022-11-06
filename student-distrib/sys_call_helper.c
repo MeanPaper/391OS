@@ -23,6 +23,9 @@ uint32_t get_current_pid() {
 
 file_descriptor_t set_up_stdin();
 file_descriptor_t set_up_stdout();
+int32_t stdout_read(int fd,void * buf, int32_t n_bytes);
+int32_t stdin_write(int fd,void * buf, int32_t n_bytes);
+
 /*
  * system_call_helper 
  * Description: output system call message and put system in loop for now
@@ -58,7 +61,7 @@ int32_t halt (uint8_t status){
     //         :"eax", "ebp", "esp"
     //         );
     // }
-    
+       
     /* halting the base shell should either not let the user halt at all or 
      * after halting must re-spawn a new base shell, so there's always one 
      * program that is running
@@ -90,6 +93,7 @@ int32_t halt (uint8_t status){
 
     // check if main shell
     if(current->pid == current->parent_pid && current_pid_num == 1){
+        current_pid_num -= 1;
         execute((uint8_t*)"shell");
     }
     else{
@@ -109,6 +113,13 @@ int32_t halt (uint8_t status){
     return status_32;
 }
 
+/*
+ * execute 
+ * Description: ghost function. 
+ * Input: int32_t fd, void* buf, int32_t nbytes
+ * Output: none
+ * Return value: -1. 
+*/
 int32_t execute (const uint8_t* command){ 
     dentry_t entry;     // file entry 
     pcb_t * entry_pcb;    // the process block
@@ -257,10 +268,24 @@ fot_t stdout_fot = {
     .close = &terminal_close
 };
 
+/*
+ * stdout_read 
+ * Description: ghost function. 
+ * Input: int32_t fd, void* buf, int32_t nbytes
+ * Output: none
+ * Return value: -1. 
+*/
 int32_t stdout_read(int fd,void * buf, int32_t n_bytes) {
     return -1;
 }
 
+/*
+ * stdout_write 
+ * Description: ghost function.
+ * Input: int32_t fd, void* buf, int32_t nbytes
+ * Output: none
+ * Return value: -1. 
+*/
 int32_t stdin_write(int fd,void * buf, int32_t n_bytes) {
     return -1;
 }
@@ -282,6 +307,13 @@ file_descriptor_t set_up_stdout(){
     return stdout;
 }
 
+/*
+ * write 
+ * Description: Writes data to the terminal or to a device (RTC). 
+ * Input: int32_t fd, void* buf, int32_t nbytes
+ * Output: none
+ * Return value: # of bytes written on sucess, and -1 on fail. 
+*/
 int32_t write(int fd, const void *buf, int32_t nbytes){
     if(fd < 0 || fd >= 8) return -1;
     if(nbytes< 0) return -1;
@@ -290,6 +322,14 @@ int32_t write(int fd, const void *buf, int32_t nbytes){
     return ((location->fd_array[fd]).file_op_ptr).write(fd, buf, nbytes);
 }
 
+/*
+ * read 
+ * Description: read the data from the keyboard/RTC/file/directory. 
+ * Input: int32_t fd, void* buf, int32_t nbytes
+ * Output: none
+ * Return value: 0 on sucess, and -1 on fail. 
+ * 
+*/
 int32_t read(int32_t fd, void* buf, int32_t nbytes){
     if(fd < 0 || fd >= 8) return -1;
     if(nbytes< 0) return -1;
@@ -298,6 +338,16 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
     pcb_t* location = (pcb_t*)temp;
     return ((location->fd_array[fd]).file_op_ptr).read(fd, buf, nbytes);
 }
+
+/*
+ * open 
+ * Description: read the filename and find it's corresponding dentry,
+ * then allocate new unused fd for the file. Then based on the different file type, do various settings for it.  
+ * Input: filename
+ * Output: none
+ * Return value: 0 on sucess, and -1 on fail. 
+ * 
+*/
 
 int32_t open(const uint8_t* filename){
     if(filename == NULL)return -1;
@@ -345,8 +395,16 @@ int32_t open(const uint8_t* filename){
     
 } 
 
+/*
+ * close 
+ * Description: Close the specified file discriptor, and make it available for other open fd. 
+ * Input: fd
+ * Output: none
+ * Return value: 0 on sucess, and -1 on fail. 
+ * 
+*/
 int32_t close(int32_t fd){
-    if(fd < 0 || fd >= 8){ // can't close stdin, stdout
+    if(fd < 0 || fd >= 8){ // can't close stdin, stdout, maximum 8 files, so fd cannot be larger than 8
         return -1;
     }
     //need to implement a pcb helper function. 
@@ -356,17 +414,50 @@ int32_t close(int32_t fd){
     return location->fd_array[fd].file_op_ptr.close(fd);
 }    
 
-
+/*
+ * getargs 
+ * Description: 
+ * Input: none
+ * Output: none
+ * Return value: none
+ * 
+*/
 int32_t getargs(uint8_t* buf, int32_t nbytes){
     return -1; // 7
 }
+
+/*
+ * vidmap 
+ * Description: 
+ * Input: none
+ * Output: none
+ * Return value: none
+ * 
+*/
 int32_t vidmap(uint8_t** screen_start){
     return -1; // 8
 }    
+
+/*
+ * set_handler 
+ * Description: 
+ * Input: none
+ * Output: none
+ * Return value: none
+ * 
+*/
 int32_t set_handler(int32_t signum, void*handler_address){
     return -1; // 9
 }
 
+/*
+ * sigreturn 
+ * Description: 
+ * Input: none
+ * Output: none
+ * Return value: none
+ * 
+*/
 int32_t sigreturn(void){
     return -1; // 10
 }   

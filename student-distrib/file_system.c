@@ -23,7 +23,6 @@ void init_file_system(uint32_t* file_system_ptr){
 int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry){
     int i;
     dentry_t *temp;
-    
     // sanity check for file name, dentry
     if(!fname || !dentry || !strlen((int8_t*)fname)){
         return -1;
@@ -35,7 +34,7 @@ int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry){
         temp = &(boot_block->files[i]);
         // using string compare to compare the file name and the name that it request
         // read the usage of the function, fname is need to be string 1 since it might be null terminated 
-        if(!strncmp((int8_t*)fname, (int8_t*)(temp->file_name), strlen((int8_t*)fname))){
+        if(!strncmp((int8_t*)fname, (int8_t*)(temp->file_name), FILE_NAME_LENGTH)){
             /* copying the entire struct */
             // destination: input dentry
             // source:  found dentry
