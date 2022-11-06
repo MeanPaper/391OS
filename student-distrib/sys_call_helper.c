@@ -1,13 +1,6 @@
 #include "sys_call_helper.h"
 #include "lib.h"
 
-
-// #define GET_
-/* Local function declaration*/
-
-/* file operations jump table associtated with the correct file type*/
-// fot_t rtc_fot, file_fot, dir_fot, stdin_fot, stdout_fot;
-
 // the magic header of elf
 uint8_t elf_magic[ELF_MAGIC_SIZE] = {0x7f, 0x45, 0x4c, 0x46}; // "DEL,E,L,F"
 uint32_t current_pid_num = 0;
@@ -27,19 +20,13 @@ int32_t stdout_read(int fd,void * buf, int32_t n_bytes);
 int32_t stdin_write(int fd,void * buf, int32_t n_bytes);
 
 /*
- * system_call_helper 
- * Description: output system call message and put system in loop for now
- * Input: none
+ * halt 
+ * Description: Terminate the current program.  
+ *      later. 
+ * Input: uint8_t status
  * Output: none
- * Return value: none
- * 
+ * Return value: -1 on failure, 0-256 on success. 
 */
-// void system_call_helper(){
-//     clear();
-//     printf(" System call, reach IDT 0x80 \n");
-//     while(1);  
-// }
-
 int32_t halt (uint8_t status){
     /* halt must return a value to the parent execute system call so that 
      * we know how the program ended */
@@ -48,33 +35,8 @@ int32_t halt (uint8_t status){
     int32_t status_32 = (int32_t)status;
     if(exception) status_32 = 256;
     exception = 0;
-    // uint32_t return_value
-    // if(exception){
-    //     asm volatile(
-    //         "movl  %2, %%esp; "
-    //         "movl  %1, %%ebp; "
-    //         "movl  %0, %%eax; "
-    //         "leave; "
-    //         "return; "
-    //         :
-    //         :"r"(256), "r"(parent->save_ebp), "r"(parent->save_esp)
-    //         :"eax", "ebp", "esp"
-    //         );
-    // }
-       
-    /* halting the base shell should either not let the user halt at all or 
-     * after halting must re-spawn a new base shell, so there's always one 
-     * program that is running
-     * 
-     * we can achieve this by check the pid that we are trying to halt
-     * if the pid is 1(the first pid) 
-     *      then we will just return */
-    // remove_program_page(current_pid_num);
-    // Restore parent data
-    
 
     // Restore parent paging
-    // printf("%d \n \n", parent->pid);
     map_program_page(parent->pid);
     flush_TLB();
     tss.esp0 = EIGHT_MB - 4 - (EIGHT_KB * (parent->pid -1));
@@ -100,8 +62,7 @@ int32_t halt (uint8_t status){
         current_pid_num -= 1;
     }
     
-    // Jump to execute return
-    // TODO: need more information here 
+    // Jump to execute return with proper ebp and esp
     asm volatile(
         "movl  %2, %%esp; "
         "movl  %1, %%ebp; "
@@ -115,10 +76,13 @@ int32_t halt (uint8_t status){
 
 /*
  * execute 
- * Description: ghost function. 
- * Input: int32_t fd, void* buf, int32_t nbytes
+ * Description: Attempt to load and execute a new program,
+ *      the command life is a space seperated string. The first part is the file name to 
+ *      be executed, the second part will be used in checkpoint4, and this will be updated 
+ *      later. 
+ * Input: const uint8_t* command
  * Output: none
- * Return value: -1. 
+ * Return value: -1 on failure, 0-256 on success. 
 */
 int32_t execute (const uint8_t* command){ 
     dentry_t entry;     // file entry 
@@ -143,7 +107,6 @@ int32_t execute (const uint8_t* command){
         command_buf[i] = command[i];
     }
     
-    // Parse args ???
     if(-1 == read_dentry_by_name(command_buf, &entry)){ // we only consider the command is in one line for now
         // failed to find the file
         return -1;                                  
@@ -157,10 +120,6 @@ int32_t execute (const uint8_t* command){
     }
     ++current_pid_num;
     entry_pcb = (pcb_t *)(GET_PCB(current_pid_num));
-    // memset(entry_pcb, 0, sizeof(pcb_t));
-    // memcpy(pcb_target_addr, &entry_pcb, sizeof(entry_pcb));
-    // clean up local var
-    // memset(entry_pcb, 0, sizeof(entry_pcb));
     entry_pcb->pid = current_pid_num;
     entry_pcb->active = 1; 
     if(current_pid_num == 1){
@@ -176,15 +135,10 @@ int32_t execute (const uint8_t* command){
         "movl %%esp, %1;"
         : "=r"(entry_pcb->save_ebp), "=r"(entry_pcb->save_esp)
     );
-    // entry_pcb->save_ebp = s_ebp;
-    // entry_pcb->save_esp = s_esp;
 
     // open stdin and stdout
     entry_pcb->fd_array[0] = set_up_stdin(); 
     entry_pcb->fd_array[1] = set_up_stdout();
-
-    // find out the memory address for the process control block
-    // 8MB - num * 8KB
 
 
     // Check for executable
@@ -196,7 +150,6 @@ int32_t execute (const uint8_t* command){
     read_data(entry.inode_num, 0, (uint8_t*)(PROG_LOAD_ADDR), FOUR_MB);
     
     // get 
-
     read_data(entry.inode_num, PROGRAM_ENTRY, (uint8_t*)(&user_code_start_addr), 4);
     
     // TODO: tss for context switching
@@ -210,12 +163,6 @@ int32_t execute (const uint8_t* command){
      * CS
      * EIP
      */
-    // context_switch(user_code_start_addr); // this function is not finish
-    //register uint32_t saved_ebp asm("ebp");
-        //    "mov $0x2B, %%ax;"
-        // "mov %%ax, %%ds;"
-        // "leave;"
-        // "ret;"
     asm volatile (
         "pushl %1; "
         "pushl %2; "
@@ -291,6 +238,13 @@ int32_t stdin_write(int fd,void * buf, int32_t n_bytes) {
 }
 
 /* stdin: read-only file corresponding to keyboard input */
+/*
+ * set_up_stdin 
+ * Description: Set up the fd for stdin, set all the attribute of file_descriptor_t.
+ * Input: none
+ * Output: none
+ * Return value: stdin. 
+*/
 file_descriptor_t set_up_stdin(){
     file_descriptor_t stdin;
     stdin.file_op_ptr = stdin_fot;
@@ -299,6 +253,13 @@ file_descriptor_t set_up_stdin(){
     return stdin;
 }
 /* stdout: write-only file corresponding to terminal */
+/*
+ * set_up_stdout 
+ * Description: Set up the fd for stdout, set all the attribute of file_descriptor_t.
+ * Input: none
+ * Output: none
+ * Return value: stdout. 
+*/
 file_descriptor_t set_up_stdout(){
     file_descriptor_t stdout;
     stdout.file_op_ptr = stdout_fot;
@@ -342,7 +303,8 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
 /*
  * open 
  * Description: read the filename and find it's corresponding dentry,
- * then allocate new unused fd for the file. Then based on the different file type, do various settings for it.  
+ *              then allocate new unused fd for the file. 
+ *              Then based on the different file type, do various settings for it.  
  * Input: filename
  * Output: none
  * Return value: 0 on sucess, and -1 on fail. 
@@ -397,7 +359,8 @@ int32_t open(const uint8_t* filename){
 
 /*
  * close 
- * Description: Close the specified file discriptor, and make it available for other open fd. 
+ * Description: Close the specified file discriptor, 
+ *              and make it available for other open fd. 
  * Input: fd
  * Output: none
  * Return value: 0 on sucess, and -1 on fail. 

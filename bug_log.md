@@ -106,5 +106,14 @@
 ### Difficulty to find: 
     Easy. Since we know this is definitely from our keyboard function. 
 ### Difficulty to fix:
-    Easy. In our terminal.c:handle_backspace, we need to make sure 
+    Easy. In our terminal.c:handle_backspace, we need to make sure that when the buffer is empty, we cannot do backspace. 
+---
+## Bug #: 11
+### Date: 11/7/2022
+### Symptom: 
+    Whenever we do something, our terminal will print multiple times.
+### Difficulty to find: 
+    Easy. Since we know this is definitely from our keyboard function. 
+### Difficulty to fix:
+    Midium. Henry pointed the error location. The fix took awhile since we need to implement a way to prevent multiple press due to human interaction time and CPU respond time. 
 ---

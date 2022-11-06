@@ -48,11 +48,12 @@ return_to_user:
 syscall_jump_table:
 .long 0x0, halt, execute, read, write, open, close, getargs, vidmap, set_handler, sigreturn
 
+
 # do we need to set up stacks?
 flush_TLB:
     movl %cr3, %eax
     movl %eax, %cr3
     ret
 
-context_switch:
-    iret
+
+
