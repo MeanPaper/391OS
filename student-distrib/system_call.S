@@ -3,7 +3,7 @@
 #define FIRST_SYS_CALL 1
 
 .align 4
-.globl system_call, flush_TLB, context_switch
+.globl system_call, flush_TLB
 
 system_call:
     # eax will have sys_call number
@@ -33,6 +33,7 @@ system_call:
 invalid_sys_call:
     andl $0, %eax
     addl $-1, %eax
+    iret
 return_to_user:
     popfl
     popl %esp

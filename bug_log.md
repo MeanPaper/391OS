@@ -115,5 +115,5 @@
 ### Difficulty to find: 
     Easy. Since we know this is definitely from our keyboard function. 
 ### Difficulty to fix:
-    Midium. Henry pointed the error location. The fix took awhile since we need to implement a way to prevent multiple press due to human interaction time and CPU respond time. 
+    Medium. Henry pointed the error location. The fix took awhile since we need to implement a way to prevent multiple press due to human interaction time and CPU respond time. 
 ---

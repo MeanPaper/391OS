@@ -22,19 +22,20 @@ int32_t close_helper(int32_t fd);
 
 /*
  * halt 
- * Description: Terminate the current program and close all the relevant fd.  
- *      later. 
+ * Description: 
+ *      Terminate the current program and close all the relevant fd. Report 
+ *      back to the current execute and then return back to parent execute
  * Input: uint8_t status
  * Output: none
- * Return value: to the parent processor. 
-*/
+ * Return value: status code from halt
+ */
 int32_t halt (uint8_t status){
     /* halt must return a value to the parent execute system call so that 
      * we know how the program ended */
     pcb_t * current = (pcb_t*)(GET_PCB(current_pid_num));
     pcb_t * parent = (pcb_t*)(GET_PCB(current->parent_pid));
     int32_t status_32 = (int32_t)status;
-    if(exception) status_32 = 256;
+    if(exception) status_32 = 256; //if exception, status is 256
     exception = 0;
 
     // Restore parent paging
@@ -83,15 +84,15 @@ int32_t halt (uint8_t status){
  *      later. 
  * Input: const uint8_t* command
  * Output: none
- * Return value: -1 on failure, 0-256 on success. 
-*/
+ * Return value: -1 on failure, 256 on exception, other for success. 
+ */
 int32_t execute (const uint8_t* command){ 
     dentry_t entry;     // file entry 
     pcb_t * entry_pcb;    // the process block
     // uint32_t s_ebp;
     // uint32_t s_esp;
     uint32_t user_code_start_addr;
-    uint8_t command_buf[128];
+    uint8_t command_buf[128]; //buff size has a maximum of 128
     uint8_t elf_buffer[ELF_MAGIC_SIZE]; // elf buffer for the magic keyword         
     int32_t ret;
     int i;
@@ -185,6 +186,8 @@ int32_t execute (const uint8_t* command){
     return ret;
 }
 
+
+/* All the different function operation jump table depending on the function type */
 fot_t rtc_fot = {
     .read = &rtc_read,
     .write = &rtc_write,
@@ -216,16 +219,18 @@ fot_t stdout_fot = {
     .close = &terminal_close
 };
 
+
 /*
  * stdout_read 
  * Description: ghost function. 
  * Input: int32_t fd, void* buf, int32_t nbytes
  * Output: none
  * Return value: -1. 
-*/
+ */
 int32_t stdout_read(int fd,void * buf, int32_t n_bytes) {
     return -1;
 }
+
 
 /*
  * stdout_write 
@@ -233,19 +238,20 @@ int32_t stdout_read(int fd,void * buf, int32_t n_bytes) {
  * Input: int32_t fd, void* buf, int32_t nbytes
  * Output: none
  * Return value: -1. 
-*/
+  */
 int32_t stdin_write(int fd,void * buf, int32_t n_bytes) {
     return -1;
 }
 
-/* stdin: read-only file corresponding to keyboard input */
+
 /*
  * set_up_stdin 
  * Description: Set up the fd for stdin, set all the attribute of file_descriptor_t.
  * Input: none
  * Output: none
  * Return value: stdin. 
-*/
+ */
+/* stdin: read-only file corresponding to keyboard input */
 file_descriptor_t set_up_stdin(){
     file_descriptor_t stdin;
     stdin.file_op_ptr = stdin_fot;
@@ -253,14 +259,17 @@ file_descriptor_t set_up_stdin(){
     stdin.flags = 1;
     return stdin;
 }
-/* stdout: write-only file corresponding to terminal */
+
+
+
 /*
  * set_up_stdout 
  * Description: Set up the fd for stdout, set all the attribute of file_descriptor_t.
  * Input: none
  * Output: none
  * Return value: stdout. 
-*/
+ */
+/* stdout: write-only file corresponding to terminal */
 file_descriptor_t set_up_stdout(){
     file_descriptor_t stdout;
     stdout.file_op_ptr = stdout_fot;
@@ -275,9 +284,9 @@ file_descriptor_t set_up_stdout(){
  * Input: int32_t fd, void* buf, int32_t nbytes
  * Output: none
  * Return value: # of bytes written on sucess, and -1 on fail. 
-*/
+ */
 int32_t write(int fd, const void *buf, int32_t nbytes){
-    if(fd < 0 || fd >= 8) return -1;
+    if(fd < 0 || fd >= 8) return -1;  //maximum 8 files per fd, so fd cannot be larger than 8
     if(nbytes< 0) return -1;
     if(buf == NULL) return -1;
     pcb_t* location = (pcb_t*)(EIGHT_MB - (EIGHT_KB * current_pid_num));
@@ -291,10 +300,9 @@ int32_t write(int fd, const void *buf, int32_t nbytes){
  * Input: int32_t fd, void* buf, int32_t nbytes
  * Output: none
  * Return value: 0 on sucess, and -1 on fail. 
- * 
-*/
+ */
 int32_t read(int32_t fd, void* buf, int32_t nbytes){
-    if(fd < 0 || fd >= 8) return -1;
+    if(fd < 0 || fd >= 8) return -1; //maximum 8 files per fd, so fd cannot be larger than 8
     if(nbytes< 0) return -1;
     if(buf == NULL) return -1;
     uint8_t * temp = (uint8_t*)(EIGHT_MB - (EIGHT_KB * current_pid_num));
@@ -311,8 +319,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
  * Input: filename
  * Output: none
  * Return value: 0 on sucess, and -1 on fail. 
- * 
-*/
+ */
 
 int32_t open(const uint8_t* filename){
     if(filename == NULL)return -1;
@@ -332,7 +339,7 @@ int32_t open(const uint8_t* filename){
     }
     //use entry to access inode
     // set the file discriptor array entry
-    for(i = 0 ; i < 8; i++){
+    for(i = 0 ; i < 8; i++){ //maximum 8 files per fd, so fd cannot be larger than 8
         if(location->fd_array[i].flags == 0){
             fd = i;
             break;
@@ -342,13 +349,13 @@ int32_t open(const uint8_t* filename){
 
     location->fd_array[fd].flags = 1;       // set the fda entry as used
     location->fd_array[fd].file_pos = 0;    // set the pos to the start of the file
-    if(entry.file_type == 1){ //directory
+    if(entry.file_type == 1){ //directory type = 1
         location->fd_array[fd].file_op_ptr = dir_fot;  // set file operation table pointer based on file type of the dentry
     }
-    else if(entry.file_type == 2){ //file
+    else if(entry.file_type == 2){ //file = 2
         location->fd_array[fd].file_op_ptr = file_fot;  // set file operation table pointer based on file type of the dentry
     }
-    else if(entry.file_type == 0){ //RTC
+    else if(entry.file_type == 0){ //RTC = 0
         location->fd_array[fd].file_op_ptr = rtc_fot;  // set file operation table pointer based on file type of the dentry
     }
     else{
@@ -365,8 +372,7 @@ int32_t open(const uint8_t* filename){
  * Description: a helper function for our close function
  * Input: fd
  * Output: none
- * Return value: 0 on sucess, and -1 on fail. 
- * 
+ * Return value: other on sucess, and -1 on fail. 
  */
 int32_t close_helper(int32_t fd){
     if(fd < 0 || fd >= 8){ // can't close stdin, stdout, maximum 8 files, so fd cannot be larger than 8
@@ -387,7 +393,6 @@ int32_t close_helper(int32_t fd){
  * Input: fd
  * Output: none
  * Return value: 0 on sucess, and -1 on fail. 
- * 
  */
 int32_t close(int32_t fd){
     // can't close stdin, stdout
@@ -400,8 +405,7 @@ int32_t close(int32_t fd){
  * Input: none
  * Output: none
  * Return value: none
- * 
-*/
+ */
 int32_t getargs(uint8_t* buf, int32_t nbytes){
     return -1; // 7
 }
@@ -412,8 +416,7 @@ int32_t getargs(uint8_t* buf, int32_t nbytes){
  * Input: none
  * Output: none
  * Return value: none
- * 
-*/
+ */
 int32_t vidmap(uint8_t** screen_start){
     return -1; // 8
 }    
@@ -424,8 +427,7 @@ int32_t vidmap(uint8_t** screen_start){
  * Input: none
  * Output: none
  * Return value: none
- * 
-*/
+ */
 int32_t set_handler(int32_t signum, void*handler_address){
     return -1; // 9
 }
@@ -436,8 +438,7 @@ int32_t set_handler(int32_t signum, void*handler_address){
  * Input: none
  * Output: none
  * Return value: none
- * 
-*/
+ */
 int32_t sigreturn(void){
     return -1; // 10
 }   
