@@ -18,6 +18,7 @@ file_descriptor_t set_up_stdin();
 file_descriptor_t set_up_stdout();
 int32_t stdout_read(int fd,void * buf, int32_t n_bytes);
 int32_t stdin_write(int fd,void * buf, int32_t n_bytes);
+int32_t close_helper(int32_t fd);
 
 /*
  * halt 
@@ -45,7 +46,7 @@ int32_t halt (uint8_t status){
     int i;
     for(i = 0; i < FD_ARRAY_SIZE; ++i){
         if(current->fd_array[i].flags){
-            close(i);
+            close_helper(i);
             current->fd_array[i].flags = 0;
         }
     }
@@ -280,6 +281,7 @@ int32_t write(int fd, const void *buf, int32_t nbytes){
     if(nbytes< 0) return -1;
     if(buf == NULL) return -1;
     pcb_t* location = (pcb_t*)(EIGHT_MB - (EIGHT_KB * current_pid_num));
+    if (location->fd_array[fd].flags == 0) return -1;   // attempt to write unopened fd
     return ((location->fd_array[fd]).file_op_ptr).write(fd, buf, nbytes);
 }
 
@@ -297,6 +299,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
     if(buf == NULL) return -1;
     uint8_t * temp = (uint8_t*)(EIGHT_MB - (EIGHT_KB * current_pid_num));
     pcb_t* location = (pcb_t*)temp;
+    if (location->fd_array[fd].flags == 0) return -1;   // attempt to read unopened fd
     return ((location->fd_array[fd]).file_op_ptr).read(fd, buf, nbytes);
 }
 
@@ -357,6 +360,18 @@ int32_t open(const uint8_t* filename){
     
 } 
 
+int32_t close_helper(int32_t fd){
+    if(fd < 0 || fd >= 8){ // can't close stdin, stdout, maximum 8 files, so fd cannot be larger than 8
+        return -1;
+    }
+    //need to implement a pcb helper function. 
+    uint8_t * temp = (uint8_t*)(EIGHT_MB - (EIGHT_KB * current_pid_num));
+    pcb_t* location = (pcb_t*)temp;
+    if (location->fd_array[fd].flags == 0) return -1;   // attempt to close unopened fd
+    location->fd_array[fd].flags = 0;
+    return location->fd_array[fd].file_op_ptr.close(fd);
+}  
+
 /*
  * close 
  * Description: Close the specified file discriptor, 
@@ -367,16 +382,10 @@ int32_t open(const uint8_t* filename){
  * 
 */
 int32_t close(int32_t fd){
-    if(fd < 0 || fd >= 8){ // can't close stdin, stdout, maximum 8 files, so fd cannot be larger than 8
-        return -1;
-    }
-    //need to implement a pcb helper function. 
-    uint8_t * temp = (uint8_t*)(EIGHT_MB - (EIGHT_KB * current_pid_num));
-    pcb_t* location = (pcb_t*)temp;
-    location->fd_array[fd].flags = 0;
-    return location->fd_array[fd].file_op_ptr.close(fd);
-}    
-
+    // can't close stdin, stdout
+    if (fd == 0 || fd == 1) return -1;
+    return close_helper(fd);
+}  
 /*
  * getargs 
  * Description: 
