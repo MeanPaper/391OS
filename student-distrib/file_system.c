@@ -163,13 +163,16 @@ int32_t directory_close(int fd){
 // directory_read, read a file name from the current directory
 int32_t directory_read(int fd, void *buf, int32_t nbytes){
     if(!buf) return -1;
-    if(file_counter >= boot_block->total_dentry_num){
+    uint32_t current_pid_num = get_current_pid();
+    uint8_t * temp = (uint8_t*)(EIGHT_MB - (EIGHT_KB * current_pid_num));
+    pcb_t* location = (pcb_t*)temp;
+    if(location->fd_array[fd].file_pos >= boot_block->total_dentry_num){
         return 0;
     }
     if (nbytes > 32) nbytes = 32;
-    read_dentry_by_index(file_counter, &current_file);  // get the file by index  
+    read_dentry_by_index(location->fd_array[fd].file_pos, &current_file);  // get the file by index  
     memcpy(buf, current_file.file_name, nbytes);        // get the name
-    file_counter += 1;                                  // 
+    location->fd_array[fd].file_pos += 1;                                  // 
     return nbytes;
 }
 

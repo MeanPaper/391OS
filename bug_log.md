@@ -79,3 +79,14 @@
 ### Difficulty to fix:
     easy, to fix the bug we rewrote the function that is used to find the data blocks.
 ---
+## Checkpoint 3
+---
+## Bug #: 8
+### Date: 11/4/2022
+### Symptom: 
+    Not able to print new line for "ls"
+### Difficulty to find: 
+    Medium
+### Difficulty to fix:
+    easy, to fix the bug we rewrote the function that is used to find the data blocks.
+---

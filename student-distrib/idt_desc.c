@@ -170,8 +170,9 @@ void exception_handler(int idt_num){
     if(idt_num < 0 || idt_num > INTEL_LAST_DEF){    
         printf("oops! reaching the wrong code.");
         set_exception_flag(1);
-        while(1);
+        halt(0);
     }
+    set_exception_flag(1);
     printf("%s", exception_message[idt_num]);
-    while(1);
+    halt(0);
 }

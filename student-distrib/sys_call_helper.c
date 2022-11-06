@@ -42,19 +42,22 @@ int32_t halt (uint8_t status){
      * we know how the program ended */
     pcb_t * current = (pcb_t*)(GET_PCB(current_pid_num));
     pcb_t * parent = (pcb_t*)(GET_PCB(current->parent_pid));
-    
+    int32_t status_32 = (int32_t)status;
+    if(exception) status_32 = 256;
+    exception = 0;
     // uint32_t return_value
-    if(exception){
-        asm volatile(
-            "movl  %2, %%esp; "
-            "movl  %1, %%ebp; "
-            "movl  %0, %%eax; "
-            "jmp execute_end; "
-            :
-            :"r"(256), "r"(parent->save_ebp), "r"(parent->save_esp)
-            :"eax", "ebp", "esp"
-            );
-    }
+    // if(exception){
+    //     asm volatile(
+    //         "movl  %2, %%esp; "
+    //         "movl  %1, %%ebp; "
+    //         "movl  %0, %%eax; "
+    //         "leave; "
+    //         "return; "
+    //         :
+    //         :"r"(256), "r"(parent->save_ebp), "r"(parent->save_esp)
+    //         :"eax", "ebp", "esp"
+    //         );
+    // }
     
     /* halting the base shell should either not let the user halt at all or 
      * after halting must re-spawn a new base shell, so there's always one 
@@ -63,13 +66,15 @@ int32_t halt (uint8_t status){
      * we can achieve this by check the pid that we are trying to halt
      * if the pid is 1(the first pid) 
      *      then we will just return */
-    remove_program_page(current_pid_num);
+    // remove_program_page(current_pid_num);
     // Restore parent data
     
 
     // Restore parent paging
+    // printf("%d \n \n", parent->pid);
     map_program_page(parent->pid);
-    tss.esp0 = parent->save_esp;
+    flush_TLB();
+    tss.esp0 = EIGHT_MB - 4 - (EIGHT_KB * (parent->pid -1));
     
     // Close all relevant FDs
     int i;
@@ -84,7 +89,7 @@ int32_t halt (uint8_t status){
     current->active = 0;
 
     // check if main shell
-    if(current->parent_pid == parent->pid && current_pid_num == 1){
+    if(current->pid == current->parent_pid && current_pid_num == 1){
         execute((uint8_t*)"shell");
     }
     else{
@@ -97,12 +102,11 @@ int32_t halt (uint8_t status){
         "movl  %2, %%esp; "
         "movl  %1, %%ebp; "
         "movl  %0, %%eax; "
-        "jmp execute_end; "
+        "jmp execute_return;"
         :
-        :"r"((int32_t)status), "r"(parent->save_ebp), "r"(parent->save_esp)
-        :"eax", "ebp", "esp"
+        :"r"(status_32), "r"(current->save_ebp), "r"(current->save_esp)
     );
-    return status;
+    return status_32;
 }
 
 int32_t execute (const uint8_t* command){ 
@@ -110,7 +114,10 @@ int32_t execute (const uint8_t* command){
     pcb_t * entry_pcb;    // the process block
     // uint32_t s_ebp;
     // uint32_t s_esp;
+    uint32_t user_code_start_addr;
     uint8_t command_buf[128];
+    uint8_t elf_buffer[ELF_MAGIC_SIZE]; // elf buffer for the magic keyword         
+    int32_t ret;
     int i;
 
     memset(command_buf, 0, sizeof(command_buf));
@@ -131,8 +138,6 @@ int32_t execute (const uint8_t* command){
         return -1;                                  
     }
     
-    uint8_t elf_buffer[ELF_MAGIC_SIZE]; // elf buffer for the magic keyword         
-    
     // read the first 4 byte of the file to see if the file has ELF
     read_data(entry.inode_num, 0, elf_buffer, ELF_MAGIC_SIZE);          
     if(strncmp((int8_t*)elf_magic,(int8_t*)elf_buffer,ELF_MAGIC_SIZE)){
@@ -141,7 +146,7 @@ int32_t execute (const uint8_t* command){
     }
     ++current_pid_num;
     entry_pcb = (pcb_t *)(GET_PCB(current_pid_num));
-    memset(entry_pcb, 0, sizeof(pcb_t));
+    // memset(entry_pcb, 0, sizeof(pcb_t));
     // memcpy(pcb_target_addr, &entry_pcb, sizeof(entry_pcb));
     // clean up local var
     // memset(entry_pcb, 0, sizeof(entry_pcb));
@@ -180,7 +185,7 @@ int32_t execute (const uint8_t* command){
     read_data(entry.inode_num, 0, (uint8_t*)(PROG_LOAD_ADDR), FOUR_MB);
     
     // get 
-    uint32_t user_code_start_addr;
+
     read_data(entry.inode_num, PROGRAM_ENTRY, (uint8_t*)(&user_code_start_addr), 4);
     
     // TODO: tss for context switching
@@ -196,28 +201,29 @@ int32_t execute (const uint8_t* command){
      */
     // context_switch(user_code_start_addr); // this function is not finish
     //register uint32_t saved_ebp asm("ebp");
+        //    "mov $0x2B, %%ax;"
+        // "mov %%ax, %%ds;"
+        // "leave;"
+        // "ret;"
     asm volatile (
-        "mov $0x2B, %%ax;"
-        "mov %%ax, %%ds;"
-        "pushl %0; "
         "pushl %1; "
+        "pushl %2; "
         "pushfl;"
         "popl %%eax;"
         "orl $0x200, %%eax;"
         "pushl %%eax;"
-        "pushl %2;"
-        "pushl %3; "
+        "pushl %3;"
+        "pushl %4; "
         "iret;"
-        "execute_end:;"
-        "leave;"
-        "ret;"
-        :           /* output */
+        "execute_return:;"
+        "movl %%eax, %0;"
+        :"=r"(ret)         /* output */
         :"r"(USER_DS), "r"(USER_PROG - sizeof(uint32_t)), "r"(USER_CS), "r"(user_code_start_addr) /* input */
         :"eax"          /* clobbered register*/
     );
     
     // Push IRET context to kernel stack
-    return 0;
+    return ret;
 }
 
 fot_t rtc_fot = {
@@ -240,16 +246,24 @@ fot_t dir_fot = {
 };
 fot_t stdin_fot = {
     .read = &terminal_read,
-    .write = NULL,
+    .write = &stdin_write,
     .open = &terminal_open,
     .close = terminal_close
 };
 fot_t stdout_fot = {
-    .read = NULL,
+    .read = &stdout_read,
     .write = &terminal_write,
     .open = &terminal_open,
     .close = &terminal_close
 };
+
+int32_t stdout_read(int fd,void * buf, int32_t n_bytes) {
+    return -1;
+}
+
+int32_t stdin_write(int fd,void * buf, int32_t n_bytes) {
+    return -1;
+}
 
 /* stdin: read-only file corresponding to keyboard input */
 file_descriptor_t set_up_stdin(){

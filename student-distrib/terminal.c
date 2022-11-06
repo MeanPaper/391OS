@@ -54,7 +54,8 @@ int32_t terminal_close(){
 int32_t terminal_read(int fd,void * buf, int32_t n_bytes){
     if(!buf) return -1;
     sti();
-    while(!ENTER_PRESSED); //wait until user press enter. 
+    while(!ENTER_PRESSED); //wait until user press enter.
+    ENTER_PRESSED = 0; 
     cli();
     strncpy((int8_t*)(terminal.terminal_buf), (int8_t*)key_buffer, 127);
 
