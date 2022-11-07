@@ -29,9 +29,10 @@
 .vscode
 
 #
+bootimg
 
 # img file
-
+*.img
 
 # dependancy file 
 *.dep
