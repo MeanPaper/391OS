@@ -1,5 +1,6 @@
 #include "file_system.h"
 #include "lib.h"
+#include "sys_call_helper.h"
 
 // this temporary dentry, only for checkpoint 2
 dentry_t current_file;
@@ -22,7 +23,6 @@ void init_file_system(uint32_t* file_system_ptr){
 int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry){
     int i;
     dentry_t *temp;
-    
     // sanity check for file name, dentry
     if(!fname || !dentry || !strlen((int8_t*)fname)){
         return -1;
@@ -34,7 +34,7 @@ int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry){
         temp = &(boot_block->files[i]);
         // using string compare to compare the file name and the name that it request
         // read the usage of the function, fname is need to be string 1 since it might be null terminated 
-        if(!strncmp((int8_t*)fname, (int8_t*)(temp->file_name), strlen((int8_t*)fname))){
+        if(!strncmp((int8_t*)fname, (int8_t*)(temp->file_name), FILE_NAME_LENGTH)){
             /* copying the entire struct */
             // destination: input dentry
             // source:  found dentry
@@ -149,7 +149,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 
 // open a directory and read the directory
 int32_t directory_open(const uint8_t* file_name){
-    if(*file_name) return -1;
+    if(!file_name) return -1;
 
     return read_dentry_by_index(0, &current_file);
 }
@@ -160,20 +160,23 @@ int32_t directory_close(int fd){
 }
 
 // directory_read, read a file name from the current directory
-int32_t directory_read(int fd, void *buf, uint32_t nbytes){
+int32_t directory_read(int fd, void *buf, int32_t nbytes){
     if(!buf) return -1;
-
-    if(file_counter >= boot_block->total_dentry_num){
-        return -1;
+    uint32_t current_pid_num = get_current_pid();
+    uint8_t * temp = (uint8_t*)(EIGHT_MB - (EIGHT_KB * current_pid_num));
+    pcb_t* location = (pcb_t*)temp;
+    if(location->fd_array[fd].file_pos >= boot_block->total_dentry_num){
+        return 0;
     }
-    read_dentry_by_index(file_counter, &current_file);  // get the file by index  
+    if (nbytes > 32) nbytes = 32;
+    read_dentry_by_index(location->fd_array[fd].file_pos, &current_file);  // get the file by index  
     memcpy(buf, current_file.file_name, nbytes);        // get the name
-    file_counter += 1;                                  // 
-    return 0;
+    location->fd_array[fd].file_pos += 1;                                  // 
+    return nbytes;
 }
 
 // directory_write, do nothing
-int32_t directory_write(int fd, void *buf, uint32_t nbytes){
+int32_t directory_write(int fd, const void *buf, int32_t nbytes){
     if(!buf) return -1;
     return -1;
 }
@@ -191,7 +194,7 @@ int32_t file_close(int fd){
 }
 
 // write to a file
-int32_t file_write(int fd, void *buf, uint32_t nbytes){
+int32_t file_write(int fd, const void *buf, int32_t nbytes){
     if(!buf) return -1;
 
     return -1;
@@ -199,9 +202,20 @@ int32_t file_write(int fd, void *buf, uint32_t nbytes){
 
 // read the data from the file
 // this is a simple implementation, need to modify later on
-int32_t file_read(int fd, void *buf, uint32_t nbytes){
-    if(!buf) return -1;
-
-    inode_t * data_block_start_index = (inode_t*)(boot_block + 1 + current_file.inode_num);
-    return read_data(current_file.inode_num, 0, buf, data_block_start_index->length);
+int32_t file_read(int fd, void *buf, int32_t nbytes){
+    // if(!buf) return -1;
+    uint32_t read_size;
+ 
+    // inode_t * data_block_start_index = (inode_t*)(boot_block + 1 + current_file.inode_num);
+    // return read_data(current_file.inode_num, 0, buf, data_block_start_index->length);
+    if(fd < 0 || fd >= 8)return -1;
+    if(nbytes< 0)return -1;
+    if(buf == NULL) return -1;
+    uint32_t current_pid_num = get_current_pid();
+    uint8_t * temp = (uint8_t*)(EIGHT_MB - (EIGHT_KB * current_pid_num));
+    pcb_t* location = (pcb_t*)temp;
+    read_size = read_data(location->fd_array[fd].inode, location->fd_array[fd].file_pos, buf, nbytes);
+    if (read_size == -1) return -1;
+    location->fd_array[fd].file_pos += read_size;
+    return read_size;
 }

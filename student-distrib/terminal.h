@@ -9,8 +9,8 @@ extern int32_t terminal_open();
 
 //function does nothing, return 0;
 extern int32_t terminal_close();
-extern int32_t terminal_read(int fd,void * buf, uint32_t n_bytes);
-extern int32_t terminal_write(int fd,void * buf, uint32_t n_bytes);
+extern int32_t terminal_read(int fd,void * buf, int32_t n_bytes);
+extern int32_t terminal_write(int fd, const void * buf, int32_t n_bytes);
 
 typedef struct terminal{
     uint8_t terminal_buf[128];

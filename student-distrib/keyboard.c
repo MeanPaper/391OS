@@ -180,8 +180,8 @@ void append_to_buffer(uint8_t keyword){
 void handle_backspace(){
 	if(buffer_index > 0){
 		key_buffer[--buffer_index] = '\0';
+		backspace();
 	}
-	backspace();
 	//delete the char in buffer and update in memory, set the cursor to the new location. 
 }
 
@@ -194,8 +194,10 @@ void handle_backspace(){
  * Side Effects: none
 */
 void handle_enter(){
+	
 	key_buffer[buffer_index] = '\n';
 	enter();
+	buffer_index = 0;
 	// memset((void*)key_buffer, 0, sizeof(key_buffer));
 	//need to set the memory
 

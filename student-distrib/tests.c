@@ -323,32 +323,32 @@ int very_large_file_with_long_name_ok(){
  * Coverage: RTC
  * Files: rtc.c
  */
-int rtc_test_2() {
-	TEST_HEADER;
-	rtc_open();
-	int idx, loop, loop2, f;
-	loop = 0;
-	loop2 = 0;
-	f = 2;	// base frequency is 2 
-	while(loop2<5) { // loop 5 times
-		while(loop < 10) { // loop 10 times
-			idx = 0;
-			while(idx < 8) {	// loop for outputing 8 char at a time 
-				rtc_read();
-				putc('1');
-				idx++;
-			}
-			f = 2 * f;	// increase frequency
-			rtc_write(&f);
-			loop ++;
-		}
-		loop2++;
-		loop = 0;
-		// putc('\n');
-	}
-	rtc_close();
-	return 1;
-}
+// int rtc_test_2() {
+// 	TEST_HEADER;
+// 	rtc_open(NULL);
+// 	int idx, loop, loop2, f;
+// 	loop = 0;
+// 	loop2 = 0;
+// 	f = 2;	// base frequency is 2 
+// 	while(loop2<5) { // loop 5 times
+// 		while(loop < 10) { // loop 10 times
+// 			idx = 0;
+// 			while(idx < 8) {	// loop for outputing 8 char at a time 
+// 				rtc_read();
+// 				putc('1');
+// 				idx++;
+// 			}
+// 			f = 2 * f;	// increase frequency
+// 			rtc_write(&f);
+// 			loop ++;
+// 		}
+// 		loop2++;
+// 		loop = 0;
+// 		// putc('\n');
+// 	}
+// 	rtc_close();
+// 	return 1;
+// }
 
 
 
@@ -374,17 +374,11 @@ void launch_tests(){
 	// TEST_OUTPUT("divide by 0 test", div_zero_test());
 	/* expect to have system call and program stay in a loop */
 	// TEST_OUTPUT("System call test", system_call_test());
-	/* expect to have a page fault */
-	// TEST_OUTPUT("deference null pointer", derefence_null()); 
-	/* expect to have no page fault */
-	// TEST_OUTPUT("deference correct page pointer", paging_test_no_fault()); 
-	/* expect to have overflow exception */
-	//TEST_OUTPUT("overflow exception rise", overflow_exception_test()); 
 		
 	/* Checkpoint 2 test start here */
 
 	/* expect screen to print "1" with increasing speed */
-	TEST_OUTPUT("rtc_test_2", rtc_test_2());
+	// TEST_OUTPUT("rtc_test_2", rtc_test_2());
 
 	/* output all the file within the directory including "." */
 	// TEST_OUTPUT("ls_test", ls_test());
@@ -396,12 +390,11 @@ void launch_tests(){
 	// TEST_OUTPUT("fish frame one", fish_frame_one());
 	
 	// /* fish file test */
-	// default read range to 2000 bytes
-	// TEST_OUTPUT("fish file test", read_non_txt("fish", 2000));
+	// this test is strange, 36000 is an approximation of fish file size
+	// TEST_OUTPUT("fish file test", read_non_txt("fish", 1000));
  	// printf(" =============================================================== \n");
 		
-	/* grep exe read test */
-	// default reading range to 2000 Bytes
+	// /* grep exe read test */
 	// TEST_OUTPUT("grep file test", read_non_txt("grep", 2000));
  	// printf(" =============================================================== \n");
 	
@@ -416,5 +409,5 @@ void launch_tests(){
 	/* successfully read the file and output the content */
 	// TEST_OUTPUT("read the long name file", very_large_file_with_long_name_ok());
 	// printf(" =============================================================== \n");
-	TEST_OUTPUT("test terminal read full", test_terminal_read_full());
+	// TEST_OUTPUT("test terminal read full", test_terminal_read_full());
 }
