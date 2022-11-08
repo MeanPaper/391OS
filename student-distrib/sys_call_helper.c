@@ -17,7 +17,7 @@ uint32_t get_current_pid() {
 file_descriptor_t set_up_stdin();
 file_descriptor_t set_up_stdout();
 int32_t stdout_read(int fd,void * buf, int32_t n_bytes);
-int32_t stdin_write(int fd,void * buf, int32_t n_bytes);
+int32_t stdin_write(int fd, const void * buf, int32_t n_bytes);
 int32_t close_helper(int32_t fd);
 
 /*
@@ -85,6 +85,7 @@ int32_t halt (uint8_t status){
  * Input: const uint8_t* command
  * Output: none
  * Return value: -1 on failure, 256 on exception, other for success. 
+ * 
  */
 int32_t execute (const uint8_t* command){ 
     dentry_t entry;     // file entry 
@@ -103,13 +104,12 @@ int32_t execute (const uint8_t* command){
     }
     
     // we read the command until newline or null
-    for(i = 0; i < strlen((int8_t*) command); ++i)
-    {
+    for(i = 0; i < strlen((int8_t*) command); ++i){
         if(command[i] == 0x0a || command[i] == 0) break;
         command_buf[i] = command[i];
     }
     
-    if(-1 == read_dentry_by_name(command_buf, &entry)){ // we only consider the command is in one line for now
+    if(-1 == read_dentry_by_name((uint8_t*) command_buf, &entry)){ // we only consider the command is in one line for now
         // failed to find the file
         return -1;                                  
     }
@@ -239,7 +239,7 @@ int32_t stdout_read(int fd,void * buf, int32_t n_bytes) {
  * Output: none
  * Return value: -1. 
   */
-int32_t stdin_write(int fd,void * buf, int32_t n_bytes) {
+int32_t stdin_write(int fd, const void * buf, int32_t n_bytes) {
     return -1;
 }
 
