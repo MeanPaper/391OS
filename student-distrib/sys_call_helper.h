@@ -51,6 +51,7 @@ typedef struct pcb{
     uint32_t save_ebp;
     uint32_t save_esp;
     uint8_t active;
+    uint8_t args[1024];
     // uint32_t * process_addr;
     file_descriptor_t fd_array[FD_ARRAY_SIZE]; // file descriptor array for the current process
 }pcb_t;

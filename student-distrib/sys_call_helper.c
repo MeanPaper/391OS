@@ -96,16 +96,21 @@ int32_t execute (const uint8_t* command){
     uint8_t command_buf[128]; //buff size has a maximum of 128
     uint8_t elf_buffer[ELF_MAGIC_SIZE]; // elf buffer for the magic keyword         
     int32_t ret;
-    int i;
+    int i, arg_idx;
+    arg_idx = 0;
 
     memset(command_buf, 0, sizeof(command_buf));
     if(!command){
         return -1;
     }
     
-    // we read the command until newline or null
+    // we read the command until newline or null or space
     for(i = 0; i < strlen((int8_t*) command); ++i){
         if(command[i] == 0x0a || command[i] == 0) break;
+        if(command[i] == 0x20){
+            arg_idx = i+1;
+            break;
+        }
         command_buf[i] = command[i];
     }
     
@@ -129,6 +134,15 @@ int32_t execute (const uint8_t* command){
     }
     else{
         entry_pcb->parent_pid = current_pid_num - 1;
+    }
+
+    memset(entry_pcb->args, 0, sizeof(entry_pcb->args));
+    if (arg_idx != 0) {
+        // there are arguments
+        for(i = arg_idx; i < strlen((int8_t*) command); ++i){
+            if(command[i] == 0x0a || command[i] == 0) break;
+            entry_pcb->args[i-arg_idx] = command[i];
+        }
     }
    
     // TODO: save esp and save ebp
@@ -407,8 +421,12 @@ int32_t close(int32_t fd){
  * Return value: none
  */
 int32_t getargs(uint8_t* buf, int32_t nbytes){
-    
-    return -1; // 7
+    if (buf == NULL || nbytes < 0) return -1;
+    pcb_t* location = (pcb_t*)(EIGHT_MB - (EIGHT_KB * current_pid_num));
+    if (location->args[nbytes] != 0) return -1;   // the arguments and a terminal NULL do not fit in the buffer
+    if (location->args[0] == 0) return -1;        // empty arguments
+    memcpy(buf, location->args, nbytes);        // get the name
+    return 0; // 7
 }
 
 /*
