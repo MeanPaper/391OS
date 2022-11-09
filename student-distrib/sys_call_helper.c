@@ -401,12 +401,13 @@ int32_t close(int32_t fd){
 }  
 /*
  * getargs 
- * Description: 
+ * Description: read the program's command line arguments into a user-level buffer
  * Input: none
  * Output: none
  * Return value: none
  */
 int32_t getargs(uint8_t* buf, int32_t nbytes){
+    
     return -1; // 7
 }
 
