@@ -48,7 +48,7 @@ int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
     sti();
     flag = 1;   // set flag
     while(flag==1);
-    return 1;
+    return 0;
 }
 
 /* Set the frequency */

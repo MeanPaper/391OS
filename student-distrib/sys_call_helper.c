@@ -416,9 +416,9 @@ int32_t close(int32_t fd){
 /*
  * getargs 
  * Description: read the program's command line arguments into a user-level buffer
- * Input: none
+ * Input: uint8_t* buf, int32_t nbytes
  * Output: none
- * Return value: none
+ * Return value: -1 if fail, 0 if success
  */
 int32_t getargs(uint8_t* buf, int32_t nbytes){
     if (buf == NULL || nbytes < 0) return -1;
@@ -431,12 +431,17 @@ int32_t getargs(uint8_t* buf, int32_t nbytes){
 
 /*
  * vidmap 
- * Description: 
+ * Description: map the text-mode video memory into user space at a preset virtual address
  * Input: none
  * Output: none
  * Return value: none
  */
 int32_t vidmap(uint8_t** screen_start){
+    // write the address into to memory location provided by the caller
+    // check if the location falls within the address range covered by the single user-level page
+    uint32_t start = (uint32_t)(GET_PCB(current_pid_num));
+    if ((uint32_t)screen_start < start || (uint32_t)screen_start > start+EIGHT_KB) return -1;
+    // the vedio memory requires you to add another page mapping for the program (4kB)
     return -1; // 8
 }    
 
