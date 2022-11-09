@@ -79,12 +79,13 @@ int32_t map_program_page(int pid_num){
 }
 
 int32_t map_video_page(int32_t video_addr){
-    page_directory_entry_t vid_page;
+    page_table_entry_t vid_page;
     vid_page.val = 0;
     vid_page.page_base_addr = 0xB8000 >> 12;  // use the same physical address for video memory
     vid_page.rw = 1;                          // enable read and write
     vid_page.present = 1;                     // present the page
     vid_page.user_super = 1;                  // allowing dpl 3
+    video_page_table[0] = vid_page.val;       // this is at page table entry 0 because the virtual address is 256MB the body are 0 for the most part
     page_directory[video_addr >> 22] = (uint32_t)(video_page_table) | 7;  // or with 111 allowing r/w, p, as well as user dpl  
     return 0;   
 }
