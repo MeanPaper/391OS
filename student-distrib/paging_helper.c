@@ -77,6 +77,17 @@ int32_t map_program_page(int pid_num){
     page_directory[(FIRST_PROG_VIRTUAL ) >> 22] = prog_page.val;       // loading the 4MB page directory entries 
     return 0;
 }
+
+int32_t map_video_page(int32_t video_addr){
+    page_directory_entry_t vid_page;
+    vid_page.val = 0;
+    vid_page.page_base_addr = 0xB8000 >> 12;  // use the same physical address for video memory
+    vid_page.rw = 1;                          // enable read and write
+    vid_page.present = 1;                     // present the page
+    vid_page.user_super = 1;                  // allowing dpl 3
+    page_directory[video_addr >> 22] = (uint32_t)(video_page_table) | 7;  // or with 111 allowing r/w, p, as well as user dpl  
+    return 0;   
+}
 // void addpage
 // pm addr >> 22
 // void removepage

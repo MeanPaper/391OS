@@ -19,8 +19,12 @@
 #define FOUR_MB   0x400000
 #define EIGHT_MB   0x800000
 #define PROG_LOAD_ADDR  0x08048000
+#define PROG_128MB  0x08000000
 #define USER_PROG 0x8400000 // 132 MB
 #define EIGHT_KB      8192
+
+#define VIDEO_VIR       0xB8000
+#define FOUR_KB         0x1000
 // #define USER_CS     0x0023
 // #define USER_DS     0x002B
 #define GET_PCB(n)  EIGHT_MB-(n)*EIGHT_KB

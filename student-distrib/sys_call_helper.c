@@ -1,6 +1,9 @@
 #include "sys_call_helper.h"
 #include "lib.h"
 
+
+// uint8_t * vram = (uint8_t*)(VIDEO_VIR + FOUR_KB);
+
 // the magic header of elf
 uint8_t elf_magic[ELF_MAGIC_SIZE] = {0x7f, 0x45, 0x4c, 0x46}; // "DEL,E,L,F"
 uint32_t current_pid_num = 0;
@@ -437,12 +440,23 @@ int32_t getargs(uint8_t* buf, int32_t nbytes){
  * Return value: none
  */
 int32_t vidmap(uint8_t** screen_start){
+    
+    // null check
+    if(!screen_start) return -1;
+    // user program page is from prog_load_addr virtual address to the address + 4MB
+    if ((uint32_t)screen_start < PROG_LOAD_ADDR || (uint32_t)screen_start > PROG_LOAD_ADDR + FOUR_MB - 4) return -1;
+    
+    map_video_page(PROG_128MB << 1);    // loading new video page
+    flush_TLB();                        // flush TLB
+    *screen_start = (uint8_t*)(PROG_128MB << 1);    // virtual address is 256MB double the size of PROG_LOAD_ADDR = 128MB
+
     // write the address into to memory location provided by the caller
     // check if the location falls within the address range covered by the single user-level page
-    uint32_t start = (uint32_t)(GET_PCB(current_pid_num));
-    if ((uint32_t)screen_start < start || (uint32_t)screen_start > start+EIGHT_KB) return -1;
+    // uint32_t start = (uint32_t)(GET_PCB(current_pid_num));
+
+
     // the vedio memory requires you to add another page mapping for the program (4kB)
-    return -1; // 8
+    return 0; // 8
 }    
 
 /*

@@ -71,6 +71,7 @@ typedef union page_table_entry {
 /* Initialize page directory and table array */
 uint32_t page_directory[ARRAY_SIZE] __attribute__ ((aligned(ALIGNMENT)));
 uint32_t first_page_table[ARRAY_SIZE] __attribute__ ((aligned(ALIGNMENT)));
+uint32_t video_page_table[ARRAY_SIZE] __attribute__ ((aligned(ALIGNMENT)));
 
 /* void page_init();
  * Inputs: none
@@ -95,6 +96,8 @@ extern void loadPageDirectory(uint32_t* page_directory);
 extern void enablePaging();
 
 extern int32_t map_program_page(int pid_num);
+extern int32_t map_video_page(int32_t video_addr);  // need to test this
+
 extern int32_t remove_program_page(int pid_num);
 
 #endif
