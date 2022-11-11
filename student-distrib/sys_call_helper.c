@@ -436,7 +436,11 @@ int32_t getargs(uint8_t* buf, int32_t nbytes){
  * vidmap 
  * Description: map the text-mode video memory into user space at a preset virtual address
  * Input: none
- * Output: none
+ * Output: 
+ *      screen_start: 
+ *          after the function call, screen start will contain the address of the video map
+ *          address in virtual space where as this points to the video memory in actual 
+ *          physical memory. 
  * Return value: none
  */
 int32_t vidmap(uint8_t** screen_start){
