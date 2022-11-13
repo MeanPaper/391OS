@@ -103,7 +103,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
     file_size = target_inode->length;                     // getting the file size
 
     // check offset validation and 
-    if(offset >= file_size){
+    if(offset > file_size){
         return -1;
     }
     // calculate the remaining data after the given offset
@@ -140,7 +140,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
     // if the length reach the remaining portion of the file
     // then end of file would be read and then return 
     if(length == remaining_file_size){ // return the end of file, if the end of file is reach
-        return 0;
+        return remaining_file_size;
     }
     return length; // return the number of bytes copied
 }

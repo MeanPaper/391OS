@@ -1,6 +1,9 @@
 #include "sys_call_helper.h"
 #include "lib.h"
 
+
+// uint8_t * vram = (uint8_t*)(VIDEO_VIR + FOUR_KB);
+
 // the magic header of elf
 uint8_t elf_magic[ELF_MAGIC_SIZE] = {0x7f, 0x45, 0x4c, 0x46}; // "DEL,E,L,F"
 uint32_t current_pid_num = 0;
@@ -96,16 +99,21 @@ int32_t execute (const uint8_t* command){
     uint8_t command_buf[128]; //buff size has a maximum of 128
     uint8_t elf_buffer[ELF_MAGIC_SIZE]; // elf buffer for the magic keyword         
     int32_t ret;
-    int i;
+    int i, arg_idx;
+    arg_idx = 0;
 
     memset(command_buf, 0, sizeof(command_buf));
     if(!command){
         return -1;
     }
     
-    // we read the command until newline or null
+    // we read the command until newline or null or space
     for(i = 0; i < strlen((int8_t*) command); ++i){
         if(command[i] == 0x0a || command[i] == 0) break;
+        if(command[i] == 0x20){
+            arg_idx = i+1;
+            break;
+        }
         command_buf[i] = command[i];
     }
     
@@ -129,6 +137,15 @@ int32_t execute (const uint8_t* command){
     }
     else{
         entry_pcb->parent_pid = current_pid_num - 1;
+    }
+
+    memset(entry_pcb->args, 0, sizeof(entry_pcb->args));
+    if (arg_idx != 0) {
+        // there are arguments
+        for(i = arg_idx; i < strlen((int8_t*) command); ++i){
+            if(command[i] == 0x0a || command[i] == 0) break;
+            entry_pcb->args[i-arg_idx] = command[i];
+        }
     }
    
     // TODO: save esp and save ebp
@@ -401,24 +418,50 @@ int32_t close(int32_t fd){
 }  
 /*
  * getargs 
- * Description: 
- * Input: none
+ * Description: read the program's command line arguments into a user-level buffer
+ * Input: uint8_t* buf, int32_t nbytes
  * Output: none
- * Return value: none
+ * Return value: -1 if fail, 0 if success
  */
 int32_t getargs(uint8_t* buf, int32_t nbytes){
-    return -1; // 7
+    if (buf == NULL || nbytes < 0) return -1;
+    pcb_t* location = (pcb_t*)(EIGHT_MB - (EIGHT_KB * current_pid_num));
+    if (location->args[nbytes] != 0) return -1;   // the arguments and a terminal NULL do not fit in the buffer
+    if (location->args[0] == 0) return -1;        // empty arguments
+    memcpy(buf, location->args, nbytes);        // get the name
+    return 0; // 7
 }
 
 /*
  * vidmap 
- * Description: 
+ * Description: map the text-mode video memory into user space at a preset virtual address
  * Input: none
- * Output: none
+ * Output: 
+ *      screen_start: 
+ *          after the function call, screen start will contain the address of the video map
+ *          address in virtual space where as this points to the video memory in actual 
+ *          physical memory. 
  * Return value: none
  */
 int32_t vidmap(uint8_t** screen_start){
-    return -1; // 8
+    
+    // null check
+    if(!screen_start) return -1;
+    // user program page is from prog_load_addr virtual address to the address + 4MB
+    if ((uint32_t)screen_start < PROG_LOAD_ADDR || (uint32_t)screen_start > PROG_LOAD_ADDR + FOUR_MB - 4) return -1;
+    clear();
+    map_video_page(PROG_128MB << 1);    // loading new video page
+    flush_TLB();                        // flush TLB
+    *screen_start = (uint8_t*)(PROG_128MB << 1);    // virtual address is 256MB double the size of PROG_LOAD_ADDR = 128MB
+    
+
+    // write the address into to memory location provided by the caller
+    // check if the location falls within the address range covered by the single user-level page
+    // uint32_t start = (uint32_t)(GET_PCB(current_pid_num));
+
+
+    // the vedio memory requires you to add another page mapping for the program (4kB)
+    return 0; // 8
 }    
 
 /*
