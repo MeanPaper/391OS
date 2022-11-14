@@ -24,7 +24,7 @@ int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry){
     int i;
     dentry_t *temp;
     // sanity check for file name, dentry
-    if(!fname || !dentry || !strlen((int8_t*)fname)){
+    if(!fname || !dentry || !strlen((int8_t*)fname) || !strlen((int8_t*)fname) > FILE_NAME_LENGTH){
         return -1;
     }
 
