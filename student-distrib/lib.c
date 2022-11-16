@@ -351,6 +351,7 @@ void kbd_putc(uint8_t c) {
  * Return Value: void
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
+    if(c == '\0') return;
     if(c == '\n' || c == '\r') { //screen_x == 79
         screen_y++;
         screen_x = 0;
