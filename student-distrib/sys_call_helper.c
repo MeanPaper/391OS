@@ -112,7 +112,7 @@ int32_t execute (const uint8_t* command){
     arg_idx = 0;
 
     if(process_in_use > MAX_PROCESS){   // to many shell runing
-        printf("Too many shell processes \n");
+        printf("Too many processes \n");
         return -1;
     }
 
