@@ -446,6 +446,7 @@ int32_t close(int32_t fd){
 int32_t getargs(uint8_t* buf, int32_t nbytes){
     if (buf == NULL || nbytes < 0) return -1;
     pcb_t* location = (pcb_t*)(EIGHT_MB - (EIGHT_KB * current_pid_num));
+    if (nbytes > FILE_NAME_LENGTH){nbytes = FILE_NAME_LENGTH;}
     if (location->args[nbytes] != 0) return -1;   // the arguments and a terminal NULL do not fit in the buffer
     if (location->args[0] == 0) return -1;        // empty arguments
     memcpy(buf, location->args, nbytes);        // get the name
