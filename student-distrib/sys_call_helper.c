@@ -2,14 +2,16 @@
 #include "lib.h"
 
 
+
+#define MAX_PROCESS 6
 // uint8_t * vram = (uint8_t*)(VIDEO_VIR + FOUR_KB);
 
 // the magic header of elf
 uint8_t elf_magic[ELF_MAGIC_SIZE] = {0x7f, 0x45, 0x4c, 0x46}; // "DEL,E,L,F"
 uint32_t current_pid_num = 0;
 uint32_t exception = 0;
-uint32_t shell_in_use = 0;
-int32_t shell_active[4] = {-1, -1, -1, -1};
+uint32_t process_in_use = 0;
+int32_t process_active[MAX_PROCESS] = {-1, -1, -1, -1, -1, -1};
 
 void set_exception_flag(uint32_t num){
     exception = num;
@@ -60,14 +62,14 @@ int32_t halt (uint8_t status){
     // set current process to non-active
     current->active = 0;
     
-    if(shell_active[shell_in_use-1] == current->pid){
-        shell_active[shell_in_use-1] = -1;
-        shell_in_use--;
+    if(process_active[process_in_use-1] == current->pid){
+        process_active[process_in_use-1] = -1;
+        process_in_use--;
     }
     // check if main shell
     if(current->pid == current->parent_pid && current_pid_num == 1){
         current_pid_num -= 1;
-        shell_in_use = 0;
+        process_in_use = 0;
         execute((uint8_t*)"shell");
     }
     else{
@@ -109,6 +111,11 @@ int32_t execute (const uint8_t* command){
     int i, arg_idx;
     arg_idx = 0;
 
+    if(process_in_use > MAX_PROCESS){   // to many shell runing
+        printf("Too many shell processes \n");
+        return -1;
+    }
+
     memset(command_buf, 0, sizeof(command_buf));
     if(!command){
         return -1;
@@ -124,13 +131,6 @@ int32_t execute (const uint8_t* command){
         command_buf[i] = command[i];
     }
     
-    if(shell_in_use > 3){   // to many shell runing
-        printf("Too many shell running, only allow 3 shells running at most \n");
-        return -1;
-    }
-
-
-
     if(-1 == read_dentry_by_name((uint8_t*) command_buf, &entry)){ // we only consider the command is in one line for now
         // failed to find the file
         return -1;                                  
@@ -145,8 +145,8 @@ int32_t execute (const uint8_t* command){
     ++current_pid_num;
 
     if(!strncmp((int8_t*)command, "shell", 5)){
-        shell_active[shell_in_use] = current_pid_num; // mark current shell pid
-        shell_in_use++;                               // mark shell as active
+        process_active[process_in_use] = current_pid_num; // mark current shell pid
+        process_in_use++;                               // mark shell as active
     }
 
     entry_pcb = (pcb_t *)(GET_PCB(current_pid_num));
