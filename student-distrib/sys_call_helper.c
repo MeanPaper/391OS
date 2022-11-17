@@ -108,6 +108,10 @@ int32_t execute (const uint8_t* command){
     uint8_t command_buf[128]; //buff size has a maximum of 128
     uint8_t elf_buffer[ELF_MAGIC_SIZE]; // elf buffer for the magic keyword         
     int32_t ret;
+    
+    uint32_t found_cmd = 0;
+    uint32_t cmd_arg_len = 0;
+    uint32_t command_len = strlen((int8_t*) command);
     int i, arg_idx;
     arg_idx = 0;
 
@@ -122,14 +126,26 @@ int32_t execute (const uint8_t* command){
     }
     
     // we read the command until newline or null or space
-    for(i = 0; i < strlen((int8_t*) command); ++i){
+    for(i = 0; i < command_len; ++i){
         if(command[i] == 0x0a || command[i] == 0) break;
-        if(command[i] == 0x20){
-            arg_idx = i+1;
+        if(command[i] != 0x20 && !found_cmd){
+            command_buf[cmd_arg_len] = command[i];
+            cmd_arg_len++;
+        }
+        else if(!found_cmd && cmd_arg_len && command[i] == 0x20){found_cmd=i;}
+        
+        if(found_cmd && command[i-1] == 0x20 && command[i] != 0x20){
+            arg_idx = i;
             break;
         }
-        command_buf[i] = command[i];
+
+        // if(command[i] == 0x20){
+        //     arg_idx = i+1;
+        //     break;
+        // }
+  
     }
+
     
     if(-1 == read_dentry_by_name((uint8_t*) command_buf, &entry)){ // we only consider the command is in one line for now
         // failed to find the file
