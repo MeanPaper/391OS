@@ -5,6 +5,26 @@
 #define FOUR_MB_PAGE       0x400000
 #define PROG_FIRST_PAGE    0x800000 // 8 MB?
 #define FOUR_MB_SHIFT      22
+#define FOUR_KB_SHIFT      12
+#define VIDEO_PHYS         0xB8000
+#define TERM1_VIDEO        VIDEO_PHYS + ALIGNMENT
+#define TERM2_VIDEO        VIDEO_PHYS + ALIGNMENT * 2
+#define TERM3_VIDEO        VIDEO_PHYS + ALIGNMENT * 3
+
+static uint32_t vram_addrs[4] = {VIDEO_PHYS, TERM1_VIDEO, TERM2_VIDEO, TERM3_VIDEO};
+
+void init_terminal_video(){
+    int i;
+    page_table_entry_t video_page;
+    for(i = 1; i < 4; ++i){
+        video_page.val = 0;
+        video_page.page_base_addr = vram_addrs[i] >> FOUR_KB_SHIFT; 
+        video_page.rw = 1;
+        video_page.present = 1;
+        first_page_table[vram_addrs[i] >> FOUR_KB_SHIFT] = video_page.val;
+    }
+} 
+
 
 // initialize page
 // reference: https://wiki.osdev.org/Setting_Up_Paging
@@ -41,10 +61,11 @@ void page_init() {
     // physcial addr / 4096 to determine the index on page table
     // because we don't have that many space in the page_base_addr
     // also the bottom 12 bits are zero anyway
-    vid_page.page_base_addr = 0xB8000 >> 12; 
+    vid_page.page_base_addr = VIDEO_PHYS >> 12; 
     vid_page.rw = 1;
     vid_page.present = 1;
-    first_page_table[0xB8000 >> 12] = vid_page.val;
+    first_page_table[VIDEO_PHYS >> 12] = vid_page.val;
+    init_terminal_video();
 
     /* set up the kernel page */
     kernel_page.val = 0;
@@ -74,7 +95,7 @@ int32_t map_program_page(int pid_num){
     prog_page.rw = 1;
     prog_page.page_size = 1;
     prog_page.user_super = 1;                                           
-    page_directory[(FIRST_PROG_VIRTUAL ) >> 22] = prog_page.val;       // loading the 4MB page directory entries 
+    page_directory[(FIRST_PROG_VIRTUAL ) >> FOUR_MB_SHIFT] = prog_page.val;       // loading the 4MB page directory entries 
     return 0;
 }
 
@@ -86,7 +107,7 @@ int32_t map_video_page(int32_t video_addr){
     vid_page.present = 1;                     // present the page
     vid_page.user_super = 1;                  // allowing dpl 3
     video_page_table[0] = vid_page.val;       // this is at page table entry 0 because the virtual address is 256MB the body are 0 for the most part
-    page_directory[video_addr >> 22] = (uint32_t)(video_page_table) | 7;  // or with 111 allowing r/w, p, as well as user dpl  
+    page_directory[video_addr >> FOUR_MB_SHIFT] = (uint32_t)(video_page_table) | 7;  // or with 111 allowing r/w, p, as well as user dpl  
     return 0;   
 }
 // void addpage
@@ -94,6 +115,6 @@ int32_t map_video_page(int32_t video_addr){
 // void removepage
 
 int32_t remove_program_page(int pid_num){
-    page_directory[(FIRST_PROG_VIRTUAL ) >> 22] &= 0x0;
+    page_directory[(FIRST_PROG_VIRTUAL ) >> FOUR_MB_SHIFT] &= 0x0;
     return 0;
 }
