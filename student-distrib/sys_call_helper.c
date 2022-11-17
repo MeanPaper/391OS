@@ -1,13 +1,15 @@
 #include "sys_call_helper.h"
 #include "lib.h"
 
-
+#define MAX_PROCESS 6
 // uint8_t * vram = (uint8_t*)(VIDEO_VIR + FOUR_KB);
 
 // the magic header of elf
 uint8_t elf_magic[ELF_MAGIC_SIZE] = {0x7f, 0x45, 0x4c, 0x46}; // "DEL,E,L,F"
 uint32_t current_pid_num = 0;
 uint32_t exception = 0;
+uint32_t process_in_use = 0;
+int32_t process_active[MAX_PROCESS] = {-1, -1, -1, -1, -1, -1};
 
 void set_exception_flag(uint32_t num){
     exception = num;
@@ -32,6 +34,8 @@ int32_t close_helper(int32_t fd);
  * Output: none
  * Return value: status code from halt
  */
+
+// page fault if execute fish after exiting the seventh shell
 int32_t halt (uint8_t status){
     /* halt must return a value to the parent execute system call so that 
      * we know how the program ended */
@@ -57,10 +61,14 @@ int32_t halt (uint8_t status){
 
     // set current process to non-active
     current->active = 0;
+    if(process_in_use > 0 && process_active[process_in_use-1] == current->pid){
+        process_active[--process_in_use] = -1;
+    }
 
     // check if main shell
     if(current->pid == current->parent_pid && current_pid_num == 1){
         current_pid_num -= 1;
+        process_in_use = 0;
         execute((uint8_t*)"shell");
     }
     else{
@@ -99,8 +107,16 @@ int32_t execute (const uint8_t* command){
     uint8_t command_buf[128]; //buff size has a maximum of 128
     uint8_t elf_buffer[ELF_MAGIC_SIZE]; // elf buffer for the magic keyword         
     int32_t ret;
+    // uint32_t found_cmd = 0;
+    // uint32_t cmd_arg_len = 0;
+    uint32_t command_len = strlen((int8_t*) command);
     int i, arg_idx;
     arg_idx = 0;
+
+    if(process_in_use + 1 > MAX_PROCESS){   // to many
+        printf("Too many processes \n");
+        return -1;
+    }
 
     memset(command_buf, 0, sizeof(command_buf));
     if(!command){
@@ -108,14 +124,27 @@ int32_t execute (const uint8_t* command){
     }
     
     // we read the command until newline or null or space
-    for(i = 0; i < strlen((int8_t*) command); ++i){
+    for(i = 0; i < command_len; ++i){
         if(command[i] == 0x0a || command[i] == 0) break;
+        // if(command[i] != 0x20 && !found_cmd){
+        //     command_buf[cmd_arg_len] = command[i];
+        //     cmd_arg_len++;
+        // }
+        // else if(!found_cmd && cmd_arg_len && command[i] == 0x20){found_cmd=i;}
+        
+        // if(found_cmd && command[i-1] == 0x20 && command[i] != 0x20){
+        //     arg_idx = i;
+        //     break;
+        // }
+
         if(command[i] == 0x20){
             arg_idx = i+1;
             break;
         }
+
         command_buf[i] = command[i];
     }
+
     
     if(-1 == read_dentry_by_name((uint8_t*) command_buf, &entry)){ // we only consider the command is in one line for now
         // failed to find the file
@@ -129,6 +158,12 @@ int32_t execute (const uint8_t* command){
         return -1;                          
     }
     ++current_pid_num;
+
+    // // will use a function wrapper to this
+    process_active[process_in_use] = current_pid_num; // mark current process 
+    process_in_use++;                                 // mark current process
+
+
     entry_pcb = (pcb_t *)(GET_PCB(current_pid_num));
     entry_pcb->pid = current_pid_num;
     entry_pcb->active = 1; 
