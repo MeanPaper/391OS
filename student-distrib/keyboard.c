@@ -4,13 +4,16 @@
 
 #include "keyboard.h"
 #include "lib.h"
+#include "terminal.h"
 
 uint8_t shift_pressed_cons;
 uint8_t caps_pressed_cons;
 uint8_t alt_pressed_cons;
 uint8_t control_pressed_cons;
 uint8_t buffer_index;
-
+uint8_t terminal1;
+uint8_t terminal2;
+uint8_t terminal3;
 
 /* Mapping scancode to ascii */
 // 4 conditions, 60 different inputs. includes char, number and special keys. 
@@ -138,6 +141,24 @@ void display_on_screen(uint32_t scan_code){
 
 //if alt is pressed, do nothing. 
 	if(alt_pressed_cons == 1){
+		if(scan_code == F1_pressed){
+			terms[0].viewing = 1;
+			terms[1].viewing = 0;
+			terms[2].viewing = 0;
+			set_current_term(0);
+		}
+		else if(scan_code == F2_pressed){
+			terms[0].viewing = 0;
+			terms[1].viewing = 1;
+			terms[2].viewing = 0;
+			set_current_term(1);
+		}
+		if(scan_code == F3_pressed){
+			terms[0].viewing = 0;
+			terms[1].viewing = 0;
+			terms[2].viewing = 1;
+			set_current_term(2);
+		}
 		return;
 	}
 	

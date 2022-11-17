@@ -1,9 +1,13 @@
 #include "terminal.h"
 #include "lib.h"
 #include "keyboard.h"
+#include "system_call.h"
+#include "paging.h"
 
 terminal_t terminal;
+uint32_t current_term_id = 0;
 
+int32_t term_video_switching(uint8_t next_term);
 /* void terminal_init();
  * Description: terminal_init, but do nothing.   
  * 
@@ -13,8 +17,35 @@ terminal_t terminal;
  * Side Effects: none
 */
 void terminal_init(){
+    int i;  // initialize three terminal and assign the terminal id for it
+    for(i = 0; i < 3; ++i){
+        memset(terms + i, 0, sizeof(terminal_t));
+        terms[i].terminal_id = i;
+    }
+    current_term_id = 0;
     return;
 }
+
+int32_t set_current_term(uint8_t term_index){
+    if(term_index > 2 || term_index < 0){
+        return -1;
+    }
+    terminal = terms[term_index];
+    
+
+    // switch the page and do the work
+
+    current_term_id = term_index;
+    return 0;
+}
+
+int32_t term_video_switching(uint8_t next_term){
+    memcpy(vram_addrs[current_term_id], VIDEO_PHYS, FOUR_KB);   // copy the current view to the copy
+    memcpy(VIDEO_PHYS, vram_addrs[next_term], FOUR_KB);         // load the next view to the position
+    map_program_page(terms[next_term].current_process_id);      // remap prog virtual memory
+    flush_TLB; 
+}
+
 
 /* void terminal_open();
  * Description: terminal_open, but do nothing.   

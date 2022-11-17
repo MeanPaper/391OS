@@ -2,6 +2,18 @@
 #define _TERMINAL_H
 #include "types.h"
 
+
+typedef struct terminal{
+    uint8_t terminal_buf[128];
+    uint32_t screen_x;
+    uint32_t screen_y;
+    uint32_t terminal_id;
+    uint8_t  viewing;
+    uint8_t current_process_id; 
+}terminal_t;
+
+terminal_t terms[3];
+
 extern void terminal_init();
 
 //function does nothing, return 0;
@@ -11,12 +23,6 @@ extern int32_t terminal_open();
 extern int32_t terminal_close();
 extern int32_t terminal_read(int fd,void * buf, int32_t n_bytes);
 extern int32_t terminal_write(int fd, const void * buf, int32_t n_bytes);
-
-typedef struct terminal{
-    uint8_t terminal_buf[128];
-    uint32_t screen_x;
-    uint32_t screen_y;
-    uint32_t terminal_id;
-}terminal_t;
+extern int32_t set_current_term(uint8_t term_index); // setting current term index, use to switch terminal
 
 #endif /* _TERMINAL_H */

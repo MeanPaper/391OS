@@ -3,8 +3,15 @@
 
 #include "types.h"
 
-#define ARRAY_SIZE      1024
-#define ALIGNMENT       4096
+#define ARRAY_SIZE          1024
+#define ALIGNMENT           4096
+#define FOUR_KB             ALIGNMENT
+#define FOUR_MB_SHIFT       22
+#define FOUR_KB_SHIFT       12
+#define VIDEO_PHYS          0xB8000
+#define TERM1_VIDEO         VIDEO_PHYS + ALIGNMENT
+#define TERM2_VIDEO         VIDEO_PHYS + ALIGNMENT * 2
+#define TERM3_VIDEO         VIDEO_PHYS + ALIGNMENT * 3
 
 /* Initialize struct for 4MB page directory */
 // The number of bits below is from intel manual pg.91
@@ -72,6 +79,8 @@ typedef union page_table_entry {
 uint32_t page_directory[ARRAY_SIZE] __attribute__ ((aligned(ALIGNMENT)));
 uint32_t first_page_table[ARRAY_SIZE] __attribute__ ((aligned(ALIGNMENT)));
 uint32_t video_page_table[ARRAY_SIZE] __attribute__ ((aligned(ALIGNMENT)));
+
+const uint32_t vram_addrs[3] = {TERM1_VIDEO, TERM2_VIDEO, TERM3_VIDEO};
 
 /* void page_init();
  * Inputs: none

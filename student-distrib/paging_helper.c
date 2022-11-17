@@ -4,19 +4,12 @@
 #define FIRST_PROG_VIRTUAL 0x08000000 // 128 MB?
 #define FOUR_MB_PAGE       0x400000
 #define PROG_FIRST_PAGE    0x800000 // 8 MB?
-#define FOUR_MB_SHIFT      22
-#define FOUR_KB_SHIFT      12
-#define VIDEO_PHYS         0xB8000
-#define TERM1_VIDEO        VIDEO_PHYS + ALIGNMENT
-#define TERM2_VIDEO        VIDEO_PHYS + ALIGNMENT * 2
-#define TERM3_VIDEO        VIDEO_PHYS + ALIGNMENT * 3
 
-static uint32_t vram_addrs[4] = {VIDEO_PHYS, TERM1_VIDEO, TERM2_VIDEO, TERM3_VIDEO};
 
 void init_terminal_video(){
     int i;
     page_table_entry_t video_page;
-    for(i = 1; i < 4; ++i){
+    for(i = 0; i < 3; ++i){
         video_page.val = 0;
         video_page.page_base_addr = vram_addrs[i] >> FOUR_KB_SHIFT; 
         video_page.rw = 1;

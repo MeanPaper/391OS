@@ -162,7 +162,7 @@ void entry(unsigned long magic, unsigned long addr) {
     init_file_system(file_sys_start);
     rtc_init();
     keyboard_init();
-
+    terminal_init();
     
 
     /* Enable interrupts */
