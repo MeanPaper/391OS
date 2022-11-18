@@ -81,6 +81,7 @@ uint32_t first_page_table[ARRAY_SIZE] __attribute__ ((aligned(ALIGNMENT)));
 uint32_t video_page_table[ARRAY_SIZE] __attribute__ ((aligned(ALIGNMENT)));
 
 extern uint32_t vram_addrs[3];
+
 /* void page_init();
  * Inputs: none
  * Return Value: none

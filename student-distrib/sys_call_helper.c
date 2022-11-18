@@ -6,10 +6,11 @@
 
 // the magic header of elf
 uint8_t elf_magic[ELF_MAGIC_SIZE] = {0x7f, 0x45, 0x4c, 0x46}; // "DEL,E,L,F"
-uint32_t current_pid_num = 0;
+uint32_t current_pid_num = 0;           // this is kinda cheating, since there are 3 processes use by the terminal, there will be 16kb gap between
 uint32_t exception = 0;
 uint32_t process_in_use = 0;
-int32_t process_active[MAX_PROCESS] = {-1, -1, -1, -1, -1, -1};
+int32_t process_active[MAX_PROCESS] = {-1, -1, -1, -1, -1, -1}; // the index + 1 will the pcb location
+int32_t active_terminal[3] = {-1,-1,-1};   // -1 means unactive, having pid number means active
 
 void set_exception_flag(uint32_t num){
     exception = num;
@@ -39,6 +40,8 @@ int32_t close_helper(int32_t fd);
 int32_t halt (uint8_t status){
     /* halt must return a value to the parent execute system call so that 
      * we know how the program ended */
+
+    // how do we grap the program
     pcb_t * current = (pcb_t*)(GET_PCB(current_pid_num));
     pcb_t * parent = (pcb_t*)(GET_PCB(current->parent_pid));
     int32_t status_32 = (int32_t)status;
@@ -61,19 +64,21 @@ int32_t halt (uint8_t status){
 
     // set current process to non-active
     current->active = 0;
-    if(process_in_use > 0 && process_active[process_in_use-1] == current->pid){
-        process_active[--process_in_use] = -1;
-    }
+    process_active[current->pid-1] = -1;
+    process_in_use--;
+    // if(process_in_use > 0 && process_active[process_in_use-1] == current->pid){
+    //     // process_active[--process_in_use] = -1;
+    // }
 
     // check if main shell
-    if(current->pid == current->parent_pid && current_pid_num == 1){
-        current_pid_num -= 1;
-        process_in_use = 0;
+    if(current->pid == current->parent_pid){
+        process_in_use++;
+        process_active[current->pid-1] = 1;
         execute((uint8_t*)"shell");
     }
-    else{
-        current_pid_num -= 1;
-    }
+    // else{
+    //     current_pid_num -= 1;
+    // }
     
     // Jump to execute return with proper ebp and esp
     asm volatile(
@@ -87,7 +92,7 @@ int32_t halt (uint8_t status){
     return status_32;
 }
 int32_t execute (const uint8_t* command){
-    return execute_on_term(command,current_term_id);
+    return execute_on_term(command, current_term_id);
 }
 /*
  * execute 
@@ -100,7 +105,7 @@ int32_t execute (const uint8_t* command){
  * Return value: -1 on failure, 256 on exception, other for success. 
  * 
  */
-int32_t execute_on_term (const uint8_t* command,int terminal_idx ){ 
+int32_t execute_on_term (const uint8_t* command, int32_t term_index){ 
     dentry_t entry;     // file entry 
     pcb_t * entry_pcb;    // the process block
     // uint32_t s_ebp;
@@ -114,6 +119,10 @@ int32_t execute_on_term (const uint8_t* command,int terminal_idx ){
     uint32_t command_len = strlen((int8_t*) command);
     int i, arg_idx;
     arg_idx = 0;
+
+    if(term_index > 2 || term_index < 0){
+        return -1;
+    }
 
     if(process_in_use + 1 > MAX_PROCESS){   // to many
         printf("Too many processes \n");
@@ -159,23 +168,62 @@ int32_t execute_on_term (const uint8_t* command,int terminal_idx ){
         // failed to find magic ELF, the file is not executable
         return -1;                          
     }
-    ++current_pid_num;
-
-    // // will use a function wrapper to this
-    process_active[process_in_use] = current_pid_num; // mark current process 
-    process_in_use++;                                 // mark current process
 
 
-    entry_pcb = (pcb_t *)(GET_PCB(current_pid_num));
-    entry_pcb->pid = current_pid_num;
-    entry_pcb->active = 1; 
-    entry_pcb->term_go_brrrrrrr=terminal_idx;
-    if(current_pid_num == 1){
-        entry_pcb->parent_pid = 1;
+    // all new process should start at offset 4, because the first 3 is used by the terminals
+    // ++current_pid_num;
+    // we mind not use the table by any chance
+    // we can use process active array index as the pid
+    // if the terminal is not running, get the pcb for the terminal
+    if(active_terminal[term_index] == -1){
+        for(i=0; i<6; ++i){ 
+            // find available process active slots
+            if(process_active[i]==-1) break;
+        }
+        entry_pcb = (pcb_t *)(GET_PCB(i + 1));
+        entry_pcb->pid = i + 1; 
+        process_active[i] = 1;  // set to active
+        ++process_in_use;   // increase number of process
+        entry_pcb->terminal_idx = term_index;
+        entry_pcb->parent_pid = entry_pcb->pid;
     }
-    else{
-        entry_pcb->parent_pid = current_pid_num - 1;
+    else
+    {
+        for(i=0; i<6; ++i){
+            // find available process active slots
+            if(process_active[i]==-1) break;
+        } 
+        process_active[i] = 1;    // set to active
+        ++process_in_use;         // increase the number of process
+        entry_pcb = (pcb_t *)(GET_PCB(i+1));
+        entry_pcb->pid = i+1;
+        entry_pcb->active = 1; 
+        entry_pcb->terminal_idx=term_index;
+        // the logic of this is the following, assuming that we have the a shell running in index 0
+        // the current shell pid will be placed inside the active_terminal array
+        // when another process comes it will set its pid first, then it will look up the pid in the 
+        // array and use that as the parent
+        entry_pcb->parent_pid = active_terminal[term_index];
+        // active_terminal[term_index] = entry_pcb->pid;
+        
     }
+    
+    active_terminal[term_index] = entry_pcb->pid ; // save the current process number to the array
+    current_pid_num = entry_pcb->pid;
+
+
+    // entry_pcb = (pcb_t *)(GET_PCB(current_pid_num));
+    // entry_pcb->pid = current_pid_num;
+    // entry_pcb->active = 1; 
+    // entry_pcb->terminal_idx=term_idex;
+    
+    // old code
+    // if(current_pid_num == 1){
+    //     entry_pcb->parent_pid = 1;
+    // }
+    // else{    
+    // entry_pcb->parent_pid = current_pid_num - 1;
+    //}
 
     memset(entry_pcb->args, 0, sizeof(entry_pcb->args));
     if (arg_idx != 0) {
@@ -185,14 +233,13 @@ int32_t execute_on_term (const uint8_t* command,int terminal_idx ){
             entry_pcb->args[i-arg_idx] = command[i];
         }
     }
-   
+
     // TODO: save esp and save ebp
     asm volatile(
         "movl %%ebp, %0;"
         "movl %%esp, %1;"
         : "=r"(entry_pcb->save_ebp), "=r"(entry_pcb->save_esp)
     );
-
     // open stdin and stdout
     entry_pcb->fd_array[0] = set_up_stdin(); 
     entry_pcb->fd_array[1] = set_up_stdout();
@@ -200,7 +247,7 @@ int32_t execute_on_term (const uint8_t* command,int terminal_idx ){
 
     // Check for executable
     // Set up paging
-    map_program_page(current_pid_num);  // set up paging
+    map_program_page(current_pid_num);  // set up paging, need to change later
     flush_TLB();                        // flush tlb
 
     // Load file into memory
@@ -210,7 +257,8 @@ int32_t execute_on_term (const uint8_t* command,int terminal_idx ){
     read_data(entry.inode_num, PROGRAM_ENTRY, (uint8_t*)(&user_code_start_addr), 4);
     
     // TODO: tss for context switching
-    tss.esp0 = EIGHT_MB - 4 - (EIGHT_KB * (current_pid_num -1));
+    // tss.esp0 = EIGHT_MB - 4 - (EIGHT_KB * (current_pid_num -1)); // use the entry_pcb->pid, because the current pid
+    tss.esp0 = entry_pcb->save_esp;
     tss.ss0 = KERNEL_DS;
 
     /* Prepare for Context Switch 

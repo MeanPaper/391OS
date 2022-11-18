@@ -56,13 +56,9 @@ typedef struct pcb{
     uint8_t active;
     uint8_t args[128];
     // uint32_t * process_addr;
-    uint8_t term_go_brrrrrrr;
+    int32_t terminal_idx;
     file_descriptor_t fd_array[FD_ARRAY_SIZE]; // file descriptor array for the current process
 }pcb_t;
-
-
-
-
 
 // handle system call for checkpoint 1
 extern void system_call_helper();
@@ -97,5 +93,5 @@ extern int32_t getargs(uint8_t* buf, int32_t nbytes);   // 7
 extern int32_t vidmap(uint8_t** screen_start);    // 8
 extern int32_t set_handler(int32_t signum,void*handler_address); // 9
 extern int32_t sigreturn(void);   // 10
-
+extern int32_t execute_on_term(const uint8_t * command, int32_t term_idx);
 #endif

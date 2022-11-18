@@ -47,9 +47,8 @@ void terminal_init(){
     for(i = 0; i < 3; ++i){
         memset(terms + i, 0, sizeof(terminal_t));
         terms[i].terminal_id = i;
-        terms[i].current_process_id = i + 1;
     }
-    current_term_id = 2;
+    current_term_id = 0;
     term_video_map(current_term_id);
     terminal = terms[current_term_id];
     return;
@@ -62,8 +61,8 @@ int32_t set_current_term(int32_t term_index){
     
     term_video_unmap(current_term_id);
     term_video_map(term_index);
-    map_program_page(terms[term_index].current_process_id);
-    flush_TLB();
+    // map_program_page(terms[term_index].current_process_id);
+    // flush_TLB();
 
     terminal = terms[term_index];
     current_term_id = term_index;
