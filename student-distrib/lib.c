@@ -12,6 +12,18 @@ static int screen_x;
 static int screen_y;
 static char* video_mem = (char *)VIDEO;
 
+
+int get_cursor_x(){
+    return screen_x;
+}
+int get_cursor_y(){
+    return screen_y;
+}
+
+void term_set_cursor(int x, int y){
+    screen_x = x;
+    screen_y = y;
+}
 // void set_screen_pos(uint32_t x_pos, uint32_t y_pos){
 //     screen_x = x_pos;
 //     if(y_pos >= NUM_ROWS){

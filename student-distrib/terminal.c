@@ -32,7 +32,10 @@ int32_t term_video_map(uint32_t current_term){
     return 0;
 }
 
-
+void save_current_cursor(int x, int y){
+    terminal.screen_x = x;
+    terminal.screen_y = y;
+}
 // int32_t term_video_switching(uint8_t next_term);
 /* void terminal_init();
  * Description: terminal_init, but do nothing.   
@@ -59,14 +62,16 @@ int32_t set_current_term(int32_t term_index){
         return -1;
     }
     
+    cli();
     term_video_unmap(current_term_id);
     term_video_map(term_index);
     // map_program_page(terms[term_index].current_process_id);
     // flush_TLB();
-
     terminal = terms[term_index];
     current_term_id = term_index;
-    // execute_on_term("shell", current_term_id);
+    sti();
+    // execute_on_term((uint8_t*)"shell", term_index);
+    
     return 0;
 }
 

@@ -43,15 +43,15 @@ int32_t halt (uint8_t status){
 
     // how do we grap the program
     pcb_t * current = (pcb_t*)(GET_PCB(current_pid_num));
-    pcb_t * parent = (pcb_t*)(GET_PCB(current->parent_pid));
+    // pcb_t * parent = (pcb_t*)(GET_PCB(current->parent_pid));
     int32_t status_32 = (int32_t)status;
     if(exception) status_32 = 256; //if exception, status is 256
     exception = 0;
 
     // Restore parent paging
-    map_program_page(parent->pid);
+    map_program_page(current->parent_pid);
     flush_TLB();
-    tss.esp0 = EIGHT_MB - 4 - (EIGHT_KB * (parent->pid -1));
+    tss.esp0 = EIGHT_MB - 4 - (EIGHT_KB * (current->parent_pid -1));
     
     // Close all relevant FDs
     int i;
@@ -65,15 +65,20 @@ int32_t halt (uint8_t status){
     // set current process to non-active
     current->active = 0;
     process_active[current->pid-1] = -1;
+    active_terminal[current->terminal_idx] = current->parent_pid;
+
+    // update the terminal current process when the current process in the current terminal halts
+    terms[current->terminal_idx].current_process_id = active_terminal[current->terminal_idx];
+
     process_in_use--;
+    current_pid_num = current->parent_pid;
     // if(process_in_use > 0 && process_active[process_in_use-1] == current->pid){
     //     // process_active[--process_in_use] = -1;
     // }
 
     // check if main shell
-    if(current->pid == current->parent_pid){
-        process_in_use++;
-        process_active[current->pid-1] = 1;
+    if(current->pid == current->parent_pid && current->pid == active_terminal[current->terminal_idx]){
+        active_terminal[current->terminal_idx] = -1;
         execute((uint8_t*)"shell");
     }
     // else{
@@ -210,6 +215,9 @@ int32_t execute_on_term (const uint8_t* command, int32_t term_index){
     
     active_terminal[term_index] = entry_pcb->pid ; // save the current process number to the array
     current_pid_num = entry_pcb->pid;
+    
+    // setting the current_pid for the terminal
+    terms[term_index].current_process_id = active_terminal[term_index];
 
 
     // entry_pcb = (pcb_t *)(GET_PCB(current_pid_num));
@@ -257,8 +265,8 @@ int32_t execute_on_term (const uint8_t* command, int32_t term_index){
     read_data(entry.inode_num, PROGRAM_ENTRY, (uint8_t*)(&user_code_start_addr), 4);
     
     // TODO: tss for context switching
-    // tss.esp0 = EIGHT_MB - 4 - (EIGHT_KB * (current_pid_num -1)); // use the entry_pcb->pid, because the current pid
-    tss.esp0 = entry_pcb->save_esp;
+    tss.esp0 = EIGHT_MB - 4 - (EIGHT_KB * (current_pid_num -1)); // use the entry_pcb->pid, because the current pid
+    // tss.esp0 = entry_pcb->save_esp;
     tss.ss0 = KERNEL_DS;
 
     /* Prepare for Context Switch 
