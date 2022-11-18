@@ -80,8 +80,7 @@ uint32_t page_directory[ARRAY_SIZE] __attribute__ ((aligned(ALIGNMENT)));
 uint32_t first_page_table[ARRAY_SIZE] __attribute__ ((aligned(ALIGNMENT)));
 uint32_t video_page_table[ARRAY_SIZE] __attribute__ ((aligned(ALIGNMENT)));
 
-const uint32_t vram_addrs[3] = {TERM1_VIDEO, TERM2_VIDEO, TERM3_VIDEO};
-
+extern uint32_t vram_addrs[3];
 /* void page_init();
  * Inputs: none
  * Return Value: none
@@ -108,5 +107,6 @@ extern int32_t map_program_page(int pid_num);
 extern int32_t map_video_page(int32_t video_addr);  // need to test this
 
 extern int32_t remove_program_page(int pid_num);
+extern int32_t video_mem_swap(uint8_t current, uint8_t next);
 
 #endif

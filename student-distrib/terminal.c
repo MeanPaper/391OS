@@ -4,10 +4,36 @@
 #include "system_call.h"
 #include "paging.h"
 
+
 terminal_t terminal;
 uint32_t current_term_id = 0;
 
-int32_t term_video_switching(uint8_t next_term);
+// const uint32_t vram_addrs[3] = {TERM1_VIDEO, TERM2_VIDEO, TERM3_VIDEO};
+
+int32_t term_video_unmap(uint32_t current_term){
+    int32_t term_page_table_entry = vram_addrs[current_term] >> 12;
+    page_table_entry_t temp;
+    temp.val = first_page_table[term_page_table_entry];
+    temp.page_base_addr = vram_addrs[current_term] >> 12;
+    first_page_table[term_page_table_entry] = temp.val;
+    flush_TLB();
+    memcpy((uint8_t*)vram_addrs[current_term],(uint8_t*)VIDEO_PHYS, FOUR_KB);
+    return 0;
+}
+
+int32_t term_video_map(uint32_t current_term){
+    memcpy((uint8_t*)VIDEO_PHYS, (uint8_t*)vram_addrs[current_term], FOUR_KB);
+    int32_t term_page_table_entry = vram_addrs[current_term] >> 12;
+    page_table_entry_t temp;
+    temp.val = first_page_table[term_page_table_entry];
+    temp.page_base_addr = VIDEO_PHYS >> 12;
+    first_page_table[term_page_table_entry] = temp.val;
+    flush_TLB();
+    return 0;
+}
+
+
+// int32_t term_video_switching(uint8_t next_term);
 /* void terminal_init();
  * Description: terminal_init, but do nothing.   
  * 
@@ -21,30 +47,36 @@ void terminal_init(){
     for(i = 0; i < 3; ++i){
         memset(terms + i, 0, sizeof(terminal_t));
         terms[i].terminal_id = i;
+        terms[i].current_process_id = i + 1;
     }
-    current_term_id = 0;
+    current_term_id = 2;
+    term_video_map(current_term_id);
+    terminal = terms[current_term_id];
     return;
 }
 
-int32_t set_current_term(uint8_t term_index){
+int32_t set_current_term(int32_t term_index){
     if(term_index > 2 || term_index < 0){
         return -1;
     }
-    terminal = terms[term_index];
     
+    term_video_unmap(current_term_id);
+    term_video_map(term_index);
+    map_program_page(terms[term_index].current_process_id);
+    flush_TLB();
 
-    // switch the page and do the work
-
+    terminal = terms[term_index];
     current_term_id = term_index;
+    // execute_on_term("shell", current_term_id);
     return 0;
 }
 
-int32_t term_video_switching(uint8_t next_term){
-    memcpy(vram_addrs[current_term_id], VIDEO_PHYS, FOUR_KB);   // copy the current view to the copy
-    memcpy(VIDEO_PHYS, vram_addrs[next_term], FOUR_KB);         // load the next view to the position
-    map_program_page(terms[next_term].current_process_id);      // remap prog virtual memory
-    flush_TLB; 
-}
+// int32_t term_video_switching(uint8_t next_term){
+//     // video_mem_swap(current_term_id, next_term);
+//     map_program_page(terms[next_term].current_process_id);      // remap prog virtual memory
+//     flush_TLB(); 
+//     return 0;
+// }
 
 
 /* void terminal_open();
@@ -88,6 +120,7 @@ int32_t terminal_read(int fd,void * buf, int32_t n_bytes){
     while(!ENTER_PRESSED); //wait until user press enter.
     ENTER_PRESSED = 0; 
     cli();
+
     strncpy((int8_t*)(terminal.terminal_buf), (int8_t*)key_buffer, 127);
 
     if(n_bytes >= 128){ //buffer size is 128, if n_bytes >= 128, only write 128 bytes. 

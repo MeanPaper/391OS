@@ -126,7 +126,6 @@ void keyboard_interrupt(){
 
 void display_on_screen(uint32_t scan_code){
 	//check if the scan code is in range, aka a char or num. 
-	if(scan_code >= 60 || scan_code < 0)return; //check if in char array range
 	if(control_pressed_cons == 1){
 		//if control+l, clear the screen and update cursor to top left. 
 		if(scan_code == 0x26){ 
@@ -142,18 +141,21 @@ void display_on_screen(uint32_t scan_code){
 //if alt is pressed, do nothing. 
 	if(alt_pressed_cons == 1){
 		if(scan_code == F1_pressed){
+			// printf("Alt + F1 received! \n");
 			terms[0].viewing = 1;
 			terms[1].viewing = 0;
 			terms[2].viewing = 0;
 			set_current_term(0);
 		}
 		else if(scan_code == F2_pressed){
+			// printf("Alt + F2 received! \n");
 			terms[0].viewing = 0;
 			terms[1].viewing = 1;
 			terms[2].viewing = 0;
 			set_current_term(1);
 		}
-		if(scan_code == F3_pressed){
+		else if(scan_code == F3_pressed){
+			// printf("Alt + F3 received! \n");
 			terms[0].viewing = 0;
 			terms[1].viewing = 0;
 			terms[2].viewing = 1;
@@ -162,6 +164,7 @@ void display_on_screen(uint32_t scan_code){
 		return;
 	}
 	
+	if(scan_code >= 60 || scan_code < 0)return; //check if in char array range
 	//output the keyword according to scan_code and shift/control flag status. 
 	uint8_t keyword = keyboard_ch[shift_pressed_cons+2*caps_pressed_cons][scan_code];
 	if(buffer_index >= 127)return; //buffer max is 127, letter after 127th input will not be recorded. 

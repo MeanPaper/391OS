@@ -24,7 +24,6 @@
 #define EIGHT_KB      8192
 
 #define VIDEO_VIR       0xB8000
-#define FOUR_KB         0x1000
 // #define USER_CS     0x0023
 // #define USER_DS     0x002B
 #define GET_PCB(n)  EIGHT_MB-(n)*EIGHT_KB
@@ -57,6 +56,7 @@ typedef struct pcb{
     uint8_t active;
     uint8_t args[128];
     // uint32_t * process_addr;
+    uint8_t term_go_brrrrrrr;
     file_descriptor_t fd_array[FD_ARRAY_SIZE]; // file descriptor array for the current process
 }pcb_t;
 

@@ -5,6 +5,7 @@
 #define FOUR_MB_PAGE       0x400000
 #define PROG_FIRST_PAGE    0x800000 // 8 MB?
 
+uint32_t vram_addrs[3] = {TERM1_VIDEO, TERM2_VIDEO, TERM3_VIDEO};
 
 void init_terminal_video(){
     int i;
@@ -14,10 +15,10 @@ void init_terminal_video(){
         video_page.page_base_addr = vram_addrs[i] >> FOUR_KB_SHIFT; 
         video_page.rw = 1;
         video_page.present = 1;
+        video_page.user_super = 1;
         first_page_table[vram_addrs[i] >> FOUR_KB_SHIFT] = video_page.val;
     }
 } 
-
 
 // initialize page
 // reference: https://wiki.osdev.org/Setting_Up_Paging
@@ -92,6 +93,7 @@ int32_t map_program_page(int pid_num){
     return 0;
 }
 
+// this one has to change to allow multiple terminal addresses
 int32_t map_video_page(int32_t video_addr){
     page_table_entry_t vid_page;
     vid_page.val = 0;
@@ -111,3 +113,9 @@ int32_t remove_program_page(int pid_num){
     page_directory[(FIRST_PROG_VIRTUAL ) >> FOUR_MB_SHIFT] &= 0x0;
     return 0;
 }
+
+// int32_t video_mem_swap(uint8_t current, uint8_t next){
+//     memcpy((uint8_t*)vram_addrs[current], (uint8_t*)VIDEO_PHYS, FOUR_KB);   // copy the current view to the copy
+//     memcpy((uint8_t*)VIDEO_PHYS, (uint8_t*)vram_addrs[next], FOUR_KB);         // load the next view to the position
+//     return 0;
+// }

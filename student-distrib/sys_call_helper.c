@@ -86,7 +86,9 @@ int32_t halt (uint8_t status){
     );
     return status_32;
 }
-
+int32_t execute (const uint8_t* command){
+    return execute_on_term(command,current_term_id);
+}
 /*
  * execute 
  * Description: Attempt to load and execute a new program,
@@ -98,7 +100,7 @@ int32_t halt (uint8_t status){
  * Return value: -1 on failure, 256 on exception, other for success. 
  * 
  */
-int32_t execute (const uint8_t* command){ 
+int32_t execute_on_term (const uint8_t* command,int terminal_idx ){ 
     dentry_t entry;     // file entry 
     pcb_t * entry_pcb;    // the process block
     // uint32_t s_ebp;
@@ -167,6 +169,7 @@ int32_t execute (const uint8_t* command){
     entry_pcb = (pcb_t *)(GET_PCB(current_pid_num));
     entry_pcb->pid = current_pid_num;
     entry_pcb->active = 1; 
+    entry_pcb->term_go_brrrrrrr=terminal_idx;
     if(current_pid_num == 1){
         entry_pcb->parent_pid = 1;
     }
