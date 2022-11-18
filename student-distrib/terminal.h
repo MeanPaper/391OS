@@ -2,7 +2,6 @@
 #define _TERMINAL_H
 #include "types.h"
 
-
 typedef struct terminal{
     uint8_t terminal_buf[128];
     uint32_t screen_x;

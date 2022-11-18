@@ -7,6 +7,7 @@
 
 terminal_t terminal;
 uint32_t current_term_id = 0;
+uint8_t terminal_active_count = 1;
 
 // const uint32_t vram_addrs[3] = {TERM1_VIDEO, TERM2_VIDEO, TERM3_VIDEO};
 
@@ -65,13 +66,34 @@ int32_t set_current_term(int32_t term_index){
     cli();
     term_video_unmap(current_term_id);
     term_video_map(term_index);
-    // map_program_page(terms[term_index].current_process_id);
     // flush_TLB();
     terminal = terms[term_index];
     current_term_id = term_index;
+    current_pid_num = terms[term_index].current_process_id;
     sti();
-    execute_on_term((uint8_t*)"shell", term_index);
-    
+    if(terminal_active_count < 3){
+        ++terminal_active_count;
+        execute_on_term((uint8_t*)"shell", term_index);
+    }
+    else
+    {
+        // map_program_page(terms[term_index].current_process_id);
+        // flush_TLB();
+        // asm volatile (
+        //     "pushl %1; "
+        //     "pushl %2; "
+        //     "pushfl;"
+        //     "popl %%eax;"
+        //     "orl $0x200, %%eax;"
+        //     "pushl %%eax;"
+        //     "pushl %3;"
+        //     "pushl %4; "
+        //     "iret;"
+        //     :
+        //     :"r"(USER_DS), "r"(USER_PROG - sizeof(uint32_t)), "r"(USER_CS), "r"(user_code_start_addr) /* input */
+        //     :
+        // );
+    }
     return 0;
 }
 

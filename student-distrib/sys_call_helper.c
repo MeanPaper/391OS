@@ -213,7 +213,7 @@ int32_t execute_on_term (const uint8_t* command, int32_t term_index){
         
     }
     
-    active_terminal[term_index] = entry_pcb->pid ; // save the current process number to the array
+    active_terminal[term_index] = entry_pcb->pid; // save the current process number to the array
     current_pid_num = entry_pcb->pid;
     
     // setting the current_pid for the terminal
