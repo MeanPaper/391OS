@@ -148,6 +148,7 @@ void display_on_screen(uint32_t scan_code){
 			save_current_cursor(get_cursor_x(), get_cursor_y());
 			term_set_cursor(terms[0].screen_x, terms[0].screen_y);
 			set_cursor_position();
+			send_eoi(KEYBOARD_IRQ);
 			set_current_term(0);
 		}
 		else if(scan_code == F2_pressed){
@@ -158,6 +159,7 @@ void display_on_screen(uint32_t scan_code){
 			save_current_cursor(get_cursor_x(), get_cursor_y());
 			term_set_cursor(terms[1].screen_x, terms[1].screen_y);
 			set_cursor_position();
+			send_eoi(KEYBOARD_IRQ);
 			set_current_term(1);
 		}
 		else if(scan_code == F3_pressed){
@@ -168,6 +170,7 @@ void display_on_screen(uint32_t scan_code){
 			save_current_cursor(get_cursor_x(), get_cursor_y());
 			term_set_cursor(terms[2].screen_x, terms[2].screen_y);
 			set_cursor_position();
+			send_eoi(KEYBOARD_IRQ);
 			set_current_term(2);
 		}
 		return;

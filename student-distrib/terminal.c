@@ -70,7 +70,7 @@ int32_t set_current_term(int32_t term_index){
     terminal = terms[term_index];
     current_term_id = term_index;
     sti();
-    // execute_on_term((uint8_t*)"shell", term_index);
+    execute_on_term((uint8_t*)"shell", term_index);
     
     return 0;
 }

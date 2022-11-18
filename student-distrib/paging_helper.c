@@ -1,9 +1,9 @@
 #include "paging.h"
 #include "lib.h"
 
-#define FIRST_PROG_VIRTUAL 0x08000000 // 128 MB?
+#define FIRST_PROG_VIRTUAL 0x08000000 // 128 MB
 #define FOUR_MB_PAGE       0x400000
-#define PROG_FIRST_PAGE    0x800000 // 8 MB?
+#define PROG_FIRST_PAGE    0x800000 // 8 MB
 
 uint32_t vram_addrs[3] = {TERM1_VIDEO, TERM2_VIDEO, TERM3_VIDEO};
 
