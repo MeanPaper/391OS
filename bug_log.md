@@ -117,3 +117,12 @@
 ### Difficulty to fix:
     Medium. Henry pointed the error location. The fix took awhile since we need to implement a way to prevent multiple press due to human interaction time and CPU respond time. 
 ---
+## Bug #: 12
+### Date: 11/18/2022
+### Symptom: 
+    When switching terminals, the terminals will be able to open, but the keyboard is freezing and we cannot type
+### Difficulty to find: 
+    Hard. We initially fail to find where the problem is. We discuss with other students, and we figure out that we need to send eoi when switching terminals.
+### Difficulty to fix:
+    Easy. Just add a line of endeoi when switching terminals. 
+---
