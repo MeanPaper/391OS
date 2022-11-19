@@ -8,6 +8,7 @@
 #include "interrupt.h"
 #include "exception.h"
 #include "system_call.h"
+#include "schedule.h"
 
 #define INTRRUPT_START          32    // start of user defined interrupt in IDT
 #define SYSTEM_CALL_INDEX     0x80  // index for system calls
@@ -122,6 +123,7 @@ void init_idt_desc(){
     SET_IDT_ENTRY(idt[19], simd_float_exception); // idt index 19
 
     // user defined interrupts: rtc and keyboard
+    SET_IDT_ENTRY(idt[0x20], pit_handle_call);
     SET_IDT_ENTRY(idt[0x21], keyboard_intr_call);
     SET_IDT_ENTRY(idt[0x28], rtc_interrupt_call);
 
