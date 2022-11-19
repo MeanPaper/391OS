@@ -23,6 +23,7 @@ int32_t term_video_unmap(uint32_t current_term){
 }
 
 int32_t term_video_map(uint32_t current_term){
+    clear();
     memcpy((uint8_t*)VIDEO_PHYS, (uint8_t*)vram_addrs[current_term], FOUR_KB);
     int32_t term_page_table_entry = vram_addrs[current_term] >> 12;
     page_table_entry_t temp;
@@ -34,8 +35,8 @@ int32_t term_video_map(uint32_t current_term){
 }
 
 void save_current_cursor(int x, int y){
-    terminal.screen_x = x;
-    terminal.screen_y = y;
+    terms[current_term_id].screen_x = x;
+    terms[current_term_id].screen_y = y;
 }
 // int32_t term_video_switching(uint8_t next_term);
 /* void terminal_init();
@@ -72,27 +73,9 @@ int32_t set_current_term(int32_t term_index){
     current_pid_num = terms[term_index].current_process_id;
     sti();
     if(terminal_active_count < 3){
+    
         ++terminal_active_count;
         execute_on_term((uint8_t*)"shell", term_index);
-    }
-    else
-    {
-        // map_program_page(terms[term_index].current_process_id);
-        // flush_TLB();
-        // asm volatile (
-        //     "pushl %1; "
-        //     "pushl %2; "
-        //     "pushfl;"
-        //     "popl %%eax;"
-        //     "orl $0x200, %%eax;"
-        //     "pushl %%eax;"
-        //     "pushl %3;"
-        //     "pushl %4; "
-        //     "iret;"
-        //     :
-        //     :"r"(USER_DS), "r"(USER_PROG - sizeof(uint32_t)), "r"(USER_CS), "r"(user_code_start_addr) /* input */
-        //     :
-        // );
     }
     return 0;
 }
