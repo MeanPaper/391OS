@@ -3,6 +3,13 @@
 #define SQR_WAVE_MODE 0x33      // square wave mode, use by most of the OS
 #define PIT_APPR_MAX  1193180   // this is approximately the highest requency for the pit
 
+void schedule(){
+    
+}
+
+void pit_handler(){
+
+}
 
 void pit_init(){
     // cli();

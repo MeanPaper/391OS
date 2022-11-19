@@ -13,12 +13,12 @@
 
 
 // initialize pit
-void pit_init();
+extern void pit_init();
 
 // pit handler
-void pit_handler();
+extern void pit_handler();
 
 // scheduler 
-void scheduler();
+extern void scheduler();
 
 #endif
