@@ -1,5 +1,6 @@
 #include "paging.h"
 #include "lib.h"
+#include "terminal.h"
 
 #define FIRST_PROG_VIRTUAL 0x08000000 // 128 MB
 #define FOUR_MB_PAGE       0x400000
@@ -94,10 +95,17 @@ int32_t map_program_page(int pid_num){
 }
 
 // this one has to change to allow multiple terminal addresses
-int32_t map_video_page(int32_t video_addr){
+int32_t map_video_page(int32_t video_addr, int32_t cur_term){
     page_table_entry_t vid_page;
     vid_page.val = 0;
-    vid_page.page_base_addr = 0xB8000 >> 12;  // use the same physical address for video memory
+
+    if(cur_term == display_terminal){
+        vid_page.page_base_addr = VIDEO_PHYS >> 12;
+    }
+    else{
+        vid_page.page_base_addr = vram_addrs[cur_term] >> 12;
+    }
+    // vid_page.page_base_addr = vram_addrs[cur_term] >> 12;  // use the same physical address for video memory
     vid_page.rw = 1;                          // enable read and write
     vid_page.present = 1;                     // present the page
     vid_page.user_super = 1;                  // allowing dpl 3

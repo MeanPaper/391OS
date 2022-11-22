@@ -544,8 +544,8 @@ int32_t vidmap(uint8_t** screen_start){
     if(!screen_start) return -1;
     // user program page is from prog_load_addr virtual address to the address + 4MB
     if ((uint32_t)screen_start < PROG_LOAD_ADDR || (uint32_t)screen_start > PROG_LOAD_ADDR + FOUR_MB - 4) return -1;
-    clear();
-    map_video_page(PROG_128MB << 1);    // loading new video page
+    // clear();
+    map_video_page(PROG_128MB << 1, current_term_id);    // loading new video page
     flush_TLB();                        // flush TLB
     *screen_start = (uint8_t*)(PROG_128MB << 1);    // virtual address is 256MB double the size of PROG_LOAD_ADDR = 128MB
     

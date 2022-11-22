@@ -8,9 +8,23 @@
 terminal_t terminal;
 uint32_t current_term_id = 0;
 uint8_t terminal_active_count = 1;
+uint32_t display_terminal = 0;
 
 // const uint32_t vram_addrs[3] = {TERM1_VIDEO, TERM2_VIDEO, TERM3_VIDEO};
 
+/* void term_video_unmap(uint32_t current_term);
+ * Description:  
+ *      First, we find the page_table_entry for the current terminal virtual address.
+ * the address >> 12 is the index inside our first page_table. It retrieves the page 
+ * through the page_table. Then we change the page_base_addr to the terminal's own
+ * video page. Then we send this bask again. since we change the mapping, now we need
+ * to flush_TLB() and copy the display video memory to the terminal video memory. 
+ *  
+ * Inputs: uint32_t current_term
+ * Output: none
+ * Return Value: 0
+ * Side Effects: none
+*/
 int32_t term_video_unmap(uint32_t current_term){
     int32_t term_page_table_entry = vram_addrs[current_term] >> 12;
     page_table_entry_t temp;
@@ -22,8 +36,21 @@ int32_t term_video_unmap(uint32_t current_term){
     return 0;
 }
 
+/* void term_video_map(uint32_t current_term);
+ * Description:  
+ *      First, we copy the terminal video memory to the terminal memory. Then, we 
+ *      find the page_table_entry for the current terminal virtual address.
+ *      the address >> 12 is the index inside our first page_table. It retrieves the page 
+ *      through the page_table. Then we change the page_base_addr to the terminal's own
+ *      video page. Then we send this bask again. since we change the mapping, now we need
+ *      to flush_TLB()
+ * Inputs: uint32_t current_term
+ * Output: none
+ * Return Value: 0
+ * Side Effects: none
+ */
 int32_t term_video_map(uint32_t current_term){
-    clear();
+    // clear();
     memcpy((uint8_t*)VIDEO_PHYS, (uint8_t*)vram_addrs[current_term], FOUR_KB);
     int32_t term_page_table_entry = vram_addrs[current_term] >> 12;
     page_table_entry_t temp;
@@ -34,11 +61,20 @@ int32_t term_video_map(uint32_t current_term){
     return 0;
 }
 
+/* void save_current_cursor(int x, int y)
+ * Description: Store the cursor position of the current terminal
+ * Inputs: none
+ * Output: none
+ * Return Value: none
+ * Side Effects: none
+ */
 void save_current_cursor(int x, int y){
-    terms[current_term_id].screen_x = x;
-    terms[current_term_id].screen_y = y;
+    terms[display_terminal].screen_x = x;
+    terms[display_terminal].screen_y = y;
 }
 // int32_t term_video_switching(uint8_t next_term);
+
+
 /* void terminal_init();
  * Description: terminal_init, but do nothing.   
  * 
@@ -54,23 +90,24 @@ void terminal_init(){
         terms[i].terminal_id = i;
     }
     current_term_id = 0;
-    term_video_map(current_term_id);
-    terminal = terms[current_term_id];
+    display_terminal = 0;
+    term_video_map(display_terminal);
+    terminal = terms[display_terminal];
     return;
 }
 
-int32_t set_current_term(int32_t term_index){
+int32_t set_display_term(int32_t term_index){
     if(term_index > 2 || term_index < 0){
         return -1;
     }
     
     cli();
-    term_video_unmap(current_term_id);
+    term_video_unmap(display_terminal);
     term_video_map(term_index);
     // flush_TLB();
     terminal = terms[term_index];
-    current_term_id = term_index;
-    current_pid_num = terms[term_index].current_process_id;
+    display_terminal = term_index;
+    // current_pid_num = terms[term_index].current_process_id;
     sti();
     if(terminal_active_count < 3){
     

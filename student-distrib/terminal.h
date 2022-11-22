@@ -11,7 +11,10 @@ typedef struct terminal{
     uint8_t current_process_id; 
     int32_t key_index;
 }terminal_t;
+
 extern uint32_t current_term_id;
+extern uint32_t display_terminal;
+
 terminal_t terms[3];
 
 extern void terminal_init();
@@ -23,6 +26,6 @@ extern int32_t terminal_open();
 extern int32_t terminal_close();
 extern int32_t terminal_read(int fd,void * buf, int32_t n_bytes);
 extern int32_t terminal_write(int fd, const void * buf, int32_t n_bytes);
-extern int32_t set_current_term(int32_t term_index); // setting current term index, use to switch terminal
+extern int32_t set_display_term(int32_t term_index); // setting current term index, use to switch terminal
 extern void save_current_cursor(int x, int y);
 #endif /* _TERMINAL_H */

@@ -29,6 +29,7 @@
 #define GET_PCB(n)  EIGHT_MB-(n)*EIGHT_KB
 
 extern uint32_t get_current_pid();
+extern int32_t active_terminal[3];
 /* file operations jump table */
 typedef struct Fot {
     int32_t (*read)(int32_t, void*, int32_t);
