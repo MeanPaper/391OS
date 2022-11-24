@@ -14,6 +14,7 @@ typedef struct terminal{
 
 extern uint32_t current_term_id;
 extern uint32_t display_terminal;
+extern terminal_t terminal;
 
 terminal_t terms[3];
 

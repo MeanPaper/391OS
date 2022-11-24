@@ -153,7 +153,7 @@ void display_on_screen(uint32_t scan_code){
 			buffer_index = terms[0].key_index;
 			strncpy((int8_t*)key_buffer, (int8_t*)terms[0].terminal_buf, 128);
 			send_eoi(KEYBOARD_IRQ);
-			sti();
+			// sti();
 			set_display_term(0);
 		}
 		else if(scan_code == F2_pressed && display_terminal != 1){
@@ -169,7 +169,7 @@ void display_on_screen(uint32_t scan_code){
 			buffer_index = terms[1].key_index;
 			strncpy((int8_t*)key_buffer, (int8_t*)terms[1].terminal_buf, 128);
 			send_eoi(KEYBOARD_IRQ);
-			sti();
+			// sti();
 			set_display_term(1);
 		}
 		else if(scan_code == F3_pressed && display_terminal != 2){
@@ -185,7 +185,7 @@ void display_on_screen(uint32_t scan_code){
 			buffer_index = terms[2].key_index;
 			strncpy((int8_t*)key_buffer, (int8_t*)terms[2].terminal_buf, 128);
 			send_eoi(KEYBOARD_IRQ);
-			sti();
+			// sti();
 			set_display_term(2);
 		}
 		return;

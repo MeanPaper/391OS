@@ -38,6 +38,7 @@ void pit_handler(){
     
     current_pid_num = next_proc->pid;
     current_term_id = (uint32_t)(next_proc->terminal_idx);
+    // terminal = terms[current_term_id];
     sti();
 
     asm volatile(

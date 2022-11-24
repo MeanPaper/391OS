@@ -5,7 +5,7 @@
 #include "paging.h"
 
 
-terminal_t terminal;
+// terminal_t terminal;
 uint32_t current_term_id = 0;
 uint8_t terminal_active_count = 1;
 uint32_t display_terminal = 0;
@@ -92,7 +92,7 @@ void terminal_init(){
     current_term_id = 0;
     display_terminal = 0;
     term_video_map(display_terminal);
-    terminal = terms[display_terminal];
+    // terminal = terms[display_terminal];
     return;
 }
 
@@ -105,12 +105,12 @@ int32_t set_display_term(int32_t term_index){
     term_video_unmap(display_terminal);
     term_video_map(term_index);
     // flush_TLB();
-    terminal = terms[term_index];
+    // terminal = terms[term_index];
     display_terminal = term_index;
     // current_pid_num = terms[term_index].current_process_id;
     if(terminal_active_count < 3 && active_terminal[term_index] == -1){
         ++terminal_active_count;
-        sti();
+        // sti();
         execute_on_term((uint8_t*)"shell", term_index);
     }
     sti();
@@ -167,13 +167,13 @@ int32_t terminal_read(int fd,void * buf, int32_t n_bytes){
     ENTER_PRESSED = 0; 
     cli();
 
-    strncpy((int8_t*)(terminal.terminal_buf), (int8_t*)key_buffer, 127);
+    strncpy((int8_t*)(terms[current_pid_num].terminal_buf), (int8_t*)key_buffer, 127);
 
     if(n_bytes >= 128){ //buffer size is 128, if n_bytes >= 128, only write 128 bytes. 
         n_bytes = 128;
     }
-    terminal.terminal_buf[n_bytes-1] = '\0';
-    strncpy((int8_t*)buf,(int8_t*)(terminal.terminal_buf),n_bytes);
+    terms[current_pid_num].terminal_buf[n_bytes-1] = '\0';
+    strncpy((int8_t*)buf,(int8_t*)(terms[current_pid_num].terminal_buf),n_bytes);
     sti();
     // return the number of byte read
     uint32_t read_size = strlen((const int8_t*) buf);
