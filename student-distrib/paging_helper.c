@@ -44,7 +44,7 @@ void page_init() {
     }
 
     // |3 enables the low two bit which is present and r/w
-    page_directory[0] = ((unsigned int)first_page_table) | 3;
+    page_directory[0] = ((unsigned int)first_page_table) | 7;
 
     page_directory_4MB_entry_t kernel_page;
 

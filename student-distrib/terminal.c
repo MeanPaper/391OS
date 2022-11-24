@@ -50,7 +50,7 @@ int32_t term_video_unmap(uint32_t current_term){
  * Side Effects: none
  */
 int32_t term_video_map(uint32_t current_term){
-    // clear();
+    // clear();d
     memcpy((uint8_t*)VIDEO_PHYS, (uint8_t*)vram_addrs[current_term], FOUR_KB);
     int32_t term_page_table_entry = vram_addrs[current_term] >> 12;
     page_table_entry_t temp;
@@ -100,7 +100,7 @@ int32_t set_display_term(int32_t term_index){
     if(term_index > 2 || term_index < 0){
         return -1;
     }
-    
+
     cli();
     term_video_unmap(display_terminal);
     term_video_map(term_index);
@@ -108,12 +108,12 @@ int32_t set_display_term(int32_t term_index){
     terminal = terms[term_index];
     display_terminal = term_index;
     // current_pid_num = terms[term_index].current_process_id;
-    sti();
-    if(terminal_active_count < 3){
-    
+    if(terminal_active_count < 3 && active_terminal[term_index] == -1){
         ++terminal_active_count;
+        sti();
         execute_on_term((uint8_t*)"shell", term_index);
     }
+    sti();
     return 0;
 }
 

@@ -111,6 +111,7 @@ int32_t execute (const uint8_t* command){
  * 
  */
 int32_t execute_on_term (const uint8_t* command, int32_t term_index){ 
+    
     dentry_t entry;     // file entry 
     pcb_t * entry_pcb;    // the process block
     // uint32_t s_ebp;
@@ -180,6 +181,7 @@ int32_t execute_on_term (const uint8_t* command, int32_t term_index){
     // we mind not use the table by any chance
     // we can use process active array index as the pid
     // if the terminal is not running, get the pcb for the terminal
+    // cli();
     if(active_terminal[term_index] == -1){
         for(i=0; i<6; ++i){ 
             // find available process active slots
@@ -268,6 +270,7 @@ int32_t execute_on_term (const uint8_t* command, int32_t term_index){
     tss.esp0 = EIGHT_MB - 4 - (EIGHT_KB * (current_pid_num -1)); // use the entry_pcb->pid, because the current pid
     // tss.esp0 = entry_pcb->save_esp;
     tss.ss0 = KERNEL_DS;
+    // sti();
 
     /* Prepare for Context Switch 
      * USER DS

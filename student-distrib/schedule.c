@@ -1,5 +1,5 @@
 #include "schedule.h"
-
+#include "sys_call_helper.h"
 #define SQR_WAVE_MODE 0x36      // square wave mode, use by most of the OS
 #define PIT_APPR_MAX  1193180   // this is approximately the highest requency for the pit
 #define FREQ          40
@@ -13,23 +13,24 @@ void pit_handler(){
 
     int32_t next_term;
 
-    cli();
+   
     send_eoi(PIT_IRQ_POS);
 
     if(active_terminal[0]==-1){
         execute_on_term((uint8_t*)"shell", 0);
     }
 
-
-    pcb_t * current = (pcb_t*)GET_PCB(current_pid_num);
+    cli();
+    pcb_t * current = (pcb_t*)(GET_PCB(current_pid_num));
     next_term = (current_term_id + 1) % MAX_TERM;
     while(active_terminal[next_term] == -1){
         next_term = (next_term + 1) % MAX_TERM;
     }
-    
-    pcb_t * next_proc = (pcb_t*)GET_PCB(active_terminal[next_term]);
+    if(current_pid_num == active_terminal[next_term]) return;
+
+    pcb_t * next_proc = (pcb_t*)(GET_PCB(active_terminal[next_term]));
     map_program_page(next_proc->pid);
-    map_video_page(PROG_128MB << 1, next_proc->terminal_idx);
+    // map_video_page(PROG_128MB << 1, next_proc->terminal_idx);
     flush_TLB();
     
     tss.ss0 = KERNEL_DS;

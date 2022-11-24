@@ -140,11 +140,11 @@ void display_on_screen(uint32_t scan_code){
 
 //if alt is pressed, do nothing. alt and keypress will execute the terminal and everything
 	if(alt_pressed_cons == 1){
-		if(scan_code == F1_pressed && current_term_id != 0){
+		if(scan_code == F1_pressed && display_terminal != 0){
 			// printf("Alt + F1 received! \n");
-			terms[0].viewing = 1;
-			terms[1].viewing = 0;
-			terms[2].viewing = 0;
+			// terms[0].viewing = 1;
+			// terms[1].viewing = 0;
+			// terms[2].viewing = 0;
 			strncpy((int8_t*)terms[display_terminal].terminal_buf, (int8_t*)key_buffer, 128);	// copy the content to the terminal buffer
 			terms[display_terminal].key_index = buffer_index;		// storing the current buffer index
 			save_current_cursor(get_cursor_x(), get_cursor_y());	// save currrent terminal cursor
@@ -153,13 +153,14 @@ void display_on_screen(uint32_t scan_code){
 			buffer_index = terms[0].key_index;
 			strncpy((int8_t*)key_buffer, (int8_t*)terms[0].terminal_buf, 128);
 			send_eoi(KEYBOARD_IRQ);
+			sti();
 			set_display_term(0);
 		}
-		else if(scan_code == F2_pressed && current_term_id != 1){
+		else if(scan_code == F2_pressed && display_terminal != 1){
 			// printf("Alt + F2 received! \n");
-			terms[0].viewing = 0;
-			terms[1].viewing = 1;
-			terms[2].viewing = 0;
+			// terms[0].viewing = 0;
+			// terms[1].viewing = 1;
+			// terms[2].viewing = 0;
 			strncpy((int8_t*)terms[display_terminal].terminal_buf, (int8_t*)key_buffer, 128);	// copy the content to the terminal buffer
 			terms[display_terminal].key_index = buffer_index;		// storing the current buffer index
 			save_current_cursor(get_cursor_x(), get_cursor_y());
@@ -168,13 +169,14 @@ void display_on_screen(uint32_t scan_code){
 			buffer_index = terms[1].key_index;
 			strncpy((int8_t*)key_buffer, (int8_t*)terms[1].terminal_buf, 128);
 			send_eoi(KEYBOARD_IRQ);
+			sti();
 			set_display_term(1);
 		}
-		else if(scan_code == F3_pressed && current_term_id != 2){
+		else if(scan_code == F3_pressed && display_terminal != 2){
 			// printf("Alt + F3 received! \n");
-			terms[0].viewing = 0;
-			terms[1].viewing = 0;
-			terms[2].viewing = 1;
+			// terms[0].viewing = 0;
+			// terms[1].viewing = 0;
+			// terms[2].viewing = 1;
 			strncpy((int8_t*)terms[display_terminal].terminal_buf, (int8_t*)key_buffer, 128);	// copy the content to the terminal buffer
 			terms[display_terminal].key_index = buffer_index;		// storing the current buffer index
 			save_current_cursor(get_cursor_x(), get_cursor_y());
@@ -183,6 +185,7 @@ void display_on_screen(uint32_t scan_code){
 			buffer_index = terms[2].key_index;
 			strncpy((int8_t*)key_buffer, (int8_t*)terms[2].terminal_buf, 128);
 			send_eoi(KEYBOARD_IRQ);
+			sti();
 			set_display_term(2);
 		}
 		return;
