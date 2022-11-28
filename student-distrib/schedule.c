@@ -35,12 +35,14 @@ void pit_handler(){
     map_program_page(next_proc->pid);
     // map_video_page(PROG_128MB << 1, next_proc->terminal_idx);
     flush_TLB();
-    
+    current_pid_num = next_proc->pid;
+    current_term_id = (uint32_t)next_term;
+    set_video_mem(vram_addrs[next_term]);
+
     tss.ss0 = KERNEL_DS;
     tss.esp0 = EIGHT_MB - 4 - (EIGHT_KB * (next_proc->pid -1));
     
-    current_pid_num = next_proc->pid;
-    current_term_id = (uint32_t)(next_proc->terminal_idx);
+
     // terminal = terms[current_term_id];
 
 

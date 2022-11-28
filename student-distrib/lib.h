@@ -35,6 +35,7 @@ void kbd_putc(uint8_t c);
 void tab();
 int get_cursor_x();
 int get_cursor_y();
+void set_video_mem(int32_t vram_address);
 void term_set_cursor(int x, int y);
 /* Userspace address-check functions */
 int32_t bad_userspace_addr(const void* addr, int32_t len);

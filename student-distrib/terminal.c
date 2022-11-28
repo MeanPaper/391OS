@@ -226,8 +226,9 @@ int32_t terminal_write(int fd, const void * buf, int32_t n_bytes){
     int i;
     uint8_t* temp = (uint8_t*) buf;
     for(i = 0; i < n_bytes; ++i){
-       // if(temp[i] == '\0') break;
+        // if(temp[i] == '\0') break;
         putc(temp[i]);
+       
     }
     if(i == 127){ //reach the end of line, add \n to go to next line. 
         putc('\n');

@@ -2,6 +2,8 @@
  * vim:ts=4 noexpandtab */
 
 #include "lib.h"
+#include "terminal.h"
+#include "paging.h"
 
 #define VIDEO       0xB8000
 #define NUM_COLS    80
@@ -12,12 +14,15 @@ static int screen_x;
 static int screen_y;
 static char* video_mem = (char *)VIDEO;
 
-
 int get_cursor_x(){
     return screen_x;
 }
 int get_cursor_y(){
     return screen_y;
+}
+
+void set_video_mem(int32_t vram_address){
+    video_mem = (char *)vram_address;
 }
 
 void term_set_cursor(int x, int y){
@@ -90,7 +95,8 @@ void set_cursor_position(){
     //     screen_x = 0;
     //     screen_y = 24;
     // }
-    if(screen_y > (NUM_ROWS-1)) {
+
+    if( screen_y > (NUM_ROWS-1)) {
         screen_y = (NUM_ROWS-1);
         screen_x = 0;
     }
@@ -98,7 +104,7 @@ void set_cursor_position(){
         screen_x = 0;
         screen_y += 1;
     }
-    else if(screen_x < 0)screen_x = 0;
+    else if(screen_x < 0) screen_x = 0;
     else if(screen_y < 0) screen_y = 0;
     // outw( (position & 0xFF00) | 0x0C,0x03D4);
     // outw( ((position & 0x00FF) << 8) | 0x0D,0x03D4);
@@ -356,8 +362,8 @@ int32_t puts(int8_t* s) {
     return index;
 }
 void kbd_putc(uint8_t c) {
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
+    *(uint8_t *)(vram_addrs[display_terminal] + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
+    *(uint8_t *)(vram_addrs[display_terminal] + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
 }
 /* void putc(uint8_t c);
  * Inputs: uint_8* c = character to print
