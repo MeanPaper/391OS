@@ -10,7 +10,7 @@
 
 void pit_handler(){
     // return;    
-
+    cli();
     int32_t next_term;
 
    
@@ -20,13 +20,16 @@ void pit_handler(){
         execute_on_term((uint8_t*)"shell", 0);
     }
 
-    cli();
+
     pcb_t * current = (pcb_t*)(GET_PCB(current_pid_num));
     next_term = (current_term_id + 1) % MAX_TERM;
     while(active_terminal[next_term] == -1){
         next_term = (next_term + 1) % MAX_TERM;
     }
-    if(current_pid_num == active_terminal[next_term]) return;
+    // if(current_pid_num == active_terminal[next_term]){
+    //     sti();
+    //     return;
+    // }
 
     pcb_t * next_proc = (pcb_t*)(GET_PCB(active_terminal[next_term]));
     map_program_page(next_proc->pid);
@@ -39,7 +42,7 @@ void pit_handler(){
     current_pid_num = next_proc->pid;
     current_term_id = (uint32_t)(next_proc->terminal_idx);
     // terminal = terms[current_term_id];
-    sti();
+
 
     asm volatile(
         "movl   %%ebp, %0;"
@@ -52,7 +55,7 @@ void pit_handler(){
         : 
         :"r"(next_proc->save_ebp), "r"(next_proc->save_esp)
     );
-
+    sti();
     return;
 }
 

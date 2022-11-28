@@ -26,11 +26,11 @@ uint32_t display_terminal = 0;
  * Side Effects: none
 */
 int32_t term_video_unmap(uint32_t current_term){
-    int32_t term_page_table_entry = vram_addrs[current_term] >> 12;
+    int32_t temp_addr = vram_addrs[current_term] >> 12;
     page_table_entry_t temp;
-    temp.val = first_page_table[term_page_table_entry];
-    temp.page_base_addr = vram_addrs[current_term] >> 12;
-    first_page_table[term_page_table_entry] = temp.val;
+    temp.val = first_page_table[temp_addr];
+    temp.page_base_addr = temp_addr; // vram_addrs[current_term] >> 12;
+    first_page_table[temp_addr] = temp.val;
     flush_TLB();
     memcpy((uint8_t*)vram_addrs[current_term],(uint8_t*)VIDEO_PHYS, FOUR_KB);
     return 0;
@@ -52,11 +52,11 @@ int32_t term_video_unmap(uint32_t current_term){
 int32_t term_video_map(uint32_t current_term){
     // clear();d
     memcpy((uint8_t*)VIDEO_PHYS, (uint8_t*)vram_addrs[current_term], FOUR_KB);
-    int32_t term_page_table_entry = vram_addrs[current_term] >> 12;
-    page_table_entry_t temp;
-    temp.val = first_page_table[term_page_table_entry];
+    int32_t temp_addr = vram_addrs[current_term] >> 12;
+    page_table_entry_t temp; 
+    temp.val = first_page_table[temp_addr];
     temp.page_base_addr = VIDEO_PHYS >> 12;
-    first_page_table[term_page_table_entry] = temp.val;
+    first_page_table[temp_addr] = temp.val;
     flush_TLB();
     return 0;
 }

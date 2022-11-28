@@ -177,16 +177,30 @@ void display_on_screen(uint32_t scan_code){
 			// terms[0].viewing = 0;
 			// terms[1].viewing = 0;
 			// terms[2].viewing = 1;
+
 			strncpy((int8_t*)terms[display_terminal].terminal_buf, (int8_t*)key_buffer, 128);	// copy the content to the terminal buffer
 			terms[display_terminal].key_index = buffer_index;		// storing the current buffer index
-			save_current_cursor(get_cursor_x(), get_cursor_y());
-			term_set_cursor(terms[2].screen_x, terms[2].screen_y);
-			set_cursor_position();
+			save_current_cursor(get_cursor_x(), get_cursor_y());	// save currrent terminal cursor
+			term_set_cursor(terms[2].screen_x, terms[2].screen_y);	// update the current cursor to the correct position
+			set_cursor_position();	// update the cursor
 			buffer_index = terms[2].key_index;
 			strncpy((int8_t*)key_buffer, (int8_t*)terms[2].terminal_buf, 128);
 			send_eoi(KEYBOARD_IRQ);
 			// sti();
 			set_display_term(2);
+
+
+
+			// strncpy((int8_t*)terms[display_terminal].terminal_buf, (int8_t*)key_buffer, 128);	// copy the content to the terminal buffer
+			// terms[display_terminal].key_index = buffer_index;		// storing the current buffer index
+			// save_current_cursor(get_cursor_x(), get_cursor_y());
+			// term_set_cursor(terms[2].screen_x, terms[2].screen_y);
+			// set_cursor_position();
+			// buffer_index = terms[2].key_index;
+			// strncpy((int8_t*)key_buffer, (int8_t*)terms[2].terminal_buf, 128);
+			// send_eoi(KEYBOARD_IRQ);
+			// // sti();
+			// set_display_term(2);
 		}
 		return;
 	}

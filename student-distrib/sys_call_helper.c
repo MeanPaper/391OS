@@ -41,6 +41,7 @@ int32_t halt (uint8_t status){
     /* halt must return a value to the parent execute system call so that 
      * we know how the program ended */
 
+    // cli();
     // how do we grap the program
     pcb_t * current = (pcb_t*)(GET_PCB(current_pid_num));
     // pcb_t * parent = (pcb_t*)(GET_PCB(current->parent_pid));
@@ -77,14 +78,14 @@ int32_t halt (uint8_t status){
     // }
 
     // check if main shell
-    if(current->pid == current->parent_pid && current->pid == active_terminal[current->terminal_idx]){
+    if(current->pid == current->parent_pid ){ //&& current->pid == active_terminal[current->terminal_idx]
         active_terminal[current->terminal_idx] = -1;
         execute((uint8_t*)"shell");
     }
     // else{
     //     current_pid_num -= 1;
     // }
-    
+    // sti();
     // Jump to execute return with proper ebp and esp
     asm volatile(
         "movl  %2, %%esp; "
@@ -111,7 +112,7 @@ int32_t execute (const uint8_t* command){
  * 
  */
 int32_t execute_on_term (const uint8_t* command, int32_t term_index){ 
-    
+    cli();
     dentry_t entry;     // file entry 
     pcb_t * entry_pcb;    // the process block
     // uint32_t s_ebp;
@@ -125,6 +126,7 @@ int32_t execute_on_term (const uint8_t* command, int32_t term_index){
     uint32_t command_len = strlen((int8_t*) command);
     int i, arg_idx;
     arg_idx = 0;
+
 
     if(term_index > 2 || term_index < 0){
         return -1;
