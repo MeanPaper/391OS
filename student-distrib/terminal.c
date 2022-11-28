@@ -20,10 +20,15 @@ uint32_t display_terminal = 0;
  * video page. Then we send this bask again. since we change the mapping, now we need
  * to flush_TLB() and copy the display video memory to the terminal video memory. 
  *  
- * Inputs: uint32_t current_term
+ * Inputs: 
+ *      uint32_t current_term
+ *          This is the number for current terminal
  * Output: none
  * Return Value: 0
- * Side Effects: none
+ * Side Effects: 
+ *      We change the page_base_addr of the current terminal virtual address from the
+ * display physical address to the physical address of the the current terminal. Then we 
+ * copy the display video memory to the current terminal video memory.
 */
 int32_t term_video_unmap(uint32_t current_term){
     int32_t temp_addr = vram_addrs[current_term] >> 12;
@@ -44,13 +49,18 @@ int32_t term_video_unmap(uint32_t current_term){
  *      through the page_table. Then we change the page_base_addr to the terminal's own
  *      video page. Then we send this bask again. since we change the mapping, now we need
  *      to flush_TLB()
- * Inputs: uint32_t current_term
+ * Inputs: 
+ *      uint32_t current_term
+ *          This is the number for current terminal
  * Output: none
  * Return Value: 0
- * Side Effects: none
+ * Side Effects: 
+ *      We first copy the current terminal video memory to the display video memory. Then We 
+ * change the page_base_addr of the current terminal virtual address from the physical address 
+ * of the the current terminal to the physical address of the display video memory address. 
  */
 int32_t term_video_map(uint32_t current_term){
-    // clear();d
+    // clear();
     memcpy((uint8_t*)VIDEO_PHYS, (uint8_t*)vram_addrs[current_term], FOUR_KB);
     int32_t temp_addr = vram_addrs[current_term] >> 12;
     page_table_entry_t temp; 
@@ -63,10 +73,13 @@ int32_t term_video_map(uint32_t current_term){
 
 /* void save_current_cursor(int x, int y)
  * Description: Store the cursor position of the current terminal
- * Inputs: none
+ * Inputs:
+ *      int x: the current cursor's x position
+ *      int y: the current cursor's y position
  * Output: none
  * Return Value: none
- * Side Effects: none
+ * Side Effects: 
+ *      It will save the cursor position of the current terminal
  */
 void save_current_cursor(int x, int y){
     terms[display_terminal].screen_x = x;
@@ -81,7 +94,9 @@ void save_current_cursor(int x, int y){
  * Inputs: none
  * Output: none
  * Return Value: none
- * Side Effects: none
+ * Side Effects: 
+ *      Set the current terminal to the 0th shell and display_terminal to the 0th terminal
+ * as well. 
 */
 void terminal_init(){
     int i;  // initialize three terminal and assign the terminal id for it
@@ -96,6 +111,26 @@ void terminal_init(){
     return;
 }
 
+
+
+/* int32_t set_display_term(int32_t term_index)
+ * Description: 
+ *      Once our keyboard receive ALT + F_num, it will call the function to set the 
+ * display terminal. This function will first check if the input is valid. If not it will
+ * return -1. We will unmap the current display terminal. Then we will map the terminal 
+ * we want to display. Then we will set the display terminal to the input terminal. 
+ * 
+ * Inputs: 
+ *      int32_t term_index
+ *          this is terminal index that we want to display
+ * Output: none
+ * Return Value: 
+ *      0: on success
+ *      -1: on failure
+ * Side Effects: 
+ *      We will unmap the current display terminal. Then we will map the terminal 
+ * we want to display. Then we will set the display terminal to the input terminal. 
+ */
 int32_t set_display_term(int32_t term_index){
     if(term_index > 2 || term_index < 0){
         return -1;
@@ -108,11 +143,6 @@ int32_t set_display_term(int32_t term_index){
     // terminal = terms[term_index];
     display_terminal = term_index;
     // current_pid_num = terms[term_index].current_process_id;
-    if(terminal_active_count < 3 && active_terminal[term_index] == -1){
-        ++terminal_active_count;
-        // sti();
-        execute_on_term((uint8_t*)"shell", term_index);
-    }
     sti();
     return 0;
 }

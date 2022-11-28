@@ -126,3 +126,21 @@
 ### Difficulty to fix:
     Easy. Just add a line of endeoi when switching terminals. 
 ---
+## Checkpoint 5
+---
+## Bug #: 13
+### Date: 11/23/2022
+### Symptom: 
+    Open terminal will page fault immediately
+### Difficulty to find: 
+    Hard. We asked for help from both Okan and Edward. Okan helped us greatly by guessing and checking. Then we were able to identify the bug. 
+### Difficulty to fix:
+---
+## Bug #: 14
+### Date: 11/23/2022
+### Symptom: 
+    Open second, and third terminal will page fault immediately
+### Difficulty to find: 
+    
+### Difficulty to fix:
+    Our teammate Dongming was able to fix the second page fault, but we still have the third terminal that has page fault. 
