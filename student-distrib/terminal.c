@@ -222,6 +222,7 @@ int32_t terminal_read(int fd,void * buf, int32_t n_bytes){
  * Side Effects: none
 */
 int32_t terminal_write(int fd, const void * buf, int32_t n_bytes){
+    cli();
     if(!buf) return -1;
     int i;
     uint8_t* temp = (uint8_t*) buf;
@@ -233,6 +234,7 @@ int32_t terminal_write(int fd, const void * buf, int32_t n_bytes){
     if(i == 127){ //reach the end of line, add \n to go to next line. 
         putc('\n');
     }
+    sti();
     // strncpy(buf,terminal.terminal_buf,sizeof(terminal.terminal_buf));
     // puts(terminal.terminal_buf);
     return i;

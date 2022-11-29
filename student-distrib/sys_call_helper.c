@@ -527,7 +527,7 @@ int32_t getargs(uint8_t* buf, int32_t nbytes){
  * Return value: none
  */
 int32_t vidmap(uint8_t** screen_start){
-    
+    cli();
     // null check
     if(!screen_start) return -1;
     // user program page is from prog_load_addr virtual address to the address + 4MB
@@ -537,7 +537,7 @@ int32_t vidmap(uint8_t** screen_start){
     flush_TLB();                        // flush TLB
     *screen_start = (uint8_t*)(PROG_128MB << 1) + (current_term_id * FOUR_KB);    // virtual address is 256MB double the size of PROG_LOAD_ADDR = 128MB
     
-
+    sti();
     // write the address into to memory location provided by the caller
     // check if the location falls within the address range covered by the single user-level page
 

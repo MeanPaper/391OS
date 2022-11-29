@@ -59,9 +59,7 @@ void update_cursor(int mode){
             terms[display_terminal].screen_y= (NUM_ROWS-1);
             set_cursor_position();
         }
-        // else if(screen_x == 79){
-        //     set_screen_pos(0,screen_y+1);
-        // }
+
         else{
             set_cursor_position();
             
@@ -90,12 +88,6 @@ void update_cursor(int mode){
  * Side Effects: none. 
 */
 void set_cursor_position(){
-
-    int position = terms[current_term_id].screen_y * NUM_COLS + terms[current_term_id].screen_x;
-    // if(screen_x == 80 && screen_y == 24 ){ //screen_y == 25
-    //     screen_x = 0;
-    //     screen_y = 24;
-    // }
     if( terms[current_term_id].screen_y > (NUM_ROWS-1)) {
         terms[current_term_id].screen_y = (NUM_ROWS-1);
         terms[current_term_id].screen_x = 0;
@@ -108,15 +100,14 @@ void set_cursor_position(){
     else if(terms[current_term_id].screen_y < 0) terms[current_term_id].screen_y = 0;
 
 
-    if(current_term_id != display_terminal){
-        return;
+    if(current_term_id == display_terminal){
+        //change the cursor position in memory. 
+        int position = terms[current_term_id].screen_y * NUM_COLS + terms[current_term_id].screen_x;
+        outb(0x0F,0x3D4);
+        outb((uint8_t)(position & 0xFF),0x3D5);
+        outb(0x0E,0x3D4);
+        outb((uint8_t)((position >> 8) & 0xFF),0x3D5);
     }
-    //change the cursor position in memory. 
-    
-    outb(0x0F,0x3D4);
-    outb((uint8_t)(position & 0xFF),0x3D5);
-    outb(0x0E,0x3D4);
-    outb((uint8_t)((position >> 8) & 0xFF),0x3D5);
 }
 
 /* void scrow_up();
