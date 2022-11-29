@@ -533,14 +533,13 @@ int32_t vidmap(uint8_t** screen_start){
     // user program page is from prog_load_addr virtual address to the address + 4MB
     if ((uint32_t)screen_start < PROG_LOAD_ADDR || (uint32_t)screen_start > PROG_LOAD_ADDR + FOUR_MB - 4) return -1;
     // clear();
-    map_video_page(PROG_128MB << 1, current_term_id);    // loading new video page
+    map_video_page((PROG_128MB << 1) + (current_term_id * FOUR_KB), current_term_id);    // loading new video page
     flush_TLB();                        // flush TLB
-    *screen_start = (uint8_t*)(PROG_128MB << 1);    // virtual address is 256MB double the size of PROG_LOAD_ADDR = 128MB
+    *screen_start = (uint8_t*)(PROG_128MB << 1) + (current_term_id * FOUR_KB);    // virtual address is 256MB double the size of PROG_LOAD_ADDR = 128MB
     
 
     // write the address into to memory location provided by the caller
     // check if the location falls within the address range covered by the single user-level page
-    // uint32_t start = (uint32_t)(GET_PCB(current_pid_num));
 
 
     // the vedio memory requires you to add another page mapping for the program (4kB)

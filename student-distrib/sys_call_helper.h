@@ -16,12 +16,12 @@
 #define ENTRY_ADDR_SIZE     4       // program eip range [24,27]
 #define ELF_MAGIC_SIZE      4
 
-#define FOUR_MB   0x400000
-#define EIGHT_MB   0x800000
+#define FOUR_MB         0x400000
+#define EIGHT_MB        0x800000
 #define PROG_LOAD_ADDR  0x08048000
-#define PROG_128MB  0x08000000
-#define USER_PROG 0x8400000 // 132 MB
-#define EIGHT_KB      8192
+#define PROG_128MB      0x08000000
+#define USER_PROG       0x8400000 // 132 MB
+#define EIGHT_KB        8192
 
 #define VIDEO_VIR       0xB8000
 // #define USER_CS     0x0023

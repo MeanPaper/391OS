@@ -7,7 +7,6 @@ typedef struct terminal{
     uint32_t screen_x;
     uint32_t screen_y;
     uint32_t terminal_id;
-    uint8_t  viewing;
     uint8_t current_process_id; 
     int32_t key_index;
 }terminal_t;

@@ -105,11 +105,10 @@ int32_t map_video_page(int32_t video_addr, int32_t cur_term){
     else{
         vid_page.page_base_addr = vram_addrs[cur_term] >> 12;
     }
-    // vid_page.page_base_addr = vram_addrs[cur_term] >> 12;  // use the same physical address for video memory
     vid_page.rw = 1;                          // enable read and write
     vid_page.present = 1;                     // present the page
     vid_page.user_super = 1;                  // allowing dpl 3
-    video_page_table[0] = vid_page.val;       // this is at page table entry 0 because the virtual address is 256MB the body are 0 for the most part
+    video_page_table[cur_term] = vid_page.val;       // this is at page table entry 0 because the virtual address is 256MB the body are 0 for the most part
     page_directory[video_addr >> FOUR_MB_SHIFT] = (uint32_t)(video_page_table) | 7;  // or with 111 allowing r/w, p, as well as user dpl  
     return 0;   
 }

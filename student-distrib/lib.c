@@ -50,13 +50,13 @@ void term_set_cursor(int x, int y){
  * Side Effects: change the screen_x, screen_y variable. 
 */
 void update_cursor(int mode){
-    screen_x ++;
+    terms[display_terminal].screen_x ++;
     if(mode == 0){
         // increment x;
-        if(screen_x == NUM_COLS && screen_y == (NUM_ROWS-1)){
+        if(terms[display_terminal].screen_x == NUM_COLS && terms[display_terminal].screen_y == (NUM_ROWS-1)){
             scrow_up();
-            screen_x = 0;
-            screen_y= (NUM_ROWS-1);
+            terms[display_terminal].screen_x = 0;
+            terms[display_terminal].screen_y= (NUM_ROWS-1);
             set_cursor_position();
         }
         // else if(screen_x == 79){
@@ -68,14 +68,14 @@ void update_cursor(int mode){
         }
     }
     else if(mode == 1){  //set the cursor to top-left
-        screen_x = 0;
-        screen_y = 0;
+        terms[display_terminal].screen_x = 0;
+        terms[display_terminal].screen_y = 0;
         set_cursor_position();
     }
     else if(mode == 2){  // set the cursor to last line. 
-        screen_x = 0;
+        terms[display_terminal].screen_x = 0;
         // screen_y = (NUM_ROWS-1);
-        screen_y = 0;
+        terms[display_terminal].screen_y = 0;
         set_cursor_position();
     }
     
@@ -90,26 +90,29 @@ void update_cursor(int mode){
  * Side Effects: none. 
 */
 void set_cursor_position(){
-    int position = screen_y * NUM_COLS + screen_x;
+
+    int position = terms[current_term_id].screen_y * NUM_COLS + terms[current_term_id].screen_x;
     // if(screen_x == 80 && screen_y == 24 ){ //screen_y == 25
     //     screen_x = 0;
     //     screen_y = 24;
     // }
-
-    if( screen_y > (NUM_ROWS-1)) {
-        screen_y = (NUM_ROWS-1);
-        screen_x = 0;
+    if( terms[current_term_id].screen_y > (NUM_ROWS-1)) {
+        terms[current_term_id].screen_y = (NUM_ROWS-1);
+        terms[current_term_id].screen_x = 0;
     }
-    else if(screen_x == NUM_COLS ){ //screen_y == 25
-        screen_x = 0;
-        screen_y += 1;
+    else if(terms[current_term_id].screen_x == NUM_COLS ){ //screen_y == 25
+        terms[current_term_id].screen_x = 0;
+        terms[current_term_id]. screen_y += 1;
     }
-    else if(screen_x < 0) screen_x = 0;
-    else if(screen_y < 0) screen_y = 0;
-    // outw( (position & 0xFF00) | 0x0C,0x03D4);
-    // outw( ((position & 0x00FF) << 8) | 0x0D,0x03D4);
+    else if(terms[current_term_id].screen_x < 0) terms[current_term_id].screen_x = 0;
+    else if(terms[current_term_id].screen_y < 0) terms[current_term_id].screen_y = 0;
 
+
+    if(current_term_id != display_terminal){
+        return;
+    }
     //change the cursor position in memory. 
+    
     outb(0x0F,0x3D4);
     outb((uint8_t)(position & 0xFF),0x3D5);
     outb(0x0E,0x3D4);
@@ -129,11 +132,11 @@ void scrow_up(){
     int y;
     for(y = 0 ; y < NUM_ROWS-1; y++){
         for(x = 0 ; x < NUM_COLS; x++){
-            *(uint8_t *)(video_mem + (((NUM_COLS * y + x)) << 1)) = *(uint8_t *)(video_mem + ((NUM_COLS * (y+1) + x) << 1));
+            *(uint8_t *)(vram_addrs[current_term_id] + (((NUM_COLS * y + x)) << 1)) = *(uint8_t *)(vram_addrs[current_term_id] + ((NUM_COLS * (y+1) + x) << 1));
         }
     }
     for(x = 0; x < NUM_COLS; x++){
-        *(uint8_t *)(video_mem + ((x + (NUM_ROWS-1) * NUM_COLS) << 1)) = ' ';
+        *(uint8_t *)(vram_addrs[current_term_id] + ((x + (NUM_ROWS-1) * NUM_COLS) << 1)) = ' ';
     }
 }   
     
@@ -162,23 +165,23 @@ void clear(void) {
  * Side Effects: update the position of cursor. 
 */
 void backspace(){
-    if(screen_x == 0){
-        if(screen_y == 0){
+    if(terms[display_terminal].screen_x == 0){
+        if(terms[display_terminal].screen_y == 0){
             ;
         }
         else{
-            screen_x = NUM_COLS-1; // if at first position of any line;
-            screen_y -= 1; //backspace will bring cursor to previous line, position 79. 
+            terms[display_terminal].screen_x = NUM_COLS-1; // if at first position of any line;
+            terms[display_terminal].screen_y -= 1; //backspace will bring cursor to previous line, position 79. 
             set_cursor_position();
         }
     }
     else{
         // set_screen_pos(screen_x-1,screen_y);
-        screen_x --;
+        terms[display_terminal].screen_x --;
         // screen_y--;
         set_cursor_position();
     }
-    *(uint8_t *)(video_mem + ((screen_x + screen_y * NUM_COLS) << 1)) = ' ';
+    *(uint8_t *)(video_mem + ((terms[display_terminal].screen_x + terms[display_terminal].screen_y * NUM_COLS) << 1)) = ' ';
    
 }
 
@@ -192,12 +195,12 @@ void backspace(){
  * Side Effects: update the position of cursor. 
 */
 void enter(){
-    screen_x = 0;
-    screen_y += 1;
+    terms[display_terminal].screen_x = 0;
+    terms[display_terminal].screen_y += 1;
     // set_screen_pos(0,screen_y+1);
-    if(screen_y >= NUM_ROWS){
+    if(terms[display_terminal].screen_y >= NUM_ROWS){
         scrow_up();
-        screen_y = NUM_ROWS - 1;
+        terms[display_terminal].screen_y = NUM_ROWS - 1;
         
     }
     set_cursor_position();
@@ -212,13 +215,13 @@ void enter(){
  * Side Effects: update screen_x, sceen_y position. 
 */
 void tab(){
-    screen_x += 4 ; //4 space = 1 tab
-    if(screen_x >= NUM_COLS){ //see if we need to move to the next line
-        screen_x -= NUM_COLS;
-        screen_y += 1;
+    terms[display_terminal].screen_x += 4 ; //4 space = 1 tab
+    if(terms[display_terminal].screen_x >= NUM_COLS){ //see if we need to move to the next line
+        terms[display_terminal].screen_x -= NUM_COLS;
+        terms[display_terminal].screen_y += 1;
     }
-    if(screen_y >= NUM_ROWS){ //or scrow up
-        screen_y = NUM_ROWS -1;
+    if(terms[display_terminal].screen_y >= NUM_ROWS){ //or scrow up
+        terms[display_terminal].screen_y = NUM_ROWS -1;
         scrow_up();
     }
     set_cursor_position();
@@ -362,8 +365,8 @@ int32_t puts(int8_t* s) {
     return index;
 }
 void kbd_putc(uint8_t c) {
-    *(uint8_t *)(vram_addrs[display_terminal] + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
-    *(uint8_t *)(vram_addrs[display_terminal] + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
+    *(uint8_t *)(vram_addrs[display_terminal] + ((NUM_COLS * terms[display_terminal].screen_y + terms[display_terminal].screen_x) << 1)) = c;
+    *(uint8_t *)(vram_addrs[display_terminal] + ((NUM_COLS * terms[display_terminal].screen_y + terms[display_terminal].screen_x) << 1) + 1) = ATTRIB;
 }
 /* void putc(uint8_t c);
  * Inputs: uint_8* c = character to print
@@ -372,17 +375,17 @@ void kbd_putc(uint8_t c) {
 void putc(uint8_t c) {
     if(c == '\0') return;
     if(c == '\n' || c == '\r') { //screen_x == 79
-        screen_y++;
-        screen_x = 0;
+        terms[current_term_id].screen_y++;
+        terms[current_term_id].screen_x = 0;
     } else {
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
-        screen_x++;
+        *(uint8_t *)(vram_addrs[current_term_id] + ((NUM_COLS * terms[current_term_id].screen_y + terms[current_term_id].screen_x) << 1)) = c;
+        *(uint8_t *)(vram_addrs[current_term_id] + ((NUM_COLS * terms[current_term_id].screen_y + terms[current_term_id].screen_x) << 1) + 1) = ATTRIB;
+        terms[current_term_id].screen_x++;
     }
-    screen_y = (screen_y + (screen_x / NUM_COLS)); //%NUM_ROWS;
-    screen_x %= NUM_COLS;
-    if(screen_y >= NUM_ROWS){
-        screen_y = NUM_ROWS - 1;
+    terms[current_term_id].screen_y = (terms[current_term_id].screen_y + (terms[current_term_id].screen_x / NUM_COLS)); //%NUM_ROWS;
+    terms[current_term_id].screen_x %= NUM_COLS;
+    if(terms[current_term_id].screen_y >= NUM_ROWS){
+        terms[current_term_id].screen_y = NUM_ROWS - 1;
         scrow_up();
     }
     

@@ -138,11 +138,11 @@ int32_t set_display_term(int32_t term_index){
     cli();
     term_video_unmap(display_terminal);
     term_video_map(term_index);
-    // flush_TLB();
-    // terminal = terms[term_index];
+
     display_terminal = term_index;
+    set_cursor_position();	// update the cursor
+    
     if(active_terminal[term_index] == -1){
-        // sti();
         execute_on_term((uint8_t*)"shell", term_index);
     }
     sti();
