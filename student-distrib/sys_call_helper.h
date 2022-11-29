@@ -54,10 +54,9 @@ typedef struct pcb{
     uint32_t parent_pid;            // or uint32_t* paren_pcb 
     uint32_t save_ebp;
     uint32_t save_esp;
-    uint8_t active;
+    uint32_t sched_ebp;
+    uint32_t sched_esp;
     uint8_t args[128];
-    uint32_t instr_pos;
-    // uint32_t * process_addr;
     int32_t terminal_idx;
     file_descriptor_t fd_array[FD_ARRAY_SIZE]; // file descriptor array for the current process
 }pcb_t;

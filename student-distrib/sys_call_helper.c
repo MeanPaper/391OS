@@ -64,7 +64,6 @@ int32_t halt (uint8_t status){
     }
 
     // set current process to non-active
-    current->active = 0;
     process_active[current->pid-1] = -1;
     active_terminal[current->terminal_idx] = current->parent_pid;
 
@@ -115,8 +114,6 @@ int32_t execute_on_term (const uint8_t* command, int32_t term_index){
     cli();
     dentry_t entry;     // file entry 
     pcb_t * entry_pcb;    // the process block
-    // uint32_t s_ebp;
-    // uint32_t s_esp;
     uint32_t user_code_start_addr;
     uint8_t command_buf[128]; //buff size has a maximum of 128
     uint8_t elf_buffer[ELF_MAGIC_SIZE]; // elf buffer for the magic keyword         
@@ -206,7 +203,6 @@ int32_t execute_on_term (const uint8_t* command, int32_t term_index){
         ++process_in_use;         // increase the number of process
         entry_pcb = (pcb_t *)(GET_PCB(i+1));
         entry_pcb->pid = i+1;
-        entry_pcb->active = 1; 
         entry_pcb->terminal_idx=term_index;
         // the logic of this is the following, assuming that we have the a shell running in index 0
         // the current shell pid will be placed inside the active_terminal array
@@ -222,20 +218,6 @@ int32_t execute_on_term (const uint8_t* command, int32_t term_index){
     
     // setting the current_pid for the terminal
     terms[term_index].current_process_id = active_terminal[term_index];
-
-
-    // entry_pcb = (pcb_t *)(GET_PCB(current_pid_num));
-    // entry_pcb->pid = current_pid_num;
-    // entry_pcb->active = 1; 
-    // entry_pcb->terminal_idx=term_idex;
-    
-    // old code
-    // if(current_pid_num == 1){
-    //     entry_pcb->parent_pid = 1;
-    // }
-    // else{    
-    // entry_pcb->parent_pid = current_pid_num - 1;
-    //}
 
     memset(entry_pcb->args, 0, sizeof(entry_pcb->args));
     if (arg_idx != 0) {
@@ -270,9 +252,10 @@ int32_t execute_on_term (const uint8_t* command, int32_t term_index){
     
     // TODO: tss for context switching
     tss.esp0 = EIGHT_MB - 4 - (EIGHT_KB * (current_pid_num -1)); // use the entry_pcb->pid, because the current pid
-    // tss.esp0 = entry_pcb->save_esp;
+    
+    entry_pcb->sched_ebp = tss.esp0;
+    entry_pcb->sched_esp = tss.esp0;
     tss.ss0 = KERNEL_DS;
-    // sti();
 
     /* Prepare for Context Switch 
      * USER DS

@@ -37,25 +37,23 @@ void pit_handler(){
     flush_TLB();
     current_pid_num = next_proc->pid;
     current_term_id = (uint32_t)next_term;
-    set_video_mem(vram_addrs[next_term]);
+    // set_video_mem(vram_addrs[next_term]);
 
     tss.ss0 = KERNEL_DS;
     tss.esp0 = EIGHT_MB - 4 - (EIGHT_KB * (next_proc->pid -1));
     
 
     // terminal = terms[current_term_id];
-
-
     asm volatile(
         "movl   %%ebp, %0;"
         "movl   %%esp, %1;"
-        :"=r"(current->save_ebp), "=r"(current->save_esp)
+        :"=r"(current->sched_ebp), "=r"(current->sched_esp)
     );
     asm volatile(
         "movl   %0, %%ebp;"
         "movl   %1, %%esp;"
         : 
-        :"r"(next_proc->save_ebp), "r"(next_proc->save_esp)
+        :"r"(next_proc->sched_ebp), "r"(next_proc->sched_esp)
     );
     sti();
     return;
