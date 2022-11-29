@@ -59,6 +59,15 @@ void pit_handler(){
     return;
 }
 
+
+/* void pit_init();
+ * Description: Initialize our pit 
+ * 
+ * Inputs: none
+ * Output: none
+ * Return Value: none
+ * Side Effects: set the corresponding global flag variable, i.e. caps/shift/alt/ctrl 
+*/
 void pit_init(){
     cli();
     uint32_t divisor = PIT_APPR_MAX / FREQ;
