@@ -14,7 +14,6 @@
 #define TERM3_VIDEO         VIDEO_PHYS + ALIGNMENT * 3
 #define VIDEO_PHYS_ALTER    VIDEO_PHYS + ALIGNMENT * 4 // this is the back up address for the physical memory
 
-
 /* Initialize struct for 4MB page directory */
 // The number of bits below is from intel manual pg.91
 typedef union page_directory_4MB_entry {
@@ -84,7 +83,6 @@ uint32_t video_page_table[ARRAY_SIZE] __attribute__ ((aligned(ALIGNMENT)));
 
 extern uint32_t vram_addrs[3];
 
-
 /* void page_init();
  * Inputs: none
  * Return Value: none
@@ -108,7 +106,11 @@ extern void loadPageDirectory(uint32_t* page_directory);
 extern void enablePaging();
 
 extern int32_t map_program_page(int pid_num);
+extern int32_t map_video_page(int32_t video_addr, int32_t cur_term);  // need to test this
+
 extern int32_t remove_program_page(int pid_num);
+extern int32_t video_mem_swap(uint8_t current, uint8_t next);
 extern void map_current_video_page(int term_idx);
 
 #endif
+
