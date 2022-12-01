@@ -231,7 +231,7 @@ void enter(){
         terms[display_terminal].screen_y = NUM_ROWS - 1;
         
     }
-    set_cursor_position();
+    set_display_cursor();
 }
 
 /* void tab();
@@ -252,7 +252,7 @@ void tab(){
         terms[display_terminal].screen_y = NUM_ROWS -1;
         term_scroll_up(VIDEO_PHYS);
     }
-    set_cursor_position();
+    set_display_cursor();
 }
 /* Standard printf().
  * Only supports the following format strings:

@@ -101,6 +101,7 @@ void map_current_video_page(int term_idx){
     if(term_idx == display_terminal){                      // force the user point to the physical memory
         temp.page_base_addr = (VIDEO_PHYS) >> 12;
         first_page_table[(VIDEO_PHYS_ALTER) >> 12] = temp.val;
+        flush_TLB();
         return;
     }
     

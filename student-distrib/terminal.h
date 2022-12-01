@@ -6,7 +6,9 @@ typedef struct terminal{
     uint8_t terminal_buf[128];
     uint32_t screen_x;
     uint32_t screen_y;
-    int32_t frequency;
+    int32_t rtc_frequency;  // rtc frequency; -1 means rtc not in use / not open
+    int32_t rtc_counter;    // how many interrupts for the next handle
+    int32_t rtc_flag;       // set to 1 when read, read till it is set to 0;
     uint32_t terminal_id;
     uint8_t current_process_id; 
     int32_t key_index;

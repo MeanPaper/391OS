@@ -71,7 +71,7 @@ void keyboard_init(){
  * Side Effects: set the corresponding global flag variable, i.e. caps/shift/alt/ctrl 
 */
 void keyboard_interrupt(){
-	cli();
+	// cli(); this a interrupt handler
 	uint32_t scan_code;
 	
 	scan_code = inb(KEYBOARD_PORT);
@@ -121,7 +121,7 @@ void keyboard_interrupt(){
 			break;
 	}
 	send_eoi(KEYBOARD_IRQ); //end of eoi. 
-	sti();
+	// sti();
 }
 
 void display_on_screen(uint32_t scan_code){
@@ -149,6 +149,9 @@ void display_on_screen(uint32_t scan_code){
 			// term_set_cursor(terms[0].screen_x, terms[0].screen_y);	// update the current cursor to the correct position
 			// set_cursor_position();	// update the cursor
 			buffer_index = terms[0].key_index;
+			term_video_unmap(display_terminal);
+			display_terminal = 0;
+			set_display_cursor();
 			strncpy((int8_t*)key_buffer, (int8_t*)terms[0].terminal_buf, 128);
 			send_eoi(KEYBOARD_IRQ);
 			// sti();
@@ -163,6 +166,9 @@ void display_on_screen(uint32_t scan_code){
 			// term_set_cursor(terms[1].screen_x, terms[1].screen_y);
 			//set_cursor_position();
 			buffer_index = terms[1].key_index;
+			term_video_unmap(display_terminal);
+			display_terminal = 1;
+			set_display_cursor();
 			strncpy((int8_t*)key_buffer, (int8_t*)terms[1].terminal_buf, 128);
 			send_eoi(KEYBOARD_IRQ);
 			// sti();
@@ -177,6 +183,9 @@ void display_on_screen(uint32_t scan_code){
 			// term_set_cursor(terms[2].screen_x, terms[2].screen_y);	// update the current cursor to the correct position
 			// set_cursor_position();	// update the cursor
 			buffer_index = terms[2].key_index;
+			term_video_unmap(display_terminal);
+			display_terminal = 2;
+			set_display_cursor();
 			strncpy((int8_t*)key_buffer, (int8_t*)terms[2].terminal_buf, 128);
 			send_eoi(KEYBOARD_IRQ);
 			// sti();

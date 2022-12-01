@@ -4,7 +4,7 @@
 
 #define SQR_WAVE_MODE 0x36      // square wave mode, use by most of the OS
 #define PIT_APPR_MAX  1193180   // this is approximately the highest requency for the pit
-#define FREQ          40
+#define FREQ          100 //40
 #define MAX_TERM      3
 // void schedule(){
     
@@ -12,7 +12,7 @@
 
 void pit_handler(){
     // return;    
-    cli();
+    // cli();
     int32_t next_term;
 
    
@@ -36,6 +36,7 @@ void pit_handler(){
     pcb_t * next_proc = (pcb_t*)(GET_PCB(active_terminal[next_term]));
     map_program_page(next_proc->pid);
     map_current_video_page(next_term);
+    map_video_page((PROG_128MB << 1) + (next_term * FOUR_KB), next_term);    // loading new video page
 
     // map_video_page(PROG_128MB << 1, next_proc->terminal_idx);flush_TLB();
     current_pid_num = next_proc->pid;
@@ -58,7 +59,7 @@ void pit_handler(){
         : 
         :"r"(next_proc->sched_ebp), "r"(next_proc->sched_esp)
     );
-    sti();
+    // sti();
     return;
 }
 
