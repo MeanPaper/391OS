@@ -22,7 +22,9 @@
 #define LEFT_CONTROL_RELEASED 0x9D
 #define ENTER_RELEASE 0x9C
 #define TAB_PRESSED 0x0F
-
+#define F1_pressed 0x3B
+#define F2_pressed 0x3C
+#define F3_pressed 0x3D
 //status flag.
 volatile uint8_t key_buffer[128];
 volatile uint8_t ENTER_PRESSED;
@@ -46,3 +48,4 @@ void handle_backspace();
 void handle_enter();
 void handle_tab();
 #endif
+

@@ -26,6 +26,7 @@
 #define GET_PCB(n)  EIGHT_MB-(n)*EIGHT_KB
 
 extern uint32_t get_current_pid();
+extern int32_t active_terminal[3];
 /* file operations jump table */
 typedef struct Fot {
     int32_t (*read)(int32_t, void*, int32_t);
@@ -94,4 +95,5 @@ extern int32_t vidmap(uint8_t** screen_start);    // 8
 extern int32_t set_handler(int32_t signum,void*handler_address); // 9
 extern int32_t sigreturn(void);   // 10
 
+extern int32_t execute_on_term(const uint8_t * command, int32_t term_idx);
 #endif

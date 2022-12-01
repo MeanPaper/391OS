@@ -6,6 +6,9 @@
 #define PROG_FIRST_PAGE    0x800000 // 8 MB?
 #define FOUR_MB_SHIFT      22
 
+uint32_t vram_addrs[3] = {TERM1_VIDEO, TERM2_VIDEO, TERM3_VIDEO};
+
+
 // initialize page
 // reference: https://wiki.osdev.org/Setting_Up_Paging
 void page_init() {
@@ -64,6 +67,21 @@ void page_init() {
     //enable paging
     enablePaging();
 
+}
+
+// change user level physcal virtual address mapping
+void map_current_video_page(int term_idx){
+    page_table_entry_t temp;
+    temp.val = first_page_table[(VIDEO_PHYS_ALTER) >> 12];   // getting the user pointer
+    // if(term_idx == display_terminal){                      // force the user point to the physical memory
+    //     temp.page_base_addr = (VIDEO_PHYS) >> 12;
+    //     first_page_table[(VIDEO_PHYS_ALTER) >> 12] = temp.val;
+    //     return;
+    // }
+    
+    temp.page_base_addr = vram_addrs[term_idx] >> 12;
+    first_page_table[(VIDEO_PHYS_ALTER) >> 12] = temp.val;
+    flush_TLB();
 }
 
 int32_t map_program_page(int pid_num){

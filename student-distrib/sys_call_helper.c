@@ -6,6 +6,8 @@ uint8_t elf_magic[ELF_MAGIC_SIZE] = {0x7f, 0x45, 0x4c, 0x46}; // "DEL,E,L,F"
 uint32_t current_pid_num = 0;
 uint32_t exception = 0;
 
+int32_t active_terminal[3] = {-1,-1,-1};   // -1 means unactive, having pid number means active
+
 void set_exception_flag(uint32_t num){
     exception = num;
 }
@@ -75,6 +77,9 @@ int32_t halt (uint8_t status){
     );
     return status_32;
 }
+int32_t execute (const uint8_t* command){
+    return execute_on_term(command, current_term_id);
+}
 
 /*
  * execute 
@@ -87,7 +92,7 @@ int32_t halt (uint8_t status){
  * Return value: -1 on failure, 256 on exception, other for success. 
  * 
  */
-int32_t execute (const uint8_t* command){ 
+int32_t execute_on_term (const uint8_t* command, int32_t term_index){ 
     dentry_t entry;     // file entry 
     pcb_t * entry_pcb;    // the process block
     // uint32_t s_ebp;
