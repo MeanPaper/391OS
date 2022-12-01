@@ -6,9 +6,11 @@ typedef struct terminal{
     uint8_t terminal_buf[128];
     uint32_t screen_x;
     uint32_t screen_y;
+    int32_t frequency;
     uint32_t terminal_id;
     uint8_t current_process_id; 
     int32_t key_index;
+    int32_t read;
 }terminal_t;
 
 extern uint32_t current_term_id;

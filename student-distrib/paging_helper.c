@@ -1,6 +1,7 @@
 #include "paging.h"
 #include "lib.h"
 #include "terminal.h"
+#include "system_call.h"
 
 #define FIRST_PROG_VIRTUAL 0x08000000 // 128 MB
 #define FOUR_MB_PAGE       0x400000
@@ -11,14 +12,24 @@ uint32_t vram_addrs[3] = {TERM1_VIDEO, TERM2_VIDEO, TERM3_VIDEO};
 void init_terminal_video(){
     int i;
     page_table_entry_t video_page;
+    uint32_t video_phys = VIDEO_PHYS_ALTER;
+
     for(i = 0; i < 3; ++i){
         video_page.val = 0;
         video_page.page_base_addr = vram_addrs[i] >> FOUR_KB_SHIFT; 
         video_page.rw = 1;
         video_page.present = 1;
-        video_page.user_super = 1;
+        // video_page.user_super = 1;
         first_page_table[vram_addrs[i] >> FOUR_KB_SHIFT] = video_page.val;
     }
+    
+    // this set up the backup page for the physical memory
+    video_page.val = 0;
+    video_page.page_base_addr = (uint32_t)((VIDEO_PHYS) >> FOUR_KB_SHIFT);
+    video_page.rw = 1;
+    video_page.present = 1;
+    video_page.user_super = 1;
+    first_page_table[(int32_t)(video_phys >> FOUR_KB_SHIFT)] = video_page.val;
 } 
 
 // initialize page
@@ -80,6 +91,22 @@ void page_init() {
     //enable paging
     enablePaging();
 
+}
+
+
+// change user level physcal virtual address mapping
+void map_current_video_page(int term_idx){
+    page_table_entry_t temp;
+    temp.val = first_page_table[(VIDEO_PHYS_ALTER) >> 12];   // getting the user pointer
+    if(term_idx == display_terminal){                      // force the user point to the physical memory
+        temp.page_base_addr = (VIDEO_PHYS) >> 12;
+        first_page_table[(VIDEO_PHYS_ALTER) >> 12] = temp.val;
+        return;
+    }
+    
+    temp.page_base_addr = vram_addrs[term_idx] >> 12;
+    first_page_table[(VIDEO_PHYS_ALTER) >> 12] = temp.val;
+    flush_TLB();
 }
 
 int32_t map_program_page(int pid_num){

@@ -1,5 +1,7 @@
 #include "schedule.h"
 #include "sys_call_helper.h"
+#include "paging.h"
+
 #define SQR_WAVE_MODE 0x36      // square wave mode, use by most of the OS
 #define PIT_APPR_MAX  1193180   // this is approximately the highest requency for the pit
 #define FREQ          40
@@ -33,8 +35,9 @@ void pit_handler(){
 
     pcb_t * next_proc = (pcb_t*)(GET_PCB(active_terminal[next_term]));
     map_program_page(next_proc->pid);
-    // map_video_page(PROG_128MB << 1, next_proc->terminal_idx);
-    flush_TLB();
+    map_current_video_page(next_term);
+
+    // map_video_page(PROG_128MB << 1, next_proc->terminal_idx);flush_TLB();
     current_pid_num = next_proc->pid;
     current_term_id = (uint32_t)next_term;
     // set_video_mem(vram_addrs[next_term]);

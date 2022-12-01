@@ -93,11 +93,13 @@ void keyboard_interrupt(){
 			handle_backspace();
 			break;
 		case ENTER:
-			ENTER_PRESSED = 1;
+			terms[display_terminal].read = 1;
+			// ENTER_PRESSED = 1;	// this
 			handle_enter();
 			break;
 		case ENTER_RELEASE:
-			ENTER_PRESSED = 0;
+			// ENTER_PRESSED = 0;
+			terms[display_terminal].read = 0;
 			memset((void*)key_buffer, 0, sizeof(key_buffer));
 			break;
 		case LEFT_ALT_PRESSED:

@@ -8,6 +8,7 @@
 // terminal_t terminal;
 uint32_t current_term_id = 0;
 uint32_t display_terminal = 0;
+uint32_t user_video_pg = VIDEO_PHYS_ALTER;
 
 // const uint32_t vram_addrs[3] = {TERM1_VIDEO, TERM2_VIDEO, TERM3_VIDEO};
 
@@ -30,13 +31,17 @@ uint32_t display_terminal = 0;
  * copy the display video memory to the current terminal video memory.
 */
 int32_t term_video_unmap(uint32_t current_term){
-    int32_t temp_addr = vram_addrs[current_term] >> 12;
-    page_table_entry_t temp;
-    temp.val = first_page_table[temp_addr];
-    temp.page_base_addr = temp_addr; // vram_addrs[current_term] >> 12;
-    first_page_table[temp_addr] = temp.val;
-    flush_TLB();
-    memcpy((uint8_t*)vram_addrs[current_term],(uint8_t*)VIDEO_PHYS, FOUR_KB);
+    // int32_t temp_addr = vram_addrs[current_term] >> 12;
+    // int32_t video_addr = VIDEO_PHYS >> 12;
+    // page_table_entry_t temp;
+    // temp.val = first_page_table[video_addr]; // video memory will point to a specific mem location
+    // temp.page_base_addr = video_addr >> 12;
+    // first_page_table[video_addr] = temp.val;
+    // temp.val = first_page_table[temp_addr];
+    // temp.page_base_addr = temp_addr; // vram_addrs[current_term] >> 12;
+    // first_page_table[temp_addr] = temp.val;
+    // flush_TLB();
+    memcpy((uint8_t*)vram_addrs[current_term],(uint8_t*)VIDEO_PHYS, FOUR_KB);   // save the video content to the memory
     return 0;
 }
 
@@ -60,13 +65,13 @@ int32_t term_video_unmap(uint32_t current_term){
  */
 int32_t term_video_map(uint32_t current_term){
     // clear();
-    memcpy((uint8_t*)VIDEO_PHYS, (uint8_t*)vram_addrs[current_term], FOUR_KB);
-    int32_t temp_addr = vram_addrs[current_term] >> 12;
-    page_table_entry_t temp; 
-    temp.val = first_page_table[temp_addr];
-    temp.page_base_addr = VIDEO_PHYS >> 12;
-    first_page_table[temp_addr] = temp.val;
-    flush_TLB();
+    memcpy((uint8_t*)VIDEO_PHYS, (uint8_t*)vram_addrs[current_term], FOUR_KB);  // restore the content from the physical
+    // int32_t temp_addr = vram_addrs[current_term] >> 12;
+    // page_table_entry_t temp; 
+    // temp.val = first_page_table[temp_addr];
+    // temp.page_base_addr = VIDEO_PHYS >> 12;
+    // first_page_table[temp_addr] = temp.val;
+    // flush_TLB();
     return 0;
 }
 
@@ -105,6 +110,7 @@ void terminal_init(){
     }
     current_term_id = 0;
     display_terminal = 0;
+    terms[display_terminal].read = 0;
     term_video_map(display_terminal);
     // terminal = terms[display_terminal];
     return;
@@ -140,8 +146,10 @@ int32_t set_display_term(int32_t term_index){
     term_video_map(term_index);
 
     display_terminal = term_index;
-    set_cursor_position();	// update the cursor
+    current_term_id = term_index;
+    map_current_video_page(term_index);
     
+    set_display_cursor();
     if(active_terminal[term_index] == -1){
         execute_on_term((uint8_t*)"shell", term_index);
     }
@@ -195,8 +203,9 @@ int32_t terminal_close(){
 int32_t terminal_read(int fd,void * buf, int32_t n_bytes){
     if(!buf) return -1;
     sti();
-    while(!ENTER_PRESSED); //wait until user press enter.
-    ENTER_PRESSED = 0; 
+    while(!terms[current_term_id].read); //wait until user press enter.
+    terms[current_term_id].read = 0;
+    // ENTER_PRESSED = 0; 
     cli();
 
     strncpy((int8_t*)(terms[current_term_id].terminal_buf), (int8_t*)key_buffer, 127);
