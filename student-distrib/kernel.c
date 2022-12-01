@@ -164,8 +164,8 @@ void entry(unsigned long magic, unsigned long addr) {
     init_file_system(file_sys_start);
     keyboard_init();
     terminal_init();
-    pit_init();
     rtc_init();
+    pit_init();
 
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
