@@ -164,7 +164,7 @@ void display_on_screen(uint32_t scan_code){
 		else if(scan_code == F2_pressed && display_terminal != 1){
 			// printf("Alt + F2 received! \n");
 			
-			if(get_process_total() < 6){
+			if(get_process_total() < 6 || active_terminal[1] != -1){
 				strncpy((int8_t*)terms[display_terminal].terminal_buf, (int8_t*)key_buffer, 128);	// copy the content to the terminal buffer
 				terms[display_terminal].key_index = buffer_index;		// storing the current buffer index
 				// save_current_cursor(get_cursor_x(), get_cursor_y());
@@ -184,7 +184,7 @@ void display_on_screen(uint32_t scan_code){
 		}
 		else if(scan_code == F3_pressed && display_terminal != 2){
 			// printf("Alt + F3 received! \n");
-			if(get_process_total() < 6){
+			if(get_process_total() < 6 || active_terminal[2] != -1){
 				strncpy((int8_t*)terms[display_terminal].terminal_buf, (int8_t*)key_buffer, 128);	// copy the content to the terminal buffer
 				terms[display_terminal].key_index = buffer_index;		// storing the current buffer index
 				// save_current_cursor(get_cursor_x(), get_cursor_y());	// save currrent terminal cursor

@@ -142,10 +142,10 @@ int32_t set_display_term(int32_t term_index){
         return -1;
     }
     
-    if(get_process_total() >= 6){
-        printf("process full\n");
-        return -1;
-    }
+    // if(get_process_total() >= 6){
+    //     printf("Process full\n");
+    //     return -1;
+    // }
 
     // cli(); // inside interrupt handler
     // term_video_unmap(display_terminal);

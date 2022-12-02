@@ -9,9 +9,6 @@
 
 // int flag = 0;
 int launch_terminal = 0;
-// void schedule(){
-    
-// }
 
 void pit_handler(){
     // return;    
