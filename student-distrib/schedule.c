@@ -6,6 +6,9 @@
 #define PIT_APPR_MAX  1193180   // this is approximately the highest requency for the pit
 #define FREQ          100 //40
 #define MAX_TERM      3
+
+// int flag = 0;
+int launch_terminal = 0;
 // void schedule(){
     
 // }
@@ -14,6 +17,7 @@ void pit_handler(){
     // return;    
     // cli();
     int32_t next_term;
+    uint32_t shell_esp, shell_ebp;
 
    
     send_eoi(PIT_IRQ_POS);
@@ -21,7 +25,51 @@ void pit_handler(){
     if(active_terminal[0]==-1){
         execute_on_term((uint8_t*)"shell", 0);
     }
+    
+    if(get_process_total() < 6){
+        // flag = 0;
+        if(active_terminal[launch_terminal] == -1){
+            map_current_video_page(launch_terminal);
+            
+            int availiable = get_availiable_pid();
+            // if(availiable==-1){
+            //     printf("No more available processes\n");
+            //     pcb_t * current = (pcb_t*)(GET_PCB(current_pid_num));
 
+            //     tss.ss0 = KERNEL_DS;
+            //     tss.esp0 = EIGHT_MB - 4 - (EIGHT_KB * (current->pid -1));
+
+            //     asm volatile(
+            //         "movl   %0, %%ebp;"
+            //         "movl   %1, %%esp;"
+            //         : 
+            //         :"r"(current->sched_ebp), "r"(current->sched_esp)
+            //     );
+
+
+            //     return;
+            // }
+        
+            current_term_id = launch_terminal;
+
+            shell_esp = EIGHT_MB - 4 - (EIGHT_KB * (availiable-1));
+            shell_ebp = EIGHT_MB - 4 - (EIGHT_KB * (availiable-1));
+
+            asm volatile(
+                "movl   %0, %%ebp;"
+                "movl   %1, %%esp;"
+                : 
+                :"r"(shell_ebp), "r"(shell_esp)
+            );
+            execute_on_term((uint8_t*)"shell", launch_terminal);
+        }
+    }
+    // else{
+    //     if(!flag){
+    //         flag = 1;
+    //         printf("process full\n");
+    //     }
+    // }
 
     pcb_t * current = (pcb_t*)(GET_PCB(current_pid_num));
     next_term = (current_term_id + 1) % MAX_TERM;

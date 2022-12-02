@@ -141,20 +141,18 @@ int32_t set_display_term(int32_t term_index){
     if(term_index > 2 || term_index < 0){
         return -1;
     }
+    
+    if(get_process_total() >= 6){
+        printf("process full\n");
+        return -1;
+    }
 
     // cli(); // inside interrupt handler
     // term_video_unmap(display_terminal);
     term_video_map(term_index);
-
     // display_terminal = term_index;
     // current_term_id = term_index; // force schedule
-    map_current_video_page(term_index);
-    
-    // set_display_cursor();
-    if(active_terminal[term_index] == -1){
-        // current_term_id = term_index; // force schedule
-        execute_on_term((uint8_t*)"shell", term_index);
-    }
+    map_current_video_page(term_index);    
     // sti(); inside interrupt handler should not sti
     return 0;
 }

@@ -16,8 +16,20 @@ void set_exception_flag(uint32_t num){
     exception = num;
 }
 
+uint32_t get_process_total(){
+    return process_in_use;
+}
+
 uint32_t get_current_pid() {
     return current_pid_num;
+}
+
+int get_availiable_pid(){
+    int i;
+    for(i = 0; i < MAX_PROCESS; ++i){
+        if(process_active[i]==-1) return i+1;
+    }
+    return -1;
 }
 
 file_descriptor_t set_up_stdin();

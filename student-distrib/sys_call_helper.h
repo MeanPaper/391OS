@@ -64,8 +64,8 @@ typedef struct pcb{
 uint32_t current_pid_num;
 // handle system call for checkpoint 1
 extern void system_call_helper();
-
-
+extern int get_availiable_pid();
+extern uint32_t get_process_total();
 extern void set_exception_flag(uint32_t num);
 
 // return 0 to 255 if system call run halt, failed return -1 (command cannot be execute)

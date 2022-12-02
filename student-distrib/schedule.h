@@ -13,6 +13,7 @@
 #define PIT_CMD_PORT    0x43
 #define PIT_IRQ_POS     0
 
+extern int launch_terminal;
 
 // initialize pit
 extern void pit_init();
