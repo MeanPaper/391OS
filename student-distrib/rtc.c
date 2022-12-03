@@ -8,7 +8,7 @@
 #include "terminal.h"
 
 /* Local function */
-static int log2_helper(int input);
+// static int log2_helper(int input);
 static void rtc_change_rate(int frequency);
 
 /* Local variable */
@@ -109,17 +109,17 @@ void rtc_change_rate(int rate) {
     sti();
 }
 
-/* log2_helper(int input)
- *   Inputs: int input
- *   Return Value: int count
- *   Function: Compute count = log2(input) */
-int log2_helper(int input) {
-    int count = 0;
-    int curr_num = 1;
-    while (curr_num != input) {
-        curr_num = curr_num * 2;
-        count++;
-        if (curr_num>input) return -1;
-    }
-    return count;
-}
+// /* log2_helper(int input)
+//  *   Inputs: int input
+//  *   Return Value: int count
+//  *   Function: Compute count = log2(input) */
+// int log2_helper(int input) {
+//     int count = 0;
+//     int curr_num = 1;
+//     while (curr_num != input) {
+//         curr_num = curr_num * 2;
+//         count++;
+//         if (curr_num>input) return -1;
+//     }
+//     return count;
+// }

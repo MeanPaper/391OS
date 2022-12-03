@@ -145,12 +145,12 @@ int32_t set_display_term(int32_t term_index){
     // cli(); // inside interrupt handler
     // term_video_unmap(display_terminal);
 
-    map_current_video_page(display_terminal);   
+    map_sched_video_page(display_terminal);   
     memcpy((uint8_t*)vram_addrs[display_terminal],(uint8_t*)VIDEO_PHYS, FOUR_KB);   // save the video content to the memory
     memcpy((uint8_t*)VIDEO_PHYS, (uint8_t*)vram_addrs[term_index], FOUR_KB);  // restore the content from the physical
     display_terminal = term_index;
     // current_term_id = term_index; // force schedule
-    map_current_video_page(current_term_id);    
+    map_sched_video_page(current_term_id);    
     // sti(); inside interrupt handler should not sti
     return 0;
 }

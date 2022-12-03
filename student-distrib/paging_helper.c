@@ -95,7 +95,7 @@ void page_init() {
 
 
 // change user level physcal virtual address mapping
-void map_current_video_page(int term_idx){
+void map_sched_video_page(int term_idx){
     page_table_entry_t temp;
     temp.val = first_page_table[(VIDEO_PHYS_ALTER) >> 12];   // getting the user pointer
     if(term_idx == display_terminal){                      // force the user point to the physical memory
@@ -119,11 +119,12 @@ int32_t map_program_page(int pid_num){
     prog_page.page_size = 1;
     prog_page.user_super = 1;                                           
     page_directory[(FIRST_PROG_VIRTUAL) >> FOUR_MB_SHIFT] = prog_page.val;       // loading the 4MB page directory entries 
+    flush_TLB();
     return 0;
 }
 
 // this one has to change to allow multiple terminal addresses
-int32_t map_video_page(int32_t video_addr, int32_t cur_term){
+int32_t map_vidmap_page(int32_t video_addr, int32_t cur_term){
     page_table_entry_t vid_page;
     vid_page.val = 0;
 
@@ -138,6 +139,7 @@ int32_t map_video_page(int32_t video_addr, int32_t cur_term){
     vid_page.user_super = 1;                  // allowing dpl 3
     video_page_table[cur_term] = vid_page.val;       // this is at page table entry 0 because the virtual address is 256MB the body are 0 for the most part
     page_directory[video_addr >> FOUR_MB_SHIFT] = (uint32_t)(video_page_table) | 7;  // or with 111 allowing r/w, p, as well as user dpl  
+    flush_TLB();
     return 0;   
 }
 // void addpage

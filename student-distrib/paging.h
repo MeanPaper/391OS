@@ -106,10 +106,10 @@ extern void loadPageDirectory(uint32_t* page_directory);
 extern void enablePaging();
 
 extern int32_t map_program_page(int pid_num);
-extern int32_t map_video_page(int32_t video_addr, int32_t cur_term);  // need to test this
+extern int32_t map_vidmap_page(int32_t video_addr, int32_t cur_term);  // need to test this
 
 extern int32_t remove_program_page(int pid_num);
 extern int32_t video_mem_swap(uint8_t current, uint8_t next);
-extern void map_current_video_page(int term_idx);
+extern void map_sched_video_page(int term_idx);
 
 #endif

@@ -23,15 +23,18 @@ void pit_handler(){
     if(active_terminal[0]==-1){
         // register uint32_t ebp_tmp asm("ebp");
         // register uint32_t esp_tmp asm("esp");
-        // pcb_t * current = (pcb_t*)(GET_PCB(launch_terminal+1));
+        // pcb_t * current = (pcb_t*)(GET_PCB(1));
         // current->sched_ebp = ebp_tmp;
         // current->sched_esp = esp_tmp;
         execute_on_term((uint8_t*)"shell", 0);
     }
+
+    // next_term = (current_term_id + 1) % MAX_TERM;
     if(get_process_total() < 6){
         // flag = 0;
+
         if(active_terminal[display_terminal] == -1){
-            map_current_video_page(display_terminal);
+            map_sched_video_page(display_terminal);
             int availiable = get_availiable_pid();
             register uint32_t ebp_tmp asm("ebp");
             register uint32_t esp_tmp asm("esp");
@@ -44,35 +47,29 @@ void pit_handler(){
     }
 
     pcb_t * current = (pcb_t*)(GET_PCB(current_pid_num));
-    next_term = (current_term_id + 1) % MAX_TERM;
-    while(active_terminal[next_term] == -1){
-        next_term = (next_term + 1) % MAX_TERM;
-    }
-    current_term_id = (uint32_t)next_term;
-    // if(current_pid_num == active_terminal[next_term]){
-    //     sti();
-    //     return;
-    // }
-
-    pcb_t * next_proc = (pcb_t*)(GET_PCB(active_terminal[next_term]));
-    map_program_page(next_proc->pid);
-    map_current_video_page(next_term);
-    map_video_page((PROG_128MB << 1) + (next_term * FOUR_KB), next_term);    // loading new video page
-
-    // map_video_page(PROG_128MB << 1, next_proc->terminal_idx);flush_TLB();
-    current_pid_num = next_proc->pid;
-    // set_video_mem(vram_addrs[next_term]);
-
-    tss.ss0 = KERNEL_DS;
-    tss.esp0 = EIGHT_MB - 4 - (EIGHT_KB * (next_proc->pid -1));
-    
-
-    // terminal = terms[current_term_id];
     asm volatile(
         "movl   %%ebp, %0;"
         "movl   %%esp, %1;"
         :"=r"(current->sched_ebp), "=r"(current->sched_esp)
     );
+
+    next_term = (current_term_id + 1) % MAX_TERM;
+    while(active_terminal[next_term] == -1){
+        next_term = (next_term + 1) % MAX_TERM;
+    }
+    current_term_id = (uint32_t)next_term;
+    pcb_t * next_proc = (pcb_t*)(GET_PCB(active_terminal[next_term]));
+    map_program_page(next_proc->pid);
+    map_sched_video_page(next_term);
+    map_vidmap_page((PROG_128MB << 1) + (next_term * FOUR_KB), next_term);    // loading new video page
+    // flush_TLB();
+
+    current_pid_num = next_proc->pid;
+
+    tss.ss0 = KERNEL_DS;
+    tss.esp0 = EIGHT_MB - 4 - (EIGHT_KB * (next_proc->pid -1));
+
+
     asm volatile(
         "movl   %0, %%ebp;"
         "movl   %1, %%esp;"

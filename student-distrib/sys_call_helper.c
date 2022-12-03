@@ -254,7 +254,7 @@ int32_t execute_on_term (const uint8_t* command, int32_t term_index){
     // Check for executable
     // Set up paging
     map_program_page(current_pid_num);  // set up paging, need to change later
-    flush_TLB();                        // flush tlb
+    // flush_TLB();                        // flush tlb
 
     // Load file into memory
     read_data(entry.inode_num, 0, (uint8_t*)(PROG_LOAD_ADDR), FOUR_MB);
@@ -264,9 +264,6 @@ int32_t execute_on_term (const uint8_t* command, int32_t term_index){
     
     // TODO: tss for context switching
     tss.esp0 = EIGHT_MB - 4 - (EIGHT_KB * (current_pid_num -1)); // use the entry_pcb->pid, because the current pid
-    
-    // entry_pcb->sched_ebp = tss.esp0;
-    // entry_pcb->sched_esp = tss.esp0;
     tss.ss0 = KERNEL_DS;
 
     /* Prepare for Context Switch 
@@ -545,8 +542,8 @@ int32_t vidmap(uint8_t** screen_start){
     // user program page is from prog_load_addr virtual address to the address + 4MB
     if ((uint32_t)screen_start < PROG_LOAD_ADDR || (uint32_t)screen_start > PROG_LOAD_ADDR + FOUR_MB - 4) return -1;
     // clear();
-    map_video_page((PROG_128MB << 1) + (current_term_id * FOUR_KB), current_term_id);    // loading new video page
-    flush_TLB();                        // flush TLB
+    map_vidmap_page((PROG_128MB << 1) + (current_term_id * FOUR_KB), current_term_id);    // loading new video page
+    // flush_TLB();                        // flush TLB
     *screen_start = (uint8_t*)(PROG_128MB << 1) + (current_term_id * FOUR_KB);    // virtual address is 256MB double the size of PROG_LOAD_ADDR = 128MB
     
     // sti();
