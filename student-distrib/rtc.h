@@ -20,6 +20,11 @@
 #define REG_A   0xA
 #define REG_B   0xB
 #define REG_C   0xC
+/* some constants */
+#define MIN_RATE    3
+#define MAX_FREQ    1024
+#define MIN_FREQ    2
+
 
 /* Externally-visible functions */
 

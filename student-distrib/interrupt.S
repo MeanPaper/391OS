@@ -28,3 +28,4 @@
 
 INTERRUPT_WRAPPER(rtc_interrupt_call, rtc_handler, 0x28)
 INTERRUPT_WRAPPER(keyboard_intr_call, keyboard_interrupt, 0x21)
+INTERRUPT_WRAPPER(pit_handle_call, pit_handler , 0x20)

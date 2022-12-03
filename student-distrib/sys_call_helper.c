@@ -1,20 +1,35 @@
 #include "sys_call_helper.h"
 #include "lib.h"
 
-
+#define MAX_PROCESS 6
 // uint8_t * vram = (uint8_t*)(VIDEO_VIR + FOUR_KB);
 
 // the magic header of elf
 uint8_t elf_magic[ELF_MAGIC_SIZE] = {0x7f, 0x45, 0x4c, 0x46}; // "DEL,E,L,F"
-uint32_t current_pid_num = 0;
+uint32_t current_pid_num = 0;           // this is kinda cheating, since there are 3 processes use by the terminal, there will be 16kb gap between
 uint32_t exception = 0;
+uint32_t process_in_use = 0;
+int32_t process_active[MAX_PROCESS] = {-1, -1, -1, -1, -1, -1}; // the index + 1 will the pcb location
+int32_t active_terminal[3] = {-1,-1,-1};   // -1 means unactive, having pid number means active
 
 void set_exception_flag(uint32_t num){
     exception = num;
 }
 
+uint32_t get_process_total(){
+    return process_in_use;
+}
+
 uint32_t get_current_pid() {
     return current_pid_num;
+}
+
+int get_availiable_pid(){
+    int i;
+    for(i = 0; i < MAX_PROCESS; ++i){
+        if(process_active[i]==-1) return i+1;
+    }
+    return -1;
 }
 
 file_descriptor_t set_up_stdin();
@@ -32,19 +47,24 @@ int32_t close_helper(int32_t fd);
  * Output: none
  * Return value: status code from halt
  */
+
+// page fault if execute fish after exiting the seventh shell
 int32_t halt (uint8_t status){
     /* halt must return a value to the parent execute system call so that 
      * we know how the program ended */
+
+    // cli();
+    // how do we grap the program
     pcb_t * current = (pcb_t*)(GET_PCB(current_pid_num));
-    pcb_t * parent = (pcb_t*)(GET_PCB(current->parent_pid));
+    // pcb_t * parent = (pcb_t*)(GET_PCB(current->parent_pid));
     int32_t status_32 = (int32_t)status;
     if(exception) status_32 = 256; //if exception, status is 256
     exception = 0;
 
     // Restore parent paging
-    map_program_page(parent->pid);
+    map_program_page(current->parent_pid);
     flush_TLB();
-    tss.esp0 = EIGHT_MB - 4 - (EIGHT_KB * (parent->pid -1));
+    tss.esp0 = EIGHT_MB - 4 - (EIGHT_KB * (current->parent_pid -1));
     
     // Close all relevant FDs
     int i;
@@ -56,17 +76,27 @@ int32_t halt (uint8_t status){
     }
 
     // set current process to non-active
-    current->active = 0;
+    process_active[current->pid-1] = -1;
+    active_terminal[current->terminal_idx] = current->parent_pid;
+
+    // update the terminal current process when the current process in the current terminal halts
+    terms[current->terminal_idx].current_process_id = active_terminal[current->terminal_idx];
+
+    process_in_use--;
+    current_pid_num = current->parent_pid;
+    // if(process_in_use > 0 && process_active[process_in_use-1] == current->pid){
+    //     // process_active[--process_in_use] = -1;
+    // }
 
     // check if main shell
-    if(current->pid == current->parent_pid && current_pid_num == 1){
-        current_pid_num -= 1;
+    if(current->pid == current->parent_pid ){ //&& current->pid == active_terminal[current->terminal_idx]
+        active_terminal[current->terminal_idx] = -1;
         execute((uint8_t*)"shell");
     }
-    else{
-        current_pid_num -= 1;
-    }
-    
+    // else{
+    //     current_pid_num -= 1;
+    // }
+    // sti();
     // Jump to execute return with proper ebp and esp
     asm volatile(
         "movl  %2, %%esp; "
@@ -78,7 +108,9 @@ int32_t halt (uint8_t status){
     );
     return status_32;
 }
-
+int32_t execute (const uint8_t* command){
+    return execute_on_term(command, current_term_id);
+}
 /*
  * execute 
  * Description: Attempt to load and execute a new program,
@@ -90,17 +122,29 @@ int32_t halt (uint8_t status){
  * Return value: -1 on failure, 256 on exception, other for success. 
  * 
  */
-int32_t execute (const uint8_t* command){ 
+int32_t execute_on_term (const uint8_t* command, int32_t term_index){ 
+    cli();
     dentry_t entry;     // file entry 
     pcb_t * entry_pcb;    // the process block
-    // uint32_t s_ebp;
-    // uint32_t s_esp;
     uint32_t user_code_start_addr;
     uint8_t command_buf[128]; //buff size has a maximum of 128
     uint8_t elf_buffer[ELF_MAGIC_SIZE]; // elf buffer for the magic keyword         
     int32_t ret;
+    // uint32_t found_cmd = 0;
+    // uint32_t cmd_arg_len = 0;
+    uint32_t command_len = strlen((int8_t*) command);
     int i, arg_idx;
     arg_idx = 0;
+
+
+    if(term_index > 2 || term_index < 0){
+        return -1;
+    }
+
+    if(process_in_use + 1 > MAX_PROCESS){   // to many
+        printf("Too many processes \n");
+        return -1;
+    }
 
     memset(command_buf, 0, sizeof(command_buf));
     if(!command){
@@ -108,14 +152,27 @@ int32_t execute (const uint8_t* command){
     }
     
     // we read the command until newline or null or space
-    for(i = 0; i < strlen((int8_t*) command); ++i){
+    for(i = 0; i < command_len; ++i){
         if(command[i] == 0x0a || command[i] == 0) break;
+        // if(command[i] != 0x20 && !found_cmd){
+        //     command_buf[cmd_arg_len] = command[i];
+        //     cmd_arg_len++;
+        // }
+        // else if(!found_cmd && cmd_arg_len && command[i] == 0x20){found_cmd=i;}
+        
+        // if(found_cmd && command[i-1] == 0x20 && command[i] != 0x20){
+        //     arg_idx = i;
+        //     break;
+        // }
+
         if(command[i] == 0x20){
             arg_idx = i+1;
             break;
         }
+
         command_buf[i] = command[i];
     }
+
     
     if(-1 == read_dentry_by_name((uint8_t*) command_buf, &entry)){ // we only consider the command is in one line for now
         // failed to find the file
@@ -128,16 +185,51 @@ int32_t execute (const uint8_t* command){
         // failed to find magic ELF, the file is not executable
         return -1;                          
     }
-    ++current_pid_num;
-    entry_pcb = (pcb_t *)(GET_PCB(current_pid_num));
-    entry_pcb->pid = current_pid_num;
-    entry_pcb->active = 1; 
-    if(current_pid_num == 1){
-        entry_pcb->parent_pid = 1;
+
+
+    // all new process should start at offset 4, because the first 3 is used by the terminals
+    // ++current_pid_num;
+    // we mind not use the table by any chance
+    // we can use process active array index as the pid
+    // if the terminal is not running, get the pcb for the terminal
+    // cli();
+    if(active_terminal[term_index] == -1){
+        for(i=0; i<6; ++i){ 
+            // find available process active slots
+            if(process_active[i]==-1) break;
+        }
+        entry_pcb = (pcb_t *)(GET_PCB(i + 1));
+        entry_pcb->pid = i + 1; 
+        process_active[i] = 1;  // set to active
+        ++process_in_use;   // increase number of process
+        entry_pcb->terminal_idx = term_index;
+        entry_pcb->parent_pid = entry_pcb->pid;
     }
-    else{
-        entry_pcb->parent_pid = current_pid_num - 1;
+    else
+    {
+        for(i=0; i<6; ++i){
+            // find available process active slots
+            if(process_active[i]==-1) break;
+        } 
+        process_active[i] = 1;    // set to active
+        ++process_in_use;         // increase the number of process
+        entry_pcb = (pcb_t *)(GET_PCB(i+1));
+        entry_pcb->pid = i+1;
+        entry_pcb->terminal_idx=term_index;
+        // the logic of this is the following, assuming that we have the a shell running in index 0
+        // the current shell pid will be placed inside the active_terminal array
+        // when another process comes it will set its pid first, then it will look up the pid in the 
+        // array and use that as the parent
+        entry_pcb->parent_pid = active_terminal[term_index];
+        // active_terminal[term_index] = entry_pcb->pid;
+        
     }
+    
+    active_terminal[term_index] = entry_pcb->pid; // save the current process number to the array
+    current_pid_num = entry_pcb->pid;
+    
+    // setting the current_pid for the terminal
+    terms[term_index].current_process_id = active_terminal[term_index];
 
     memset(entry_pcb->args, 0, sizeof(entry_pcb->args));
     if (arg_idx != 0) {
@@ -147,14 +239,13 @@ int32_t execute (const uint8_t* command){
             entry_pcb->args[i-arg_idx] = command[i];
         }
     }
-   
+
     // TODO: save esp and save ebp
     asm volatile(
         "movl %%ebp, %0;"
         "movl %%esp, %1;"
         : "=r"(entry_pcb->save_ebp), "=r"(entry_pcb->save_esp)
     );
-
     // open stdin and stdout
     entry_pcb->fd_array[0] = set_up_stdin(); 
     entry_pcb->fd_array[1] = set_up_stdout();
@@ -162,8 +253,8 @@ int32_t execute (const uint8_t* command){
 
     // Check for executable
     // Set up paging
-    map_program_page(current_pid_num);  // set up paging
-    flush_TLB();                        // flush tlb
+    map_program_page(current_pid_num);  // set up paging, need to change later
+    // flush_TLB();                        // flush tlb
 
     // Load file into memory
     read_data(entry.inode_num, 0, (uint8_t*)(PROG_LOAD_ADDR), FOUR_MB);
@@ -172,7 +263,7 @@ int32_t execute (const uint8_t* command){
     read_data(entry.inode_num, PROGRAM_ENTRY, (uint8_t*)(&user_code_start_addr), 4);
     
     // TODO: tss for context switching
-    tss.esp0 = EIGHT_MB - 4 - (EIGHT_KB * (current_pid_num -1));
+    tss.esp0 = EIGHT_MB - 4 - (EIGHT_KB * (current_pid_num -1)); // use the entry_pcb->pid, because the current pid
     tss.ss0 = KERNEL_DS;
 
     /* Prepare for Context Switch 
@@ -445,20 +536,19 @@ int32_t getargs(uint8_t* buf, int32_t nbytes){
  * Return value: none
  */
 int32_t vidmap(uint8_t** screen_start){
-    
+    // cli(); ?? 
     // null check
     if(!screen_start) return -1;
     // user program page is from prog_load_addr virtual address to the address + 4MB
     if ((uint32_t)screen_start < PROG_LOAD_ADDR || (uint32_t)screen_start > PROG_LOAD_ADDR + FOUR_MB - 4) return -1;
-    clear();
-    map_video_page(PROG_128MB << 1);    // loading new video page
-    flush_TLB();                        // flush TLB
-    *screen_start = (uint8_t*)(PROG_128MB << 1);    // virtual address is 256MB double the size of PROG_LOAD_ADDR = 128MB
+    // clear();
+    map_vidmap_page((PROG_128MB << 1) + (current_term_id * FOUR_KB), current_term_id);    // loading new video page
+    // flush_TLB();                        // flush TLB
+    *screen_start = (uint8_t*)(PROG_128MB << 1) + (current_term_id * FOUR_KB);    // virtual address is 256MB double the size of PROG_LOAD_ADDR = 128MB
     
-
+    // sti();
     // write the address into to memory location provided by the caller
     // check if the location falls within the address range covered by the single user-level page
-    // uint32_t start = (uint32_t)(GET_PCB(current_pid_num));
 
 
     // the vedio memory requires you to add another page mapping for the program (4kB)

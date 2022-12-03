@@ -14,6 +14,7 @@
 #include "keyboard.h"
 #include "file_system.h"
 #include "sys_call_helper.h"
+#include "schedule.h"
 
 #define RUN_TESTS
 
@@ -159,11 +160,12 @@ void entry(unsigned long magic, unsigned long addr) {
     
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
-    init_file_system(file_sys_start);
-    rtc_init();
-    keyboard_init();
-
     
+    init_file_system(file_sys_start);
+    keyboard_init();
+    terminal_init();
+    rtc_init();
+    pit_init();
 
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
@@ -177,7 +179,7 @@ void entry(unsigned long magic, unsigned long addr) {
     // launch_tests(); // comment this if you do not want loop booting
 #endif
     /* Execute the first program ("shell") ... */
-    execute((uint8_t*)"shell");
+    // execute((uint8_t*)"shell");
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile (".1: hlt; jmp .1;");
 }
