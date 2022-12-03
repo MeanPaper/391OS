@@ -144,3 +144,27 @@
     
 ### Difficulty to fix:
     Our teammate Dongming was able to fix the second page fault, but we still have the third terminal that has page fault. 
+
+---
+## Bug #: 15
+### Date: 11/23/2022
+### Symptom: 
+    Terminal one runs pingpong. Open terminal two next. When switching back to terminal one, pingpong stops and outputs page fault. Then, terminal one runs pingpong again, and we switches to terminal three. When we switches back from terminal three to terminal one, pingpong in terminal one stops and outputs general protection fault
+### Difficulty to find: 
+    It is hard to step through the entire program to see which part causes the exception. This only happened when all the terminals are not opened
+    
+### Difficulty to fix:
+    To fix this, we need to set up esp and ebp before executing new shells
+
+---
+## Bug #: 15
+### Date: 11/23/2022
+### Symptom: 
+    Printing has a glitch when constantly switching between terminals
+### Difficulty to find: 
+    Hard to find. The display terminal index and scheduled terminal index are not change correctly
+    
+### Difficulty to fix:
+    Re-map the scheduling video cursor after the display memory finishes changing
+
+
