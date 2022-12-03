@@ -73,6 +73,7 @@ void pit_handler(){
     while(active_terminal[next_term] == -1){
         next_term = (next_term + 1) % MAX_TERM;
     }
+    current_term_id = (uint32_t)next_term;
     // if(current_pid_num == active_terminal[next_term]){
     //     sti();
     //     return;
@@ -85,7 +86,6 @@ void pit_handler(){
 
     // map_video_page(PROG_128MB << 1, next_proc->terminal_idx);flush_TLB();
     current_pid_num = next_proc->pid;
-    current_term_id = (uint32_t)next_term;
     // set_video_mem(vram_addrs[next_term]);
 
     tss.ss0 = KERNEL_DS;
