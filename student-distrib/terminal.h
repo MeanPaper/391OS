@@ -31,5 +31,4 @@ extern int32_t terminal_close();
 extern int32_t terminal_read(int fd,void * buf, int32_t n_bytes);
 extern int32_t terminal_write(int fd, const void * buf, int32_t n_bytes);
 extern int32_t set_display_term(int32_t term_index); // setting current term index, use to switch terminal
-extern void save_current_cursor(int x, int y);
 #endif /* _TERMINAL_H */

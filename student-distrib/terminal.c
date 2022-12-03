@@ -85,10 +85,6 @@ int32_t term_video_map(uint32_t current_term){
  * Side Effects: 
  *      It will save the cursor position of the current terminal
  */
-void save_current_cursor(int x, int y){
-    terms[display_terminal].screen_x = x;
-    terms[display_terminal].screen_y = y;
-}
 // int32_t term_video_switching(uint8_t next_term);
 
 
@@ -112,8 +108,7 @@ void terminal_init(){
     current_term_id = 0;
     display_terminal = 0;
     terms[display_terminal].read = 0;
-    term_video_map(display_terminal);
-    // terminal = terms[display_terminal];
+    memcpy((uint8_t*)VIDEO_PHYS, (uint8_t*)vram_addrs[display_terminal], FOUR_KB);  // restore the content from the physical
     return;
 }
 
@@ -151,8 +146,8 @@ int32_t set_display_term(int32_t term_index){
     // term_video_unmap(display_terminal);
 
     map_current_video_page(display_terminal);   
-    term_video_unmap(display_terminal);
-    term_video_map(term_index);
+    memcpy((uint8_t*)vram_addrs[display_terminal],(uint8_t*)VIDEO_PHYS, FOUR_KB);   // save the video content to the memory
+    memcpy((uint8_t*)VIDEO_PHYS, (uint8_t*)vram_addrs[term_index], FOUR_KB);  // restore the content from the physical
     display_terminal = term_index;
     // current_term_id = term_index; // force schedule
     map_current_video_page(current_term_id);    

@@ -265,8 +265,8 @@ int32_t execute_on_term (const uint8_t* command, int32_t term_index){
     // TODO: tss for context switching
     tss.esp0 = EIGHT_MB - 4 - (EIGHT_KB * (current_pid_num -1)); // use the entry_pcb->pid, because the current pid
     
-    entry_pcb->sched_ebp = tss.esp0;
-    entry_pcb->sched_esp = tss.esp0;
+    // entry_pcb->sched_ebp = tss.esp0;
+    // entry_pcb->sched_esp = tss.esp0;
     tss.ss0 = KERNEL_DS;
 
     /* Prepare for Context Switch 

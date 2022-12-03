@@ -50,21 +50,6 @@ void set_display_cursor(){
     outb((uint8_t)((position >> 8) & 0xFF),0x3D5);
 }
 
-int get_cursor_x(){
-    return screen_x;
-}
-int get_cursor_y(){
-    return screen_y;
-}
-
-void set_video_mem(int32_t vram_address){
-    video_mem = (char *)vram_address;
-}
-
-void term_set_cursor(int x, int y){
-    screen_x = x;
-    screen_y = y;
-}
 // void set_screen_pos(uint32_t x_pos, uint32_t y_pos){
 //     screen_x = x_pos;
 //     if(y_pos >= NUM_ROWS){
@@ -165,9 +150,6 @@ void set_cursor_position(){
 //     }
 // }   
     
-
-
-
 /* void clear(void);
  * Inputs: void
  * Return Value: none
