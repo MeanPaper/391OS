@@ -149,10 +149,13 @@ int32_t set_display_term(int32_t term_index){
 
     // cli(); // inside interrupt handler
     // term_video_unmap(display_terminal);
+
+    map_current_video_page(display_terminal);   
+    term_video_unmap(display_terminal);
     term_video_map(term_index);
-    // display_terminal = term_index;
+    display_terminal = term_index;
     // current_term_id = term_index; // force schedule
-    map_current_video_page(term_index);    
+    map_current_video_page(current_term_id);    
     // sti(); inside interrupt handler should not sti
     return 0;
 }
