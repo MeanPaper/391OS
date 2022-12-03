@@ -4,6 +4,9 @@
 
 #include "keyboard.h"
 #include "lib.h"
+#include "schedule.h"
+#include "terminal.h"
+#include "sys_call_helper.h"
 
 uint8_t shift_pressed_cons;
 uint8_t caps_pressed_cons;
@@ -70,7 +73,7 @@ void keyboard_init(){
  * Side Effects: set the corresponding global flag variable, i.e. caps/shift/alt/ctrl 
 */
 void keyboard_interrupt(){
-	cli();
+	// cli(); this a interrupt handler
 	uint32_t scan_code;
 	
 	scan_code = inb(KEYBOARD_PORT);
@@ -92,11 +95,13 @@ void keyboard_interrupt(){
 			handle_backspace();
 			break;
 		case ENTER:
-			ENTER_PRESSED = 1;
+			terms[display_terminal].read = 1;
+			// ENTER_PRESSED = 1;	// this
 			handle_enter();
 			break;
 		case ENTER_RELEASE:
-			ENTER_PRESSED = 0;
+			// ENTER_PRESSED = 0;
+			terms[display_terminal].read = 0;
 			memset((void*)key_buffer, 0, sizeof(key_buffer));
 			break;
 		case LEFT_ALT_PRESSED:
@@ -118,12 +123,11 @@ void keyboard_interrupt(){
 			break;
 	}
 	send_eoi(KEYBOARD_IRQ); //end of eoi. 
-	sti();
+	// sti();
 }
 
 void display_on_screen(uint32_t scan_code){
 	//check if the scan code is in range, aka a char or num. 
-	if(scan_code >= 60 || scan_code < 0)return; //check if in char array range
 	if(control_pressed_cons == 1){
 		//if control+l, clear the screen and update cursor to top left. 
 		if(scan_code == 0x26){ 
@@ -136,11 +140,47 @@ void display_on_screen(uint32_t scan_code){
 		return;		
 	}
 
-//if alt is pressed, do nothing. 
+//if alt is pressed, do nothing. alt and keypress will execute the terminal and everything
 	if(alt_pressed_cons == 1){
+		if(scan_code == F1_pressed && display_terminal != 0){
+			// printf("Alt + F1 received! \n");
+			strncpy((int8_t*)terms[display_terminal].terminal_buf, (int8_t*)key_buffer, 128);	// copy the content to the terminal buffer
+			terms[display_terminal].key_index = buffer_index;		// storing the current buffer index
+			buffer_index = terms[0].key_index;
+			strncpy((int8_t*)key_buffer, (int8_t*)terms[0].terminal_buf, 128);
+			send_eoi(KEYBOARD_IRQ);
+			set_display_term(0);
+			set_display_cursor();
+		}
+		else if(scan_code == F2_pressed && display_terminal != 1){
+			// printf("Alt + F2 received! \n");
+			
+			if(get_process_total() < 6 || active_terminal[1] != -1){
+				strncpy((int8_t*)terms[display_terminal].terminal_buf, (int8_t*)key_buffer, 128);	// copy the content to the terminal buffer
+				terms[display_terminal].key_index = buffer_index;		// storing the current buffer index
+				buffer_index = terms[1].key_index;
+				strncpy((int8_t*)key_buffer, (int8_t*)terms[1].terminal_buf, 128);
+				send_eoi(KEYBOARD_IRQ);
+				set_display_term(1);
+				set_display_cursor();
+			}
+		}
+		else if(scan_code == F3_pressed && display_terminal != 2){
+			// printf("Alt + F3 received! \n");
+			if(get_process_total() < 6 || active_terminal[2] != -1){
+				strncpy((int8_t*)terms[display_terminal].terminal_buf, (int8_t*)key_buffer, 128);	// copy the content to the terminal buffer
+				terms[display_terminal].key_index = buffer_index;		// storing the current buffer index
+				buffer_index = terms[2].key_index;
+				strncpy((int8_t*)key_buffer, (int8_t*)terms[2].terminal_buf, 128);
+				send_eoi(KEYBOARD_IRQ);
+				set_display_term(2);
+				set_display_cursor();
+			}
+		}
 		return;
 	}
 	
+	if(scan_code >= 60 || scan_code < 0)return; //check if in char array range
 	//output the keyword according to scan_code and shift/control flag status. 
 	uint8_t keyword = keyboard_ch[shift_pressed_cons+2*caps_pressed_cons][scan_code];
 	if(buffer_index >= 127)return; //buffer max is 127, letter after 127th input will not be recorded. 
