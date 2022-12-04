@@ -16,7 +16,7 @@ static char* video_mem = (char *)VIDEO;
 static char* video_altr =  (char *)VIDEO_PHYS_ALTER;
 
 
-// scrolling for a specific terminal
+// scrolling up for a specific terminal screen memory
 void term_scroll_up(int term_video){
     int x;
     int y;
@@ -30,6 +30,7 @@ void term_scroll_up(int term_video){
     }
 }
 
+// updating the cursor of the terminal we are looking at
 void set_display_cursor(){
     if( terms[display_terminal].screen_y > (NUM_ROWS-1)) {
         terms[display_terminal].screen_y = (NUM_ROWS-1);

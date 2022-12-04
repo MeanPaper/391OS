@@ -11,7 +11,16 @@
 // int launch_terminal = 0;
 // int term_start_count = 0;
 
-
+/*
+ * pit_handler
+ * Descritption: schedule processes in multi terminals
+ * 
+ * Input: none
+ * Output: none
+ * Return value: none
+ * Side effect: video memory, vidmap, current running program will constantly change
+ *  in the background
+ */
 void pit_handler(){
     // return;    
     // cli();
