@@ -83,6 +83,8 @@ int32_t halt (uint8_t status){
     // update the terminal current process when the current process in the current terminal halts
     terms[current->terminal_idx].current_process_id = active_terminal[current->terminal_idx];
     terms[current->terminal_idx].read = 0;
+    terms[current->terminal_idx].key_index =0;
+    memset((uint8_t*)terms[current->terminal_idx].terminal_buf, 0, sizeof(terms[current->terminal_idx].terminal_buf));
     if(current->terminal_idx == display_terminal) {reset_keybuf();}
 
     process_in_use--;
