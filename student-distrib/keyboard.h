@@ -27,7 +27,7 @@
 #define F3_pressed 0x3D
 //status flag.
 volatile uint8_t key_buffer[128];
-volatile uint8_t ENTER_PRESSED;
+// volatile uint8_t ENTER_PRESSED;
 
 /* keyboard_init(void)
  *   Inputs: none
@@ -44,7 +44,7 @@ void display_on_screen(uint32_t scan_code);
 
 void append_to_buffer(uint8_t keyword);
 void handle_backspace();
-
+void reset_keybuf();
 void handle_enter();
 void handle_tab();
 #endif

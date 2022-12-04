@@ -1,5 +1,6 @@
 #include "sys_call_helper.h"
 #include "lib.h"
+#include "keyboard.h"
 
 #define MAX_PROCESS 6
 // uint8_t * vram = (uint8_t*)(VIDEO_VIR + FOUR_KB);
@@ -81,6 +82,8 @@ int32_t halt (uint8_t status){
 
     // update the terminal current process when the current process in the current terminal halts
     terms[current->terminal_idx].current_process_id = active_terminal[current->terminal_idx];
+    terms[current->terminal_idx].read = 0;
+    if(current->terminal_idx == display_terminal) {reset_keybuf();}
 
     process_in_use--;
     current_pid_num = current->parent_pid;

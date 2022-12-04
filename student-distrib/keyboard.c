@@ -13,7 +13,10 @@ uint8_t caps_pressed_cons;
 uint8_t alt_pressed_cons;
 uint8_t control_pressed_cons;
 uint8_t buffer_index;
-
+void reset_keybuf(){
+	memset((uint8_t*)key_buffer, 0, sizeof(key_buffer));
+	buffer_index = 0;
+}
 
 /* Mapping scancode to ascii */
 // 4 conditions, 60 different inputs. includes char, number and special keys. 
