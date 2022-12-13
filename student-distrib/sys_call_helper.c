@@ -54,7 +54,6 @@ int32_t halt (uint8_t status){
     /* halt must return a value to the parent execute system call so that 
      * we know how the program ended */
 
-    // cli();
     // how do we grap the program
     pcb_t * current = (pcb_t*)(GET_PCB(current_pid_num));
     // pcb_t * parent = (pcb_t*)(GET_PCB(current->parent_pid));
@@ -89,19 +88,12 @@ int32_t halt (uint8_t status){
 
     process_in_use--;
     current_pid_num = current->parent_pid;
-    // if(process_in_use > 0 && process_active[process_in_use-1] == current->pid){
-    //     // process_active[--process_in_use] = -1;
-    // }
 
     // check if main shell
     if(current->pid == current->parent_pid ){ //&& current->pid == active_terminal[current->terminal_idx]
         active_terminal[current->terminal_idx] = -1;
         execute((uint8_t*)"shell");
     }
-    // else{
-    //     current_pid_num -= 1;
-    // }
-    // sti();
     // Jump to execute return with proper ebp and esp
     asm volatile(
         "movl  %2, %%esp; "
@@ -135,8 +127,6 @@ int32_t execute_on_term (const uint8_t* command, int32_t term_index){
     uint8_t command_buf[128]; //buff size has a maximum of 128
     uint8_t elf_buffer[ELF_MAGIC_SIZE]; // elf buffer for the magic keyword         
     int32_t ret;
-    // uint32_t found_cmd = 0;
-    // uint32_t cmd_arg_len = 0;
     uint32_t command_len = strlen((int8_t*) command);
     int i, arg_idx;
     arg_idx = 0;
@@ -159,16 +149,6 @@ int32_t execute_on_term (const uint8_t* command, int32_t term_index){
     // we read the command until newline or null or space
     for(i = 0; i < command_len; ++i){
         if(command[i] == 0x0a || command[i] == 0) break;
-        // if(command[i] != 0x20 && !found_cmd){
-        //     command_buf[cmd_arg_len] = command[i];
-        //     cmd_arg_len++;
-        // }
-        // else if(!found_cmd && cmd_arg_len && command[i] == 0x20){found_cmd=i;}
-        
-        // if(found_cmd && command[i-1] == 0x20 && command[i] != 0x20){
-        //     arg_idx = i;
-        //     break;
-        // }
 
         if(command[i] == 0x20){
             arg_idx = i+1;
@@ -541,21 +521,14 @@ int32_t getargs(uint8_t* buf, int32_t nbytes){
  * Return value: none
  */
 int32_t vidmap(uint8_t** screen_start){
-    // cli(); ?? 
     // null check
     if(!screen_start) return -1;
     // user program page is from prog_load_addr virtual address to the address + 4MB
     if ((uint32_t)screen_start < PROG_LOAD_ADDR || (uint32_t)screen_start > PROG_LOAD_ADDR + FOUR_MB - 4) return -1;
-    // clear();
-    map_vidmap_page((PROG_128MB << 1) + (current_term_id * FOUR_KB), current_term_id);    // loading new video page
-    // flush_TLB();                        // flush TLB
+
+    map_vidmap_page((PROG_128MB << 1) + (current_term_id * FOUR_KB), current_term_id);    // loading new video page                      // flush TLB
     *screen_start = (uint8_t*)(PROG_128MB << 1) + (current_term_id * FOUR_KB);    // virtual address is 256MB double the size of PROG_LOAD_ADDR = 128MB
     
-    // sti();
-    // write the address into to memory location provided by the caller
-    // check if the location falls within the address range covered by the single user-level page
-
-
     // the vedio memory requires you to add another page mapping for the program (4kB)
     return 0; // 8
 }    

@@ -41,10 +41,6 @@ int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry){
             // size: always 32 bytes
             
             memcpy(dentry, temp, sizeof(dentry_t));
-            // strncpy((int8_t*)(dentry->file_name), (int8_t*)(temp->file_name), FILE_NAME_LENGTH);
-            // dentry->file_type = temp->file_type;
-            // dentry->inode_num = temp->inode_num;
-            // strncpy((int8_t*)(dentry->reserved), (int8_t*)(temp->reserved), DENTRY_RESERVED);
             return 0;
         }
     }
@@ -69,11 +65,6 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry){
 
     // copy all the information to the dentry parameter
     memcpy(dentry, temp, sizeof(dentry_t));
-  
-    // strncpy((int8_t*)(dentry->file_name), (int8_t*)(temp->file_name), FILE_NAME_LENGTH);
-    // dentry->file_type = temp->file_type;
-    // dentry->inode_num = temp->inode_num;
-    // strncpy((int8_t*)(dentry->reserved), (int8_t*)(temp->reserved), DENTRY_RESERVED);
 
     return 0;
 }

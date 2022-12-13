@@ -99,11 +99,9 @@ void keyboard_interrupt(){
 			break;
 		case ENTER:
 			terms[display_terminal].read = 1;
-			// ENTER_PRESSED = 1;	// this
 			handle_enter();
 			break;
 		case ENTER_RELEASE:
-			// ENTER_PRESSED = 0;
 			terms[display_terminal].read = 0;
 			memset((void*)key_buffer, 0, sizeof(key_buffer));
 			break;
@@ -126,7 +124,6 @@ void keyboard_interrupt(){
 			break;
 	}
 	send_eoi(KEYBOARD_IRQ); //end of eoi. 
-	// sti();
 }
 
 void display_on_screen(uint32_t scan_code){
@@ -146,7 +143,6 @@ void display_on_screen(uint32_t scan_code){
 //if alt is pressed, do nothing. alt and keypress will execute the terminal and everything
 	if(alt_pressed_cons == 1){
 		if(scan_code == F1_pressed && display_terminal != 0){
-			// printf("Alt + F1 received! \n");
 			strncpy((int8_t*)terms[display_terminal].terminal_buf, (int8_t*)key_buffer, 128);	// copy the content to the terminal buffer
 			terms[display_terminal].key_index = buffer_index;		// storing the current buffer index
 			buffer_index = terms[0].key_index;
@@ -156,7 +152,6 @@ void display_on_screen(uint32_t scan_code){
 			set_display_cursor();
 		}
 		else if(scan_code == F2_pressed && display_terminal != 1){
-			// printf("Alt + F2 received! \n");
 			
 			if(get_process_total() < 6 || active_terminal[1] != -1){
 				strncpy((int8_t*)terms[display_terminal].terminal_buf, (int8_t*)key_buffer, 128);	// copy the content to the terminal buffer
@@ -169,7 +164,6 @@ void display_on_screen(uint32_t scan_code){
 			}
 		}
 		else if(scan_code == F3_pressed && display_terminal != 2){
-			// printf("Alt + F3 received! \n");
 			if(get_process_total() < 6 || active_terminal[2] != -1){
 				strncpy((int8_t*)terms[display_terminal].terminal_buf, (int8_t*)key_buffer, 128);	// copy the content to the terminal buffer
 				terms[display_terminal].key_index = buffer_index;		// storing the current buffer index
@@ -208,7 +202,6 @@ void append_to_buffer(uint8_t keyword){
 		buffer_index ++;
 	}
 	key_buffer[127] = '\0'; //last char is null. 
-	// update_cursor();
 }
 
 
@@ -241,8 +234,6 @@ void handle_enter(){
 	key_buffer[buffer_index] = '\n';
 	enter();
 	buffer_index = 0;
-	// memset((void*)key_buffer, 0, sizeof(key_buffer));
-	//need to set the memory
 
 }
 
@@ -263,11 +254,3 @@ void handle_tab(){
 	buffer_index += 4; //4space = 1tab
 	tab();
 }
-// void clear(){
-// 	//set the memory. 
-// 	int i;
-// 	for(i = 0 ; i < buffer_index; i++){
-// 		key_buffer[i] = '\0';
-// 	}
-// 	buffer_index = 0;
-// }

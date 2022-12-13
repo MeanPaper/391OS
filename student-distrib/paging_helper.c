@@ -151,8 +151,3 @@ int32_t remove_program_page(int pid_num){
     return 0;
 }
 
-// int32_t video_mem_swap(uint8_t current, uint8_t next){
-//     memcpy((uint8_t*)vram_addrs[current], (uint8_t*)VIDEO_PHYS, FOUR_KB);   // copy the current view to the copy
-//     memcpy((uint8_t*)VIDEO_PHYS, (uint8_t*)vram_addrs[next], FOUR_KB);         // load the next view to the position
-//     return 0;
-// }

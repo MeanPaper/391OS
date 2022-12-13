@@ -45,13 +45,6 @@ void rtc_handler(void) {
             }
         }
     }
-
-    // if (count > MAX_FREQ/rtc_f) {
-    //     flag = 0;
-    //     count = 0;
-    // } else {
-    //     count ++;
-    // }
     
     outb(REG_C, RTC_PORT);	// select register C
     inb(RTC_DATA);		// just throw away contents
@@ -72,8 +65,6 @@ void return_from_read() {
 /* Block until the next interrupt */
 int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
     sti();
-    // flag = 1;   // set flag
-    // while(flag==1);
     terms[current_term_id].rtc_flag = 1;
     while(terms[current_term_id].rtc_flag == 1);
     return_from_read();
@@ -108,18 +99,3 @@ void rtc_change_rate(int rate) {
     outb((prev & 0xF0) | rate, RTC_DATA); // rate is the buttom 4 bits
     sti();
 }
-
-// /* log2_helper(int input)
-//  *   Inputs: int input
-//  *   Return Value: int count
-//  *   Function: Compute count = log2(input) */
-// int log2_helper(int input) {
-//     int count = 0;
-//     int curr_num = 1;
-//     while (curr_num != input) {
-//         curr_num = curr_num * 2;
-//         count++;
-//         if (curr_num>input) return -1;
-//     }
-//     return count;
-// }

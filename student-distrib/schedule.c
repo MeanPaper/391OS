@@ -7,10 +7,6 @@
 #define FREQ          100 //40
 #define MAX_TERM      3
 
-// int flag = 0;
-// int launch_terminal = 0;
-// int term_start_count = 0;
-
 /*
  * pit_handler
  * Descritption: schedule processes in multi terminals
@@ -22,26 +18,14 @@
  *  in the background
  */
 void pit_handler(){
-    // return;    
-    // cli();
     int32_t next_term;
-    // uint32_t shell_esp, shell_ebp;
 
-   
     send_eoi(PIT_IRQ_POS);
     if(active_terminal[0]==-1){
-        // register uint32_t ebp_tmp asm("ebp");
-        // register uint32_t esp_tmp asm("esp");
-        // pcb_t * current = (pcb_t*)(GET_PCB(1));
-        // current->sched_ebp = ebp_tmp;
-        // current->sched_esp = esp_tmp;
         execute_on_term((uint8_t*)"shell", 0);
     }
 
-    // next_term = (current_term_id + 1) % MAX_TERM;
     if(get_process_total() < 6){
-        // flag = 0;
-
         if(active_terminal[display_terminal] == -1){
             map_sched_video_page(display_terminal);
             int availiable = get_availiable_pid();
@@ -71,7 +55,6 @@ void pit_handler(){
     map_program_page(next_proc->pid);
     map_sched_video_page(next_term);
     map_vidmap_page((PROG_128MB << 1) + (next_term * FOUR_KB), next_term);    // loading new video page
-    // flush_TLB();
 
     current_pid_num = next_proc->pid;
 
@@ -85,7 +68,7 @@ void pit_handler(){
         : 
         :"r"(next_proc->sched_ebp), "r"(next_proc->sched_esp)
     );
-    // sti();
+
     return;
 }
 
