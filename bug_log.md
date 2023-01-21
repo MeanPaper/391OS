@@ -157,7 +157,7 @@
     To fix this, we need to set up esp and ebp before executing new shells
 
 ---
-## Bug #: 15
+## Bug #: 16
 ### Date: 11/23/2022
 ### Symptom: 
     Printing has a glitch when constantly switching between terminals
