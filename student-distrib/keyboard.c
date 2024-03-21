@@ -247,6 +247,7 @@ void handle_enter(){
 */
 void handle_tab(){
 	int i;
+	if(buffer_index >= 127) return;
 	for(i = 0; i < 4; i++){
 		key_buffer[buffer_index+i] = ' ';
 		kbd_putc(' ');
